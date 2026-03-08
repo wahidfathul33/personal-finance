@@ -1,9 +1,9 @@
 'use client'
 
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { getTransactions } from '@/actions/transactions'
 import { getPersons } from '@/actions/persons'
-import TransactionItem from '@/components/TransactionItem'
+import TransactionItem, { TransactionItemSkeleton } from '@/components/TransactionItem'
 import TransactionForm from '@/components/TransactionForm'
 import PageHeader from '@/components/PageHeader'
 import Link from 'next/link'
@@ -19,6 +19,7 @@ const TYPE_OPTIONS = [
   { value: 'transfer', label: 'Transfer' },
 ]
 
+const PAGE_SIZE = 20
 const now = new Date()
 const YEAR_OPTIONS = Array.from({ length: 5 }, (_, i) => now.getFullYear() - i)
 
@@ -30,8 +31,19 @@ export default function TransactionsPage() {
   const [month, setMonth] = useState(currentMonth())
   const [year, setYear] = useState(currentYear())
   const [loading, setLoading] = useState(true)
+  const [loadingMore, setLoadingMore] = useState(false)
+  const [hasMore, setHasMore] = useState(false)
+  const [offset, setOffset] = useState(0)
   const [showFilters, setShowFilters] = useState(false)
   const [showForm, setShowForm] = useState(false)
+  const sentinelRef = useRef<HTMLDivElement>(null)
+
+  const filters = useMemo(() => ({
+    month,
+    year,
+    person_id: personFilter === 'all' ? undefined : personFilter,
+    type: typeFilter === 'all' ? undefined : (typeFilter as TransactionWithCategory['type']),
+  }), [month, year, personFilter, typeFilter])
 
   const loadPersons = useCallback(async () => {
     const data = await getPersons()
@@ -40,18 +52,38 @@ export default function TransactionsPage() {
 
   const loadTransactions = useCallback(async () => {
     setLoading(true)
-    const data = await getTransactions({
-      month,
-      year,
-      person_id: personFilter === 'all' ? undefined : personFilter,
-      type: typeFilter === 'all' ? undefined : (typeFilter as TransactionWithCategory['type']),
-    })
+    setOffset(0)
+    const data = await getTransactions({ ...filters, limit: PAGE_SIZE, offset: 0 })
     setTransactions(data)
+    setHasMore(data.length === PAGE_SIZE)
+    setOffset(data.length)
     setLoading(false)
-  }, [month, year, personFilter, typeFilter])
+  }, [filters])
+
+  const loadMore = useCallback(async () => {
+    if (loadingMore || !hasMore) return
+    setLoadingMore(true)
+    const data = await getTransactions({ ...filters, limit: PAGE_SIZE, offset })
+    setTransactions(prev => [...prev, ...data])
+    setHasMore(data.length === PAGE_SIZE)
+    setOffset(prev => prev + data.length)
+    setLoadingMore(false)
+  }, [filters, offset, loadingMore, hasMore])
 
   useEffect(() => { loadPersons() }, [loadPersons])
   useEffect(() => { loadTransactions() }, [loadTransactions])
+
+  // Infinite scroll via IntersectionObserver
+  useEffect(() => {
+    const el = sentinelRef.current
+    if (!el) return
+    const observer = new IntersectionObserver(
+      (entries) => { if (entries[0].isIntersecting) loadMore() },
+      { threshold: 0.1 }
+    )
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [loadMore])
 
   const stats = useMemo(() => {
     const income = transactions
@@ -66,7 +98,7 @@ export default function TransactionsPage() {
   const hasActiveFilters = personFilter !== 'all' || typeFilter !== 'all'
 
   return (
-    <div>
+    <div className="flex flex-col h-[calc(100dvh-80px)]">
       <PageHeader
         title="Transaksi"
         subtitle={`${MONTHS[month - 1]} ${year}`}
@@ -189,30 +221,50 @@ export default function TransactionsPage() {
       <div className="px-4 mb-3 grid grid-cols-3 gap-2">
         <div className="bg-emerald-50 dark:bg-emerald-950/40 rounded-3xl p-4">
           <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium mb-2">Masuk</p>
-          <p className="text-base font-bold text-emerald-700 dark:text-emerald-300">{formatCurrency(stats.income)}</p>
+          {loading
+            ? <div className="h-5 w-20 rounded-full bg-emerald-200 dark:bg-emerald-900/50 shimmer-dark" />
+            : <p className="text-base font-bold text-emerald-700 dark:text-emerald-300">{formatCurrency(stats.income)}</p>
+          }
         </div>
         <div className="bg-rose-50 dark:bg-rose-950/40 rounded-3xl p-4">
           <p className="text-xs text-rose-600 dark:text-rose-400 font-medium mb-2">Keluar</p>
-          <p className="text-base font-bold text-rose-700 dark:text-rose-300">{formatCurrency(stats.expense)}</p>
+          {loading
+            ? <div className="h-5 w-20 rounded-full bg-rose-200 dark:bg-rose-900/50 shimmer-dark" />
+            : <p className="text-base font-bold text-rose-700 dark:text-rose-300">{formatCurrency(Math.abs(stats.expense))}</p>
+          }
         </div>
         <div className="bg-gray-100 dark:bg-gray-800 rounded-3xl p-4">
           <p className="text-xs text-gray-500 dark:text-gray-400 font-medium mb-2">Transaksi</p>
-          <p className="text-base font-bold text-gray-700 dark:text-gray-200">{stats.count}</p>
+          {loading
+            ? <div className="h-5 w-8 rounded-full bg-gray-300 dark:bg-gray-600 shimmer-dark" />
+            : <p className="text-base font-bold text-gray-700 dark:text-gray-200">{stats.count}</p>
+          }
         </div>
       </div>
 
       {/* List */}
+      <div className="flex-1 min-h-0 overflow-y-auto">
       {loading ? (
-        <div className="text-center py-10 text-gray-400 text-sm">Memuat...</div>
+        <div className="px-4 space-y-2 pt-1">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <TransactionItemSkeleton key={i} />
+          ))}
+        </div>
       ) : transactions.length === 0 ? (
         <div className="text-center py-10 text-gray-400 text-sm">Tidak ada transaksi</div>
       ) : (
-        <div className="px-4 space-y-2 pb-8">
+        <div className="px-4 space-y-2 pb-4">
           {transactions.map((tx) => (
             <TransactionItem key={tx.id} transaction={tx} onSuccess={loadTransactions} />
           ))}
+          {hasMore && (
+            <div ref={sentinelRef} className="py-4 text-center text-sm text-gray-400">
+              {loadingMore ? 'Memuat...' : ''}
+            </div>
+          )}
         </div>
       )}
+      </div>
 
       {showForm && (
         <TransactionForm

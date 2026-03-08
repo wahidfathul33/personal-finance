@@ -111,7 +111,37 @@ export default function AnalisisPage() {
       <div>
         <PageHeader title="Analisis" />
         <FilterRow month={month} year={year} onMonth={setMonth} onYear={setYear} />
-        <div className="text-center py-10 text-gray-400 text-sm">Memuat...</div>
+        <div className="px-4 space-y-6 pb-8">
+          {/* Trend skeleton */}
+          <div>
+            <div className="h-4 w-24 rounded-full bg-gray-200 dark:bg-gray-700 mb-3 shimmer-dark" />
+            <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 p-3">
+              <div className="h-[180px] rounded-xl bg-gray-100 dark:bg-gray-700 shimmer-dark" />
+            </div>
+          </div>
+          {/* Breakdown skeleton */}
+          <div>
+            <div className="h-4 w-40 rounded-full bg-gray-200 dark:bg-gray-700 mb-3 shimmer-dark" />
+            <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 p-3 flex gap-4">
+              <div className="w-[140px] h-[140px] rounded-full bg-gray-100 dark:bg-gray-700 flex-shrink-0 shimmer-dark" />
+              <div className="flex-1 space-y-2.5 pt-2">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <div key={i} className="flex items-center justify-between">
+                    <div className="h-3 w-24 rounded-full bg-gray-200 dark:bg-gray-700 shimmer-dark" />
+                    <div className="h-3 w-16 rounded-full bg-gray-200 dark:bg-gray-700 shimmer-dark" />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+          {/* Comparison skeleton */}
+          <div>
+            <div className="h-4 w-40 rounded-full bg-gray-200 dark:bg-gray-700 mb-3 shimmer-dark" />
+            <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 p-3">
+              <div className="h-[160px] rounded-xl bg-gray-100 dark:bg-gray-700 shimmer-dark" />
+            </div>
+          </div>
+        </div>
       </div>
     )
   }

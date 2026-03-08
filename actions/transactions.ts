@@ -53,6 +53,11 @@ export async function getTransactions(
     query = query.eq('category_id', filters.category_id)
   }
 
+  if (filters.limit !== undefined) {
+    const offset = filters.offset ?? 0
+    query = query.range(offset, offset + filters.limit - 1)
+  }
+
   const { data, error } = await query
   if (error) throw error
 

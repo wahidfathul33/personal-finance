@@ -151,3 +151,19 @@ export default function TransactionItem({ transaction, showPerson = true, onSucc
     </div>
   )
 }
+
+export function TransactionItemSkeleton() {
+  return (
+    <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 p-3 flex items-center gap-3">
+      <div className="w-9 h-9 rounded-full bg-gray-200 dark:bg-gray-700 flex-shrink-0 shimmer-dark" />
+      <div className="flex-1 min-w-0 space-y-2">
+        <div className="flex items-center gap-2">
+          <div className="h-3.5 w-24 rounded-full bg-gray-200 dark:bg-gray-700 shimmer-dark" />
+          <div className="h-3 w-12 rounded-full bg-gray-100 dark:bg-gray-700/60 shimmer-dark" />
+        </div>
+        <div className="h-3 w-16 rounded-full bg-gray-100 dark:bg-gray-700/60 shimmer-dark" />
+      </div>
+      <div className="h-4 w-16 rounded-full bg-gray-200 dark:bg-gray-700 flex-shrink-0 shimmer-dark" />
+    </div>
+  )
+}

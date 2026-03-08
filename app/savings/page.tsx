@@ -16,7 +16,7 @@ export default async function SavingsPage() {
   } catch {}
 
   return (
-    <div>
+    <div className="flex flex-col h-[calc(100dvh-80px)]">
       <PageHeader title="Tabungan" subtitle="Rekap tabungan bersama" />
 
       {/* Summary Cards */}
@@ -43,7 +43,7 @@ export default async function SavingsPage() {
         </div>
       </div>
 
-      <SavingsClient items={summary.items} />
+      <SavingsClient items={summary.items} className="flex-1 min-h-0" />
     </div>
   )
 }

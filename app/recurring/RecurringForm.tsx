@@ -3,9 +3,9 @@
 import { useState, useTransition, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { addRecurringTemplate, updateRecurringTemplate } from '@/actions/recurring'
-import { getPersons } from '@/actions/persons'
 import type { RecurringTemplate, AddRecurringTemplateInput, TransactionType, Person } from '@/lib/types'
 import { EXPENSE_CATEGORIES, INCOME_CATEGORIES, PERSON_COLORS } from '@/lib/constants'
+import { usePersons } from '@/lib/usePersons'
 import { ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 
@@ -17,7 +17,7 @@ export default function RecurringForm({ template }: Props) {
   const router = useRouter()
   const isEdit = !!template
   const [isPending, startTransition] = useTransition()
-  const [persons, setPersons] = useState<Person[]>([])
+  const persons = usePersons()
 
   const [name, setName] = useState(template?.name ?? '')
   const [type, setType] = useState<TransactionType>(template?.type ?? 'expense')
@@ -28,12 +28,9 @@ export default function RecurringForm({ template }: Props) {
   const [note, setNote] = useState(template?.note ?? '')
 
   useEffect(() => {
-    getPersons().then((list) => {
-      setPersons(list)
-      if (!personId && list.length > 0) setPersonId(list[0].id)
-    })
+    if (persons.length > 0 && !personId) setPersonId(persons[0].id)
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [persons])
 
   const categories = type === 'income' ? INCOME_CATEGORIES : EXPENSE_CATEGORIES
 

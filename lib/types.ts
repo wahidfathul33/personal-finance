@@ -150,4 +150,6 @@ export interface TransactionFilters {
   type?: TransactionType | 'all'
   month?: number
   year?: number
+  limit?: number
+  offset?: number
 }

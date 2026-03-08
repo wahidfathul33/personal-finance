@@ -9,8 +9,8 @@ import {
   updateTransaction,
 } from '@/actions/transactions'
 import { addSaving } from '@/actions/savings'
-import { getPersons } from '@/actions/persons'
 import { EXPENSE_CATEGORIES, INCOME_CATEGORIES, PERSON_COLORS, todayISO } from '@/lib/constants'
+import { usePersons } from '@/lib/usePersons'
 import type { Person, TransactionType, TransactionWithCategory } from '@/lib/types'
 
 type Mode = 'expense' | 'income' | 'split' | 'transfer'
@@ -33,7 +33,7 @@ export default function TransactionForm({ defaultMode = 'expense', editTransacti
 
   const [mode, setMode] = useState<Mode>(initialMode)
   const [isPending, startTransition] = useTransition()
-  const [persons, setPersons] = useState<Person[]>([])
+  const persons = usePersons()
 
   const [date, setDate] = useState(editTransaction?.date ?? todayISO())
   const [amount, setAmount] = useState(
@@ -56,21 +56,17 @@ export default function TransactionForm({ defaultMode = 'expense', editTransacti
   const [savingSource, setSavingSource] = useState<'saldo' | 'tabungan'>('saldo')
 
   useEffect(() => {
-    getPersons().then((list) => {
-      setPersons(list)
-      if (!personId && list.length > 0) setPersonId(list[0].id)
-      if (!fromPersonId && list.length > 0) setFromPersonId(list[0].id)
-      if (!toPersonId && list.length > 1) setToPersonId(list[1].id)
-      else if (!toPersonId && list.length > 0) setToPersonId(list[0].id)
-      // Init split amounts equally
-      if (list.length > 0) {
-        const init: Record<string, string> = {}
-        list.forEach((p) => { init[p.id] = '' })
-        setSplitAmounts(init)
-      }
-    })
+    if (persons.length === 0) return
+    if (!personId) setPersonId(persons[0].id)
+    if (!fromPersonId) setFromPersonId(persons[0].id)
+    if (!toPersonId) setToPersonId(persons.length > 1 ? persons[1].id : persons[0].id)
+    if (Object.keys(splitAmounts).length === 0) {
+      const init: Record<string, string> = {}
+      persons.forEach((p) => { init[p.id] = '' })
+      setSplitAmounts(init)
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [persons])
 
   const categories = mode === 'income' ? INCOME_CATEGORIES : EXPENSE_CATEGORIES
   const totalAmount = parseFloat(amount) || 0
