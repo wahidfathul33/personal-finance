@@ -15,7 +15,7 @@ export default function HomePage() {
   const year = currentYear()
 
   return (
-    <div className="flex flex-col h-[calc(100dvh-80px)]">
+    <div className="flex flex-col min-h-[calc(100dvh-80px)]">
       {/* Header */}
       <div className="bg-gradient-to-br from-indigo-600 to-indigo-800 px-4 pt-12 pb-6">
         <div className="flex items-center justify-between mb-5">
@@ -52,7 +52,7 @@ export default function HomePage() {
       </div>
 
       {/* Recent Transactions */}
-      <div className="px-4 pb-24">
+      <div className="px-4 pb-4">
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-sm font-semibold text-gray-800 dark:text-gray-100">Transaksi Terbaru</h2>
           <Link href="/transactions" className="text-xs text-indigo-500 font-medium">
