@@ -13,6 +13,17 @@ import type {
 } from '@/lib/types'
 import { getCategoryById, currentMonth, currentYear } from '@/lib/constants'
 
+const WITH_PERSON = '*, person:persons!person_id(name, color)'
+
+function mapRow(t: Record<string, unknown>): TransactionWithCategory {
+  return {
+    ...(t as unknown as Transaction),
+    person: t.person as { name: string; color: string } | undefined,
+    type: t.type as TransactionWithCategory['type'],
+    category: t.category_id ? getCategoryById(t.category_id as string) : undefined,
+  }
+}
+
 // ─── Fetch ────────────────────────────────────────────────────────────────────
 
 export async function getTransactions(
@@ -26,7 +37,7 @@ export async function getTransactions(
 
   let query = supabase
     .from('transactions')
-    .select('*')
+    .select(WITH_PERSON)
     .gte('date', startDate)
     .lte('date', endDate)
     .order('date', { ascending: false })
@@ -45,12 +56,7 @@ export async function getTransactions(
   const { data, error } = await query
   if (error) throw error
 
-  return (data ?? []).map((t) => ({
-    ...t,
-    person_id: t.person_id as 'mas' | 'fita',
-    type: t.type as 'income' | 'expense' | 'transfer',
-    category: t.category_id ? getCategoryById(t.category_id) : undefined,
-  }))
+  return (data ?? []).map(mapRow)
 }
 
 export async function getRecentTransactions(
@@ -58,19 +64,13 @@ export async function getRecentTransactions(
 ): Promise<TransactionWithCategory[]> {
   const { data, error } = await supabase
     .from('transactions')
-    .select('*')
+    .select(WITH_PERSON)
     .order('date', { ascending: false })
     .order('created_at', { ascending: false })
     .limit(limit)
 
   if (error) throw error
-
-  return (data ?? []).map((t) => ({
-    ...t,
-    person_id: t.person_id as 'mas' | 'fita',
-    type: t.type as 'income' | 'expense' | 'transfer',
-    category: t.category_id ? getCategoryById(t.category_id) : undefined,
-  }))
+  return (data ?? []).map(mapRow)
 }
 
 // ─── Add single transaction ───────────────────────────────────────────────────
@@ -93,42 +93,43 @@ export async function addTransaction(input: AddTransactionInput) {
   revalidatePath('/transactions')
 }
 
+// ─── Update transaction ───────────────────────────────────────────────────────
+
+export async function updateTransaction(
+  id: string,
+  data: {
+    date: string
+    amount: number
+    note: string | null
+    category_id: string | null
+    person_id: string
+    type: string
+  }
+) {
+  const { error } = await supabase
+    .from('transactions')
+    .update(data)
+    .eq('id', id)
+
+  if (error) throw error
+  revalidatePath('/')
+  revalidatePath('/transactions')
+}
+
 // ─── Split Bill ───────────────────────────────────────────────────────────────
 
 export async function addSplitBill(input: AddSplitBillInput) {
   const group_id = uuidv4()
 
-  let mas_amount: number
-  let fita_amount: number
-
-  if (input.split_type === 'equal') {
-    mas_amount = Math.round(input.total_amount / 2)
-    fita_amount = input.total_amount - mas_amount
-  } else {
-    mas_amount = input.mas_amount ?? Math.round(input.total_amount / 2)
-    fita_amount = input.fita_amount ?? input.total_amount - mas_amount
-  }
-
-  const rows = [
-    {
-      date: input.date,
-      person_id: 'mas',
-      type: 'expense',
-      category_id: input.category_id || null,
-      amount: -mas_amount,
-      note: input.note || null,
-      group_id,
-    },
-    {
-      date: input.date,
-      person_id: 'fita',
-      type: 'expense',
-      category_id: input.category_id || null,
-      amount: -fita_amount,
-      note: input.note || null,
-      group_id,
-    },
-  ]
+  const rows = input.splits.map((s) => ({
+    date: input.date,
+    person_id: s.person_id,
+    type: 'expense',
+    category_id: input.category_id || null,
+    amount: -Math.abs(s.amount),
+    note: input.note || null,
+    group_id,
+  }))
 
   const { error } = await supabase.from('transactions').insert(rows)
   if (error) throw error
@@ -145,7 +146,7 @@ export async function addTransfer(input: AddTransferInput) {
   const rows = [
     {
       date: input.date,
-      person_id: input.from_person,
+      person_id: input.from_person_id,
       type: 'transfer',
       category_id: 'transfer',
       amount: -abs,
@@ -154,7 +155,7 @@ export async function addTransfer(input: AddTransferInput) {
     },
     {
       date: input.date,
-      person_id: input.to_person,
+      person_id: input.to_person_id,
       type: 'transfer',
       category_id: 'transfer',
       amount: abs,
@@ -193,38 +194,6 @@ export async function duplicateTransaction(transaction: Transaction) {
 
 export async function deleteTransaction(id: string) {
   const { error } = await supabase.from('transactions').delete().eq('id', id)
-  if (error) throw error
-  revalidatePath('/')
-  revalidatePath('/transactions')
-}
-
-export async function deleteTransactionGroup(group_id: string) {
-  const { error } = await supabase
-    .from('transactions')
-    .delete()
-    .eq('group_id', group_id)
-  if (error) throw error
-  revalidatePath('/')
-  revalidatePath('/transactions')
-}
-
-// ─── Update ────────────────────────────────────────────────────────────────────
-
-export async function updateTransaction(
-  id: string,
-  data: {
-    date: string
-    amount: number
-    note: string | null
-    category_id: string | null
-    person_id: string
-    type: string
-  }
-) {
-  const { error } = await supabase
-    .from('transactions')
-    .update(data)
-    .eq('id', id)
   if (error) throw error
   revalidatePath('/')
   revalidatePath('/transactions')

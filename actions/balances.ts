@@ -1,11 +1,10 @@
 'use server'
 
 import { supabase } from '@/lib/supabase'
-import type { PersonId } from '@/lib/types'
 import { currentMonth, currentYear } from '@/lib/constants'
 
-export async function getBalance(
-  person_id: PersonId,
+export async function getPersonBalance(
+  person_id: string,
   month?: number,
   year?: number
 ): Promise<number> {
@@ -21,7 +20,7 @@ export async function getBalance(
     .eq('year', y)
     .single()
 
-  const startingBalance = balanceRow?.amount ?? 0
+  const startingBalance = (balanceRow?.amount ?? 0) as number
 
   // Sum of all transactions for this person this month
   const startDate = `${y}-${String(m).padStart(2, '0')}-01`
@@ -34,7 +33,7 @@ export async function getBalance(
     .gte('date', startDate)
     .lte('date', endDate)
 
-  const txSum = (txRows ?? []).reduce((acc, t) => acc + t.amount, 0)
+  const txSum = (txRows ?? []).reduce((acc, t) => acc + (t.amount as number), 0)
 
   return startingBalance + txSum
 }
@@ -43,16 +42,25 @@ export async function getAllBalances(month?: number, year?: number) {
   const m = month ?? currentMonth()
   const y = year ?? currentYear()
 
-  const [mas, fita] = await Promise.all([
-    getBalance('mas', m, y),
-    getBalance('fita', m, y),
-  ])
+  // Get all persons
+  const { data: persons } = await supabase
+    .from('persons')
+    .select('id, name, color')
+    .order('sort_order', { ascending: true })
 
-  return {
-    mas,
-    fita,
-    total: mas + fita,
-  }
+  if (!persons?.length) return { people: [], total: 0 }
+
+  const balances = await Promise.all(
+    persons.map(async (p) => ({
+      id: p.id as string,
+      name: p.name as string,
+      color: p.color as string,
+      amount: await getPersonBalance(p.id as string, m, y),
+    }))
+  )
+
+  const total = balances.reduce((acc, b) => acc + b.amount, 0)
+  return { people: balances, total }
 }
 
 export async function getMonthlyStats(month?: number, year?: number) {
@@ -69,11 +77,11 @@ export async function getMonthlyStats(month?: number, year?: number) {
 
   const income = (data ?? [])
     .filter((t) => t.type === 'income')
-    .reduce((acc, t) => acc + t.amount, 0)
+    .reduce((acc, t) => acc + (t.amount as number), 0)
 
   const expense = (data ?? [])
     .filter((t) => t.type === 'expense')
-    .reduce((acc, t) => acc + Math.abs(t.amount), 0)
+    .reduce((acc, t) => acc + Math.abs(t.amount as number), 0)
 
   return { income, expense }
 }

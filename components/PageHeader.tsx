@@ -1,5 +1,3 @@
-import ThemeToggle from './ThemeToggle'
-
 interface Props {
   title: string
   subtitle?: string
@@ -13,10 +11,7 @@ export default function PageHeader({ title, subtitle, right }: Props) {
         <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">{title}</h1>
         {subtitle && <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">{subtitle}</p>}
       </div>
-      <div className="flex items-center gap-2">
-        <ThemeToggle />
-        {right && <div>{right}</div>}
-      </div>
+      {right && <div className="flex items-center gap-2">{right}</div>}
     </div>
   )
 }

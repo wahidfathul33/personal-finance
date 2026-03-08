@@ -3,17 +3,9 @@
 import { useState, useTransition } from 'react'
 import { toggleRecurringTemplate, deleteRecurringTemplate } from '@/actions/recurring'
 import type { RecurringTemplate } from '@/lib/types'
-import { formatCurrency } from '@/lib/constants'
+import { formatCurrency, PERSON_COLORS } from '@/lib/constants'
 import { Trash2, ToggleLeft, ToggleRight, Edit } from 'lucide-react'
 import Link from 'next/link'
-
-const SPLIT_TYPE_LABELS: Record<string, string> = {
-  equal: '50/50',
-  custom: 'Custom',
-  full_mas: 'Full Mas',
-  full_fita: 'Full Fita',
-  none: '-',
-}
 
 const TYPE_COLORS: Record<string, string> = {
   income: 'text-emerald-600 bg-emerald-50',
@@ -48,98 +40,79 @@ export default function RecurringList({ templates: initial }: Props) {
 
   if (templates.length === 0) {
     return (
-      <div className="text-center py-16 px-4">
-        <p className="text-4xl mb-3">🔄</p>
-        <p className="text-gray-500 text-sm">Belum ada template berulang</p>
-        <Link
-          href="/recurring/new"
-          className="inline-block mt-4 bg-indigo-600 text-white text-sm font-medium px-4 py-2 rounded-xl"
-        >
-          Tambah Template
-        </Link>
+      <div className="text-center py-10 text-gray-400 text-sm">
+        Belum ada template transaksi berulang
       </div>
     )
   }
 
   return (
-    <div className="px-4 flex flex-col gap-3 pb-8">
-      {templates.map((t) => (
-        <div
-          key={t.id}
-          className={`bg-white rounded-2xl border border-gray-100 p-4 ${
-            !t.active ? 'opacity-50' : ''
-          }`}
-        >
-          <div className="flex items-start justify-between gap-2">
-            <div className="flex-1">
-              <div className="flex items-center gap-2 flex-wrap mb-1">
-                <span className="font-semibold text-gray-900 text-sm">{t.name}</span>
-                <span
-                  className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${
-                    TYPE_COLORS[t.type]
-                  }`}
-                >
-                  {t.type === 'income' ? 'Masuk' : t.type === 'expense' ? 'Keluar' : 'Transfer'}
-                </span>
-              </div>
-              <p className="text-base font-bold text-gray-800">
-                {formatCurrency(t.amount)}
-              </p>
-              <div className="flex items-center gap-3 mt-1.5 flex-wrap">
-                <span className="text-xs text-gray-400">
-                  Setiap tgl {t.day_of_month}
-                </span>
-                {t.person_id ? (
-                  <span className="text-xs text-gray-400">
-                    {t.person_id === 'mas' ? 'Mas' : 'Fita'}
-                  </span>
-                ) : (
-                  <span className="text-xs text-gray-400">
-                    Split: {SPLIT_TYPE_LABELS[t.split_type]}
-                  </span>
-                )}
-                {t.category?.name && (
-                  <span className="text-xs text-gray-400">
-                    {t.category.icon} {t.category.name}
-                  </span>
-                )}
-              </div>
-              {t.note && (
-                <p className="text-xs text-gray-400 mt-1 line-clamp-1">{t.note}</p>
-              )}
-            </div>
+    <div className="px-4 space-y-3 pb-8">
+      {templates.map((t) => {
+        const personColor = t.person?.color ?? 'indigo'
+        const badgeClass = PERSON_COLORS[personColor]?.badge ?? PERSON_COLORS.indigo.badge
 
-            <div className="flex flex-col items-end gap-2">
-              <button
-                onClick={() => handleToggle(t.id, t.active)}
-                disabled={isPending}
-                className="text-gray-400 hover:text-indigo-600 transition-colors"
-              >
-                {t.active ? (
-                  <ToggleRight size={24} className="text-indigo-600" />
-                ) : (
-                  <ToggleLeft size={24} />
-                )}
-              </button>
-              <div className="flex gap-2">
-                <Link
-                  href={`/recurring/${t.id}/edit`}
-                  className="text-gray-400 hover:text-indigo-600 transition-colors"
-                >
-                  <Edit size={15} />
-                </Link>
-                <button
-                  onClick={() => handleDelete(t.id)}
-                  disabled={isPending}
-                  className="text-gray-400 hover:text-rose-500 transition-colors"
-                >
-                  <Trash2 size={15} />
-                </button>
+        return (
+          <div
+            key={t.id}
+            className={`bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 p-3 transition-opacity ${
+              !t.active ? 'opacity-50' : ''
+            }`}
+          >
+            <div className="flex items-start gap-3">
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-sm font-semibold text-gray-800 dark:text-gray-100">{t.name}</span>
+                  <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${TYPE_COLORS[t.type]}`}>
+                    {t.type === 'expense' ? 'Pengeluaran' : t.type === 'income' ? 'Pemasukan' : 'Transfer'}
+                  </span>
+                  {t.person && (
+                    <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${badgeClass}`}>
+                      {t.person.name}
+                    </span>
+                  )}
+                </div>
+                <div className="flex items-center gap-2 mt-0.5">
+                  <span className="text-xs text-gray-400 dark:text-gray-500">
+                    Tgl {t.day_of_month}{t.category_id ? ` · ${t.category_id}` : ''}
+                  </span>
+                </div>
+              </div>
+              <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
+                <span className="text-sm font-bold text-gray-800 dark:text-gray-100">
+                  {formatCurrency(t.amount)}
+                </span>
+                <div className="flex items-center gap-1">
+                  <Link
+                    href={`/recurring/${t.id}/edit`}
+                    className="w-7 h-7 flex items-center justify-center rounded-full hover:bg-indigo-50 dark:hover:bg-indigo-900/20 text-indigo-500"
+                  >
+                    <Edit size={13} />
+                  </Link>
+                  <button
+                    onClick={() => handleToggle(t.id, t.active)}
+                    disabled={isPending}
+                    className={`w-7 h-7 flex items-center justify-center rounded-full transition-colors ${
+                      t.active
+                        ? 'hover:bg-gray-100 dark:hover:bg-gray-700 text-indigo-500'
+                        : 'hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-400'
+                    }`}
+                  >
+                    {t.active ? <ToggleRight size={16} /> : <ToggleLeft size={16} />}
+                  </button>
+                  <button
+                    onClick={() => handleDelete(t.id)}
+                    disabled={isPending}
+                    className="w-7 h-7 flex items-center justify-center rounded-full hover:bg-rose-50 dark:hover:bg-rose-900/20 text-gray-400 hover:text-rose-500"
+                  >
+                    <Trash2 size={13} />
+                  </button>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      ))}
+        )
+      })}
     </div>
   )
 }

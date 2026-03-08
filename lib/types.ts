@@ -1,11 +1,12 @@
-export type PersonId = 'mas' | 'fita'
 export type TransactionType = 'income' | 'expense' | 'transfer'
-export type SplitType = 'equal' | 'custom' | 'full_mas' | 'full_fita'
 export type AssetType = 'gold' | 'other'
 
 export interface Person {
-  id: PersonId
+  id: string
   name: string
+  color: string
+  sort_order: number
+  created_at: string
 }
 
 export interface Category {
@@ -18,13 +19,14 @@ export interface Category {
 export interface Transaction {
   id: string
   date: string
-  person_id: PersonId
+  person_id: string
   type: TransactionType
   category_id: string | null
   amount: number
   note: string | null
   group_id: string | null
   created_at: string
+  person?: { name: string; color: string }
   category?: Category
 }
 
@@ -37,33 +39,33 @@ export interface RecurringTemplate {
   name: string
   type: TransactionType
   category_id: string | null
-  person_id: PersonId | null
+  person_id: string | null
   amount: number
   day_of_month: number
-  split_type: SplitType
-  split_ratio_mas: number
-  split_ratio_fita: number
   note: string | null
   active: boolean
   created_at: string
+  person?: { name: string; color: string }
   category?: Category
 }
 
 export interface Balance {
   id: string
-  person_id: PersonId
+  person_id: string
   month: number
   year: number
   amount: number
+  person?: { name: string; color: string }
 }
 
 export interface Saving {
   id: string
-  person_id: PersonId
+  person_id: string
   amount: number
   date: string
   note: string | null
   created_at: string
+  person?: { name: string; color: string }
 }
 
 export interface Asset {
@@ -82,30 +84,33 @@ export interface GoldPrice {
   created_at: string
 }
 
-// Form input types
+// ─── Form input types ─────────────────────────────────────────────────────────
+
 export interface AddTransactionInput {
   date: string
-  person_id: PersonId
+  person_id: string
   type: TransactionType
   category_id: string
   amount: number
   note: string
 }
 
+export interface SplitEntry {
+  person_id: string
+  amount: number
+}
+
 export interface AddSplitBillInput {
   date: string
   category_id: string
-  total_amount: number
   note: string
-  split_type: 'equal' | 'custom'
-  mas_amount?: number
-  fita_amount?: number
+  splits: SplitEntry[]
 }
 
 export interface AddTransferInput {
   date: string
-  from_person: PersonId
-  to_person: PersonId
+  from_person_id: string
+  to_person_id: string
   amount: number
   note: string
 }
@@ -114,17 +119,14 @@ export interface AddRecurringTemplateInput {
   name: string
   type: TransactionType
   category_id: string
-  person_id: PersonId | null
+  person_id: string | null
   amount: number
   day_of_month: number
-  split_type: SplitType
-  split_ratio_mas: number
-  split_ratio_fita: number
   note: string
 }
 
 export interface AddSavingInput {
-  person_id: PersonId
+  person_id: string
   amount: number
   date: string
   note: string
@@ -142,18 +144,8 @@ export interface UpdateGoldPriceInput {
   date: string
 }
 
-// Dashboard summary
-export interface DashboardSummary {
-  balance_mas: number
-  balance_fita: number
-  total_cash: number
-  monthly_income: number
-  monthly_expense: number
-  recent_transactions: TransactionWithCategory[]
-}
-
 export interface TransactionFilters {
-  person_id?: PersonId | 'all'
+  person_id?: string | 'all'
   category_id?: string | 'all'
   type?: TransactionType | 'all'
   month?: number

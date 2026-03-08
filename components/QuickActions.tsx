@@ -1,18 +1,29 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { Plus, ArrowLeftRight, Split } from 'lucide-react'
 import TransactionForm from '@/components/TransactionForm'
 
 type Mode = 'expense' | 'income' | 'split' | 'transfer'
 
-export default function QuickActions() {
+interface Props {
+  onSuccess?: () => void
+}
+
+export default function QuickActions({ onSuccess }: Props) {
+  const router = useRouter()
   const [open, setOpen] = useState(false)
   const [mode, setMode] = useState<Mode>('expense')
 
   function openWith(m: Mode) {
     setMode(m)
     setOpen(true)
+  }
+
+  function handleSuccess() {
+    if (onSuccess) onSuccess()
+    else router.refresh()
   }
 
   return (
@@ -60,7 +71,13 @@ export default function QuickActions() {
       </div>
 
       {open && (
-        <TransactionForm defaultMode={mode} onClose={() => setOpen(false)} />
+        <TransactionForm
+          defaultMode={mode}
+          onClose={() => {
+            setOpen(false)
+            handleSuccess()
+          }}
+        />
       )}
     </>
   )

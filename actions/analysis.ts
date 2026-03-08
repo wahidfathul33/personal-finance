@@ -19,11 +19,10 @@ export type CategoryBreakdownItem = {
 
 export type PersonComparisonItem = {
   category: string
-  mas: number
-  fita: number
+  [personName: string]: number | string
 }
 
-const COLORS = [
+const CHART_COLORS = [
   '#6366f1', '#f43f5e', '#f59e0b', '#10b981', '#3b82f6',
   '#ec4899', '#8b5cf6', '#14b8a6', '#f97316', '#64748b',
   '#84cc16', '#06b6d4',
@@ -48,8 +47,8 @@ export async function getMonthlyTrend(): Promise<MonthlyTrendPoint[]> {
       .gte('date', startDate)
       .lte('date', endDate)
 
-    const income = (data ?? []).filter((t) => t.type === 'income').reduce((a, t) => a + t.amount, 0)
-    const expense = (data ?? []).filter((t) => t.type === 'expense').reduce((a, t) => a + Math.abs(t.amount), 0)
+    const income  = (data ?? []).filter((t) => t.type === 'income' ).reduce((a, t) => a + (t.amount as number), 0)
+    const expense = (data ?? []).filter((t) => t.type === 'expense').reduce((a, t) => a + Math.abs(t.amount as number), 0)
 
     points.push({ label: MONTH_NAMES[m - 1], income, expense })
   }
@@ -70,8 +69,8 @@ export async function getCategoryBreakdown(month: number, year: number): Promise
 
   const grouped: Record<string, number> = {}
   for (const t of data ?? []) {
-    const key = t.category_id ?? 'other'
-    grouped[key] = (grouped[key] ?? 0) + Math.abs(t.amount)
+    const key = (t.category_id as string) ?? 'other'
+    grouped[key] = (grouped[key] ?? 0) + Math.abs(t.amount as number)
   }
 
   return Object.entries(grouped)
@@ -84,7 +83,7 @@ export async function getCategoryBreakdown(month: number, year: number): Promise
         name: cat?.name ?? 'Lainnya',
         icon: cat?.icon ?? '📌',
         amount,
-        color: COLORS[idx % COLORS.length],
+        color: CHART_COLORS[idx % CHART_COLORS.length],
       }
     })
 }
@@ -93,6 +92,12 @@ export async function getPersonComparison(month: number, year: number): Promise<
   const startDate = `${year}-${String(month).padStart(2, '0')}-01`
   const endDate = new Date(year, month, 0).toISOString().split('T')[0]
 
+  // Get persons
+  const { data: persons } = await supabase
+    .from('persons')
+    .select('id, name')
+    .order('sort_order', { ascending: true })
+
   const { data } = await supabase
     .from('transactions')
     .select('amount, category_id, person_id, type')
@@ -100,23 +105,26 @@ export async function getPersonComparison(month: number, year: number): Promise<
     .lte('date', endDate)
     .eq('type', 'expense')
 
-  const grouped: Record<string, { mas: number; fita: number }> = {}
+  const grouped: Record<string, Record<string, number>> = {}
   for (const t of data ?? []) {
-    const key = t.category_id ?? 'other'
-    if (!grouped[key]) grouped[key] = { mas: 0, fita: 0 }
-    if (t.person_id === 'mas') grouped[key].mas += Math.abs(t.amount)
-    else if (t.person_id === 'fita') grouped[key].fita += Math.abs(t.amount)
+    const catKey = (t.category_id as string) ?? 'other'
+    const personName = (persons ?? []).find((p) => p.id === t.person_id)?.name as string ?? t.person_id as string
+    if (!grouped[catKey]) grouped[catKey] = {}
+    grouped[catKey][personName] = (grouped[catKey][personName] ?? 0) + Math.abs(t.amount as number)
   }
 
   return Object.entries(grouped)
-    .sort((a, b) => (b[1].mas + b[1].fita) - (a[1].mas + a[1].fita))
+    .sort((a, b) => {
+      const sumA = Object.values(a[1]).reduce((s, v) => s + v, 0)
+      const sumB = Object.values(b[1]).reduce((s, v) => s + v, 0)
+      return sumB - sumA
+    })
     .slice(0, 6)
     .map(([id, values]) => {
       const cat = CATEGORIES.find((c) => c.id === id)
       return {
         category: (cat?.icon ?? '📌') + ' ' + (cat?.name ?? 'Lainnya'),
-        mas: values.mas,
-        fita: values.fita,
+        ...values,
       }
     })
 }

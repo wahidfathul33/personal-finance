@@ -1,198 +1,229 @@
 'use client'
 
-import { useState, useTransition, useCallback, useEffect } from 'react'
-import { Plus, Filter, CalendarClock } from 'lucide-react'
-import Link from 'next/link'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { getTransactions } from '@/actions/transactions'
+import { getPersons } from '@/actions/persons'
 import TransactionItem from '@/components/TransactionItem'
 import TransactionForm from '@/components/TransactionForm'
 import PageHeader from '@/components/PageHeader'
-import type { TransactionWithCategory, TransactionFilters } from '@/lib/types'
-import { MONTHS, currentMonth, currentYear } from '@/lib/constants'
+import Link from 'next/link'
+import type { TransactionWithCategory } from '@/lib/types'
+import type { Person } from '@/lib/types'
+import { currentMonth, currentYear, PERSON_COLORS, formatCurrency } from '@/lib/constants'
+import { Plus, CalendarDays, SlidersHorizontal, ChevronsUpDown } from 'lucide-react'
 
-const YEARS = [2024, 2025, 2026, 2027]
+const MONTH_NAMES_FULL = [
+  '', 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+  'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember',
+]
+
+const TYPE_OPTIONS = [
+  { value: 'all', label: 'Semua' },
+  { value: 'expense', label: 'Keluar' },
+  { value: 'income', label: 'Masuk' },
+  { value: 'transfer', label: 'Transfer' },
+]
+
+const now = new Date()
+const YEAR_OPTIONS = Array.from({ length: 5 }, (_, i) => now.getFullYear() - i)
 
 export default function TransactionsPage() {
   const [transactions, setTransactions] = useState<TransactionWithCategory[]>([])
-  const [showForm, setShowForm] = useState(false)
+  const [persons, setPersons] = useState<Person[]>([])
+  const [personFilter, setPersonFilter] = useState<string>('all')
+  const [typeFilter, setTypeFilter] = useState<string>('all')
+  const [month, setMonth] = useState(currentMonth())
+  const [year, setYear] = useState(currentYear())
+  const [loading, setLoading] = useState(true)
   const [showFilters, setShowFilters] = useState(false)
-  const [isPending, startTransition] = useTransition()
+  const [showForm, setShowForm] = useState(false)
 
-  const [filters, setFilters] = useState<TransactionFilters>({
-    month: currentMonth(),
-    year: currentYear(),
-    person_id: 'all',
-    type: 'all',
-    category_id: 'all',
-  })
+  const loadPersons = useCallback(async () => {
+    const data = await getPersons()
+    setPersons(data)
+  }, [])
 
-  const loadTransactions = useCallback((f: TransactionFilters) => {
-    startTransition(async () => {
-      try {
-        const data = await getTransactions(f)
-        setTransactions(data)
-      } catch {
-        setTransactions([])
-      }
+  const loadTransactions = useCallback(async () => {
+    setLoading(true)
+    const data = await getTransactions({
+      month,
+      year,
+      person_id: personFilter === 'all' ? undefined : personFilter,
+      type: typeFilter === 'all' ? undefined : (typeFilter as TransactionWithCategory['type']),
     })
-  }, [])
+    setTransactions(data)
+    setLoading(false)
+  }, [month, year, personFilter, typeFilter])
 
-  useEffect(() => {
-    loadTransactions(filters)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  useEffect(() => { loadPersons() }, [loadPersons])
+  useEffect(() => { loadTransactions() }, [loadTransactions])
 
-  function updateFilter<K extends keyof TransactionFilters>(key: K, value: TransactionFilters[K]) {
-    const next = { ...filters, [key]: value }
-    setFilters(next)
-    loadTransactions(next)
-  }
+  const stats = useMemo(() => {
+    const income = transactions
+      .filter(tx => tx.type === 'income')
+      .reduce((s, tx) => s + tx.amount, 0)
+    const expense = transactions
+      .filter(tx => tx.type === 'expense')
+      .reduce((s, tx) => s + tx.amount, 0)
+    return { income, expense, count: transactions.length }
+  }, [transactions])
 
-  const totalIncome = transactions
-    .filter((t) => t.type === 'income')
-    .reduce((acc, t) => acc + t.amount, 0)
-  const totalExpense = transactions
-    .filter((t) => t.type === 'expense')
-    .reduce((acc, t) => acc + Math.abs(t.amount), 0)
+  const hasActiveFilters = personFilter !== 'all' || typeFilter !== 'all'
 
   return (
-    <div className="flex flex-col min-h-screen bg-white dark:bg-gray-900">
+    <div>
       <PageHeader
         title="Transaksi"
-        subtitle={`${MONTHS[(filters.month ?? 1) - 1]} ${filters.year}`}
+        subtitle={`${MONTH_NAMES_FULL[month]} ${year}`}
         right={
-          <div className="flex items-center gap-2">
+          <>
             <Link
               href="/recurring"
-              className="w-9 h-9 flex items-center justify-center rounded-full border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-              title="Transaksi Berulang"
+              className="w-9 h-9 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
             >
-              <CalendarClock size={16} />
+              <CalendarDays size={17} />
             </Link>
             <button
               onClick={() => setShowForm(true)}
-              className="w-9 h-9 bg-indigo-600 rounded-full flex items-center justify-center"
+              className="w-9 h-9 flex items-center justify-center rounded-full bg-indigo-500 text-white hover:bg-indigo-600 active:scale-95 transition-all"
             >
-              <Plus size={18} className="text-white" />
+              <Plus size={18} />
             </button>
-          </div>
+          </>
         }
       />
 
-      {/* Month / Year selector */}
-      <div className="flex items-center gap-2 px-4 mb-3">
-        <select
-          value={filters.month}
-          onChange={(e) => updateFilter('month', parseInt(e.target.value))}
-          className="flex-1 h-10 border border-gray-200 dark:border-gray-700 rounded-xl px-3 text-sm bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 focus:outline-none"
-        >
-          {MONTHS.map((m, i) => (
-            <option key={i} value={i + 1}>{m}</option>
-          ))}
-        </select>
-        <select
-          value={filters.year}
-          onChange={(e) => updateFilter('year', parseInt(e.target.value))}
-          className="h-10 border border-gray-200 dark:border-gray-700 rounded-xl px-3 text-sm w-24 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 focus:outline-none"
-        >
-          {YEARS.map((y) => (
-            <option key={y} value={y}>{y}</option>
-          ))}
-        </select>
+      {/* Month / Year / Filter Row */}
+      <div className="px-4 mb-3 flex items-center gap-2">
+        <div className="relative flex-1">
+          <select
+            value={month}
+            onChange={e => setMonth(Number(e.target.value))}
+            className="w-full bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-100 text-sm font-medium rounded-xl pl-3 pr-8 py-2.5 border-0 outline-none appearance-none cursor-pointer"
+          >
+            {MONTH_NAMES_FULL.slice(1).map((name, i) => (
+              <option key={i + 1} value={i + 1}>{name}</option>
+            ))}
+          </select>
+          <ChevronsUpDown size={14} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+        </div>
+
+        <div className="relative w-28">
+          <select
+            value={year}
+            onChange={e => setYear(Number(e.target.value))}
+            className="w-full bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-100 text-sm font-medium rounded-xl pl-3 pr-8 py-2.5 border-0 outline-none appearance-none cursor-pointer"
+          >
+            {YEAR_OPTIONS.map(y => (
+              <option key={y} value={y}>{y}</option>
+            ))}
+          </select>
+          <ChevronsUpDown size={14} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+        </div>
+
         <button
-          onClick={() => setShowFilters(!showFilters)}
-          className={`w-10 h-10 rounded-xl flex items-center justify-center border transition-colors ${
-            showFilters ? 'bg-indigo-600 border-indigo-600' : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800'
+          onClick={() => setShowFilters(v => !v)}
+          className={`w-10 h-10 flex-shrink-0 flex items-center justify-center rounded-xl transition-colors ${
+            showFilters || hasActiveFilters
+              ? 'bg-indigo-500 text-white'
+              : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300'
           }`}
         >
-          <Filter size={16} className={showFilters ? 'text-white' : 'text-gray-600'} />
+          <SlidersHorizontal size={17} />
         </button>
       </div>
 
-      {/* Filters panel */}
+      {/* Collapsible Filters */}
       {showFilters && (
-        <div className="px-4 mb-3 space-y-2">
-          {/* Person */}
-          <div className="flex gap-2">
-            {(['all', 'mas', 'fita'] as const).map((p) => (
+        <div className="space-y-2 mb-3">
+          {/* Person Filter */}
+          <div className="px-4">
+            <div className="grid grid-cols-3 gap-2">
               <button
-                key={p}
-                onClick={() => updateFilter('person_id', p)}
-                className={`flex-1 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
-                  filters.person_id === p
-                    ? 'bg-indigo-600 text-white border-indigo-600'
-                    : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300'
+                onClick={() => setPersonFilter('all')}
+                className={`py-2 rounded-2xl text-sm font-medium transition-colors ${
+                  personFilter === 'all'
+                    ? 'bg-indigo-500 text-white'
+                    : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300'
                 }`}
               >
-                {p === 'all' ? 'Semua' : p === 'mas' ? 'Mas' : 'Fita'}
+                Semua
               </button>
-            ))}
+              {persons.map((p) => {
+                const isSelected = personFilter === p.id
+                const colors = PERSON_COLORS[p.color] ?? PERSON_COLORS.indigo
+                return (
+                  <button
+                    key={p.id}
+                    onClick={() => setPersonFilter(isSelected ? 'all' : p.id)}
+                    className={`py-2 rounded-2xl text-sm font-medium transition-colors ${
+                      isSelected
+                        ? colors.button
+                        : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300'
+                    }`}
+                  >
+                    {p.name}
+                  </button>
+                )
+              })}
+            </div>
           </div>
 
-          {/* Type */}
-          <div className="flex gap-2">
-            {(['all', 'income', 'expense', 'transfer'] as const).map((t) => (
-              <button
-                key={t}
-                onClick={() => updateFilter('type', t)}
-                className={`flex-1 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
-                  filters.type === t
-                    ? 'bg-indigo-600 text-white border-indigo-600'
-                    : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300'
-                }`}
-              >
-                {t === 'all' ? 'Semua' : t === 'income' ? 'Masuk' : t === 'expense' ? 'Keluar' : 'Transfer'}
-              </button>
-            ))}
+          {/* Type Filter */}
+          <div className="px-4">
+            <div className="grid grid-cols-4 gap-2">
+              {TYPE_OPTIONS.map((opt) => (
+                <button
+                  key={opt.value}
+                  onClick={() => setTypeFilter(opt.value)}
+                  className={`py-2 rounded-2xl text-sm font-medium transition-colors ${
+                    typeFilter === opt.value
+                      ? 'bg-indigo-500 text-white'
+                      : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300'
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       )}
 
-      {/* Summary bar */}
-      <div className="flex gap-3 px-4 mb-3">
-        <div className="flex-1 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl px-3 py-2">
-          <p className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium">Masuk</p>
-          <p className="text-sm font-bold text-emerald-700 dark:text-emerald-400">
-            {totalIncome.toLocaleString('id-ID')}
-          </p>
+      {/* Stats Cards */}
+      <div className="px-4 mb-3 grid grid-cols-3 gap-2">
+        <div className="bg-emerald-50 dark:bg-emerald-950/40 rounded-3xl p-4">
+          <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium mb-2">Masuk</p>
+          <p className="text-base font-bold text-emerald-700 dark:text-emerald-300">{formatCurrency(stats.income)}</p>
         </div>
-        <div className="flex-1 bg-rose-50 dark:bg-rose-900/20 rounded-xl px-3 py-2">
-          <p className="text-[10px] text-rose-600 dark:text-rose-400 font-medium">Keluar</p>
-          <p className="text-sm font-bold text-rose-600 dark:text-rose-400">
-            {totalExpense.toLocaleString('id-ID')}
-          </p>
+        <div className="bg-rose-50 dark:bg-rose-950/40 rounded-3xl p-4">
+          <p className="text-xs text-rose-600 dark:text-rose-400 font-medium mb-2">Keluar</p>
+          <p className="text-base font-bold text-rose-700 dark:text-rose-300">{formatCurrency(stats.expense)}</p>
         </div>
-        <div className="flex-1 bg-gray-50 dark:bg-gray-800 rounded-xl px-3 py-2">
-          <p className="text-[10px] text-gray-500 dark:text-gray-400 font-medium">Transaksi</p>
-          <p className="text-sm font-bold text-gray-700 dark:text-gray-200">{transactions.length}</p>
+        <div className="bg-gray-100 dark:bg-gray-800 rounded-3xl p-4">
+          <p className="text-xs text-gray-500 dark:text-gray-400 font-medium mb-2">Transaksi</p>
+          <p className="text-base font-bold text-gray-700 dark:text-gray-200">{stats.count}</p>
         </div>
       </div>
 
-      {/* Transaction list */}
-      <div className="flex-1 px-4 flex flex-col gap-2">
-        {isPending ? (
-          <div className="text-center py-12 text-gray-400 dark:text-gray-500 text-sm">Memuat...</div>
-        ) : transactions.length === 0 ? (
-          <div className="text-center py-12 text-gray-400 dark:text-gray-500 text-sm">
-            Tidak ada transaksi
-          </div>
-        ) : (
-          transactions.map((t) => (
-            <TransactionItem
-              key={t.id}
-              transaction={t}
-              showPerson
-              onSuccess={() => loadTransactions(filters)}
-            />
-          ))
-        )}
-      </div>
+      {/* List */}
+      {loading ? (
+        <div className="text-center py-10 text-gray-400 text-sm">Memuat...</div>
+      ) : transactions.length === 0 ? (
+        <div className="text-center py-10 text-gray-400 text-sm">Tidak ada transaksi</div>
+      ) : (
+        <div className="px-4 space-y-2 pb-8">
+          {transactions.map((tx) => (
+            <TransactionItem key={tx.id} transaction={tx} onSuccess={loadTransactions} />
+          ))}
+        </div>
+      )}
 
       {showForm && (
         <TransactionForm
           onClose={() => {
             setShowForm(false)
-            loadTransactions(filters)
+            loadTransactions()
           }}
         />
       )}

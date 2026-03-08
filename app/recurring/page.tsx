@@ -1,6 +1,7 @@
 import { getRecurringTemplates } from '@/actions/recurring'
 import PageHeader from '@/components/PageHeader'
 import RecurringList from './RecurringList'
+import GenerateButton from './GenerateButton'
 import Link from 'next/link'
 import { Plus, ArrowLeft } from 'lucide-react'
 
@@ -15,8 +16,8 @@ export default async function RecurringPage() {
   return (
     <div>
       <PageHeader
-        title="Berulang"
-        subtitle="Template transaksi bulanan"
+        title="Transaksi Berulang"
+        subtitle="Template jadwal transaksi bulanan"
         right={
           <div className="flex items-center gap-2">
             <Link
@@ -26,6 +27,7 @@ export default async function RecurringPage() {
             >
               <ArrowLeft size={16} />
             </Link>
+            <GenerateButton />
             <Link
               href="/recurring/new"
               className="w-9 h-9 bg-indigo-600 rounded-full flex items-center justify-center"

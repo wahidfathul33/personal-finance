@@ -4,32 +4,33 @@ import { revalidatePath } from 'next/cache'
 import { supabase } from '@/lib/supabase'
 import type { Saving, AddSavingInput } from '@/lib/types'
 
+const WITH_PERSON = '*, person:persons!person_id(name, color)'
+
 export async function getSavings(): Promise<Saving[]> {
   const { data, error } = await supabase
     .from('savings')
-    .select('*')
+    .select(WITH_PERSON)
     .order('date', { ascending: false })
 
   if (error) throw error
 
   return (data ?? []).map((s) => ({
-    ...s,
-    person_id: s.person_id as 'mas' | 'fita',
+    ...(s as unknown as Saving),
+    person: s.person as { name: string; color: string } | undefined,
   }))
 }
 
 export async function getSavingsSummary() {
   const savings = await getSavings()
 
-  const mas = savings
-    .filter((s) => s.person_id === 'mas')
-    .reduce((acc, s) => acc + s.amount, 0)
+  const byPerson: Record<string, number> = {}
+  for (const s of savings) {
+    const name = s.person?.name ?? s.person_id
+    byPerson[name] = (byPerson[name] ?? 0) + s.amount
+  }
 
-  const fita = savings
-    .filter((s) => s.person_id === 'fita')
-    .reduce((acc, s) => acc + s.amount, 0)
-
-  return { mas, fita, total: mas + fita, items: savings }
+  const total = Object.values(byPerson).reduce((a, b) => a + b, 0)
+  return { byPerson, total, items: savings }
 }
 
 export async function addSaving(input: AddSavingInput) {

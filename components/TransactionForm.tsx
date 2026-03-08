@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useState, useTransition, useEffect } from 'react'
 import { X, ArrowLeftRight } from 'lucide-react'
 import {
   addTransaction,
@@ -8,13 +8,10 @@ import {
   addTransfer,
   updateTransaction,
 } from '@/actions/transactions'
-import {
-  EXPENSE_CATEGORIES,
-  INCOME_CATEGORIES,
-  PEOPLE,
-  todayISO,
-} from '@/lib/constants'
-import type { PersonId, TransactionType, TransactionWithCategory } from '@/lib/types'
+import { addSaving } from '@/actions/savings'
+import { getPersons } from '@/actions/persons'
+import { EXPENSE_CATEGORIES, INCOME_CATEGORIES, PERSON_COLORS, todayISO } from '@/lib/constants'
+import type { Person, TransactionType, TransactionWithCategory } from '@/lib/types'
 
 type Mode = 'expense' | 'income' | 'split' | 'transfer'
 
@@ -27,7 +24,6 @@ interface Props {
 export default function TransactionForm({ defaultMode = 'expense', editTransaction, onClose }: Props) {
   const isEdit = !!editTransaction
 
-  // Derive initial mode from editTransaction type
   const initialMode: Mode = isEdit
     ? editTransaction.type === 'transfer' ? 'transfer'
       : editTransaction.type === 'income' ? 'income'
@@ -36,8 +32,8 @@ export default function TransactionForm({ defaultMode = 'expense', editTransacti
 
   const [mode, setMode] = useState<Mode>(initialMode)
   const [isPending, startTransition] = useTransition()
+  const [persons, setPersons] = useState<Person[]>([])
 
-  // Shared fields – pre-fill from editTransaction if editing
   const [date, setDate] = useState(editTransaction?.date ?? todayISO())
   const [amount, setAmount] = useState(
     editTransaction ? String(Math.abs(editTransaction.amount)) : ''
@@ -45,30 +41,50 @@ export default function TransactionForm({ defaultMode = 'expense', editTransacti
   const [note, setNote] = useState(editTransaction?.note?.replace(/\[recurring:[^\]]+\]/g, '').trim() ?? '')
   const [categoryId, setCategoryId] = useState(editTransaction?.category_id ?? '')
 
-  // Expense / Income
-  const [personId, setPersonId] = useState<PersonId>(
-    (editTransaction?.person_id as PersonId) ?? 'mas'
-  )
+  const [personId, setPersonId] = useState<string>(editTransaction?.person_id ?? '')
 
-  // Split
+  // Split — per-person amounts keyed by person_id
+  const [splitAmounts, setSplitAmounts] = useState<Record<string, string>>({})
   const [splitType, setSplitType] = useState<'equal' | 'custom'>('equal')
-  const [masAmount, setMasAmount] = useState('')
-  const [fitaAmount, setFitaAmount] = useState('')
 
   // Transfer
-  const [fromPerson, setFromPerson] = useState<PersonId>('mas')
-  const [toPerson, setToPerson] = useState<PersonId>('fita')
+  const [fromPersonId, setFromPersonId] = useState<string>('')
+  const [toPersonId, setToPersonId] = useState<string>('')
+
+  // Expense source
+  const [savingSource, setSavingSource] = useState<'saldo' | 'tabungan'>('saldo')
+
+  useEffect(() => {
+    getPersons().then((list) => {
+      setPersons(list)
+      if (!personId && list.length > 0) setPersonId(list[0].id)
+      if (!fromPersonId && list.length > 0) setFromPersonId(list[0].id)
+      if (!toPersonId && list.length > 1) setToPersonId(list[1].id)
+      else if (!toPersonId && list.length > 0) setToPersonId(list[0].id)
+      // Init split amounts equally
+      if (list.length > 0) {
+        const init: Record<string, string> = {}
+        list.forEach((p) => { init[p.id] = '' })
+        setSplitAmounts(init)
+      }
+    })
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const categories = mode === 'income' ? INCOME_CATEGORIES : EXPENSE_CATEGORIES
-
   const totalAmount = parseFloat(amount) || 0
 
   function handleSplitEqualChange(val: string) {
     setAmount(val)
     const n = parseFloat(val) || 0
-    const half = Math.round(n / 2)
-    setMasAmount(String(half))
-    setFitaAmount(String(n - half))
+    if (n > 0 && persons.length > 0) {
+      const perPerson = Math.round(n / persons.length)
+      const newAmounts: Record<string, string> = {}
+      persons.forEach((p, i) => {
+        newAmounts[p.id] = String(i === persons.length - 1 ? n - perPerson * (persons.length - 1) : perPerson)
+      })
+      setSplitAmounts(newAmounts)
+    }
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -78,9 +94,7 @@ export default function TransactionForm({ defaultMode = 'expense', editTransacti
     startTransition(async () => {
       try {
         if (isEdit && editTransaction) {
-          // Edit mode — update the single transaction row
-          const signedAmount =
-            mode === 'expense' ? -Math.abs(totalAmount) : Math.abs(totalAmount)
+          const signedAmount = mode === 'expense' ? -Math.abs(totalAmount) : Math.abs(totalAmount)
           await updateTransaction(editTransaction.id, {
             date,
             amount: signedAmount,
@@ -98,21 +112,25 @@ export default function TransactionForm({ defaultMode = 'expense', editTransacti
             amount: totalAmount,
             note,
           })
+          if (mode === 'expense' && savingSource === 'tabungan') {
+            await addSaving({
+              person_id: personId,
+              amount: -Math.abs(totalAmount),
+              date,
+              note: note || `Pengeluaran${categoryId ? ` - ${categoryId}` : ''}`,
+            })
+          }
         } else if (mode === 'split') {
-          await addSplitBill({
-            date,
-            category_id: categoryId,
-            total_amount: totalAmount,
-            note,
-            split_type: splitType,
-            mas_amount: parseFloat(masAmount) || undefined,
-            fita_amount: parseFloat(fitaAmount) || undefined,
-          })
+          const splits = persons.map((p) => ({
+            person_id: p.id,
+            amount: parseFloat(splitAmounts[p.id] || '0') || 0,
+          })).filter((s) => s.amount > 0)
+          await addSplitBill({ date, category_id: categoryId, note, splits })
         } else if (mode === 'transfer') {
           await addTransfer({
             date,
-            from_person: fromPerson,
-            to_person: toPerson,
+            from_person_id: fromPersonId,
+            to_person_id: toPersonId,
             amount: totalAmount,
             note,
           })
@@ -141,19 +159,22 @@ export default function TransactionForm({ defaultMode = 'expense', editTransacti
           </button>
         </div>
 
-        {/* Mode Tabs — hidden in edit mode for split/transfer (complex rows) */}
+        {/* Mode Tabs */}
         <div className="flex gap-1 p-3 bg-gray-50 dark:bg-gray-800 flex-shrink-0">
           {(
             [
               { key: 'expense', label: '− Pengeluaran' },
               { key: 'income', label: '+ Pemasukan' },
-              ...(!isEdit ? [{ key: 'split' as Mode, label: '⚡ Split' }, { key: 'transfer' as Mode, label: '↔ Transfer' }] : []),
+              ...(!isEdit ? [
+                { key: 'split' as Mode, label: '⚡ Split' },
+                { key: 'transfer' as Mode, label: '↔ Transfer' },
+              ] : []),
             ] as { key: Mode; label: string }[]
           ).map(({ key, label }) => (
             <button
               key={key}
               type="button"
-              onClick={() => { if (!isEdit) { setMode(key); setCategoryId('') } }}
+              onClick={() => { if (!isEdit) { setMode(key); setCategoryId(''); setSavingSource('saldo') } }}
               className={`flex-1 text-xs py-1.5 rounded-lg font-medium transition-colors ${
                 mode === key
                   ? 'bg-indigo-600 text-white'
@@ -174,17 +195,13 @@ export default function TransactionForm({ defaultMode = 'expense', editTransacti
               {mode === 'split' ? 'Total Nominal' : 'Nominal'}
             </label>
             <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm font-medium">
-                Rp
-              </span>
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm font-medium">Rp</span>
               <input
                 type="number"
                 inputMode="numeric"
-                value={mode === 'split' ? amount : amount}
+                value={amount}
                 onChange={(e) =>
-                  mode === 'split'
-                    ? handleSplitEqualChange(e.target.value)
-                    : setAmount(e.target.value)
+                  mode === 'split' ? handleSplitEqualChange(e.target.value) : setAmount(e.target.value)
                 }
                 placeholder="0"
                 required
@@ -197,21 +214,47 @@ export default function TransactionForm({ defaultMode = 'expense', editTransacti
           {(mode === 'expense' || mode === 'income') && (
             <div>
               <label className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 block">Siapa</label>
+              <div className="flex flex-wrap gap-2">
+                {persons.map((p) => {
+                  const colors = PERSON_COLORS[p.color] ?? PERSON_COLORS.indigo
+                  return (
+                    <button
+                      key={p.id}
+                      type="button"
+                      onClick={() => setPersonId(p.id)}
+                      className={`flex-1 min-w-[80px] py-2.5 rounded-xl text-sm font-medium border transition-colors ${
+                        personId === p.id
+                          ? colors.button
+                          : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700'
+                      }`}
+                    >
+                      {p.name}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Expense source: Saldo or Tabungan */}
+          {mode === 'expense' && (
+            <div>
+              <label className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 block">Sumber Dana</label>
               <div className="flex gap-2">
-                {PEOPLE.map((p) => (
+                {(['saldo', 'tabungan'] as const).map((src) => (
                   <button
-                    key={p.id}
+                    key={src}
                     type="button"
-                    onClick={() => setPersonId(p.id)}
+                    onClick={() => setSavingSource(src)}
                     className={`flex-1 py-2.5 rounded-xl text-sm font-medium border transition-colors ${
-                      personId === p.id
-                        ? p.id === 'mas'
-                          ? 'bg-blue-600 text-white border-blue-600'
-                          : 'bg-pink-500 text-white border-pink-500'
+                      savingSource === src
+                        ? src === 'tabungan'
+                          ? 'bg-emerald-600 text-white border-emerald-600'
+                          : 'bg-indigo-600 text-white border-indigo-600'
                         : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700'
                     }`}
                   >
-                    {p.name}
+                    {src === 'saldo' ? '💳 Saldo' : '🏦 Tabungan'}
                   </button>
                 ))}
               </div>
@@ -224,11 +267,11 @@ export default function TransactionForm({ defaultMode = 'expense', editTransacti
               <div className="flex-1">
                 <label className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 block">Dari</label>
                 <select
-                  value={fromPerson}
-                  onChange={(e) => setFromPerson(e.target.value as PersonId)}
+                  value={fromPersonId}
+                  onChange={(e) => setFromPersonId(e.target.value)}
                   className="w-full border border-gray-200 dark:border-gray-700 rounded-xl py-2.5 px-3 text-sm bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 >
-                  {PEOPLE.map((p) => (
+                  {persons.map((p) => (
                     <option key={p.id} value={p.id}>{p.name}</option>
                   ))}
                 </select>
@@ -236,22 +279,22 @@ export default function TransactionForm({ defaultMode = 'expense', editTransacti
               <button
                 type="button"
                 onClick={() => {
-                  const tmp = fromPerson
-                  setFromPerson(toPerson)
-                  setToPerson(tmp)
+                  const tmp = fromPersonId
+                  setFromPersonId(toPersonId)
+                  setToPersonId(tmp)
                 }}
-                className="mt-5 w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-300 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors flex-shrink-0"
+                className="mt-5 w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-300 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 hover:text-indigo-600 transition-colors flex-shrink-0"
               >
                 <ArrowLeftRight size={14} />
               </button>
               <div className="flex-1">
                 <label className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 block">Ke</label>
                 <select
-                  value={toPerson}
-                  onChange={(e) => setToPerson(e.target.value as PersonId)}
+                  value={toPersonId}
+                  onChange={(e) => setToPersonId(e.target.value)}
                   className="w-full border border-gray-200 dark:border-gray-700 rounded-xl py-2.5 px-3 text-sm bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 >
-                  {PEOPLE.map((p) => (
+                  {persons.map((p) => (
                     <option key={p.id} value={p.id}>{p.name}</option>
                   ))}
                 </select>
@@ -274,45 +317,42 @@ export default function TransactionForm({ defaultMode = 'expense', editTransacti
                         : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-gray-200 dark:border-gray-700'
                     }`}
                   >
-                    {t === 'equal' ? '50 / 50' : 'Custom'}
+                    {t === 'equal' ? 'Rata' : 'Custom'}
                   </button>
                 ))}
               </div>
-              {splitType === 'custom' && (
-                <div className="flex gap-2">
-                  <div className="flex-1">
-                    <label className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 block">Mas</label>
+              <div className="space-y-2">
+                {persons.map((p) => (
+                  <div key={p.id} className="flex items-center gap-2">
+                    <span className={`text-xs px-2 py-1 rounded-full font-medium w-20 text-center ${
+                      PERSON_COLORS[p.color]?.badge ?? PERSON_COLORS.indigo.badge
+                    }`}>{p.name}</span>
                     <input
                       type="number"
                       inputMode="numeric"
-                      value={masAmount}
-                      onChange={(e) => setMasAmount(e.target.value)}
+                      value={splitAmounts[p.id] ?? ''}
+                      onChange={(e) => {
+                        setSplitType('custom')
+                        setSplitAmounts((prev) => ({ ...prev, [p.id]: e.target.value }))
+                      }}
+                      readOnly={splitType === 'equal'}
                       placeholder="0"
-                      className="w-full border border-gray-200 dark:border-gray-700 rounded-xl py-2 px-3 text-sm bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      className="flex-1 border border-gray-200 dark:border-gray-700 rounded-xl py-2 px-3 text-sm bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 read-only:bg-gray-50 dark:read-only:bg-gray-700"
                     />
                   </div>
-                  <div className="flex-1">
-                    <label className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 block">Fita</label>
-                    <input
-                      type="number"
-                      inputMode="numeric"
-                      value={fitaAmount}
-                      onChange={(e) => setFitaAmount(e.target.value)}
-                      placeholder="0"
-                      className="w-full border border-gray-200 dark:border-gray-700 rounded-xl py-2 px-3 text-sm bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                    />
-                  </div>
-                </div>
-              )}
+                ))}
+              </div>
               {splitType === 'equal' && totalAmount > 0 && (
-                <div className="text-xs text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800 rounded-lg px-3 py-2">
-                  Mas: Rp {Math.round(totalAmount / 2).toLocaleString('id-ID')} &nbsp;·&nbsp; Fita: Rp {(totalAmount - Math.round(totalAmount / 2)).toLocaleString('id-ID')}
-                </div>
+                <p className="text-xs text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800 rounded-lg px-3 py-2">
+                  {persons.length > 0
+                    ? persons.map((p) => `${p.name}: Rp ${(splitAmounts[p.id] ? parseInt(splitAmounts[p.id]).toLocaleString('id-ID') : '0')}`).join(' · ')
+                    : ''}
+                </p>
               )}
             </div>
           )}
 
-          {/* Category (not for transfer) */}
+          {/* Category */}
           {mode !== 'transfer' && (
             <div>
               <label className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 block">Kategori</label>
@@ -376,11 +416,7 @@ export default function TransactionForm({ defaultMode = 'expense', editTransacti
                 </svg>
                 Menyimpan...
               </>
-            ) : isEdit ? (
-              'Simpan Perubahan'
-            ) : (
-              'Simpan Transaksi'
-            )}
+            ) : isEdit ? 'Simpan Perubahan' : 'Simpan Transaksi'}
           </button>
         </div>
       </div>
