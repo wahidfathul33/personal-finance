@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import { X } from 'lucide-react'
+import { X, ArrowLeftRight } from 'lucide-react'
 import {
   addTransaction,
   addSplitBill,
@@ -233,7 +233,17 @@ export default function TransactionForm({ defaultMode = 'expense', editTransacti
                   ))}
                 </select>
               </div>
-              <span className="text-gray-400 mt-5">→</span>
+              <button
+                type="button"
+                onClick={() => {
+                  const tmp = fromPerson
+                  setFromPerson(toPerson)
+                  setToPerson(tmp)
+                }}
+                className="mt-5 w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-300 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors flex-shrink-0"
+              >
+                <ArrowLeftRight size={14} />
+              </button>
               <div className="flex-1">
                 <label className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 block">Ke</label>
                 <select
