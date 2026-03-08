@@ -9,13 +9,8 @@ import PageHeader from '@/components/PageHeader'
 import Link from 'next/link'
 import type { TransactionWithCategory } from '@/lib/types'
 import type { Person } from '@/lib/types'
-import { currentMonth, currentYear, PERSON_COLORS, formatCurrency } from '@/lib/constants'
+import { currentMonth, currentYear, PERSON_COLORS, formatCurrency, MONTHS } from '@/lib/constants'
 import { Plus, CalendarDays, SlidersHorizontal, ChevronsUpDown } from 'lucide-react'
-
-const MONTH_NAMES_FULL = [
-  '', 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
-  'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember',
-]
 
 const TYPE_OPTIONS = [
   { value: 'all', label: 'Semua' },
@@ -74,7 +69,7 @@ export default function TransactionsPage() {
     <div>
       <PageHeader
         title="Transaksi"
-        subtitle={`${MONTH_NAMES_FULL[month]} ${year}`}
+        subtitle={`${MONTHS[month - 1]} ${year}`}
         right={
           <>
             <Link
@@ -101,7 +96,7 @@ export default function TransactionsPage() {
             onChange={e => setMonth(Number(e.target.value))}
             className="w-full bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-100 text-sm font-medium rounded-xl pl-3 pr-8 py-2.5 border-0 outline-none appearance-none cursor-pointer"
           >
-            {MONTH_NAMES_FULL.slice(1).map((name, i) => (
+            {MONTHS.map((name, i) => (
               <option key={i + 1} value={i + 1}>{name}</option>
             ))}
           </select>

@@ -99,6 +99,11 @@ export const MONTHS = [
   'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember',
 ]
 
+export const MONTHS_SHORT = [
+  'Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun',
+  'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des',
+]
+
 export function formatCurrency(amount: number): string {
   return new Intl.NumberFormat('id-ID', {
     style: 'currency',

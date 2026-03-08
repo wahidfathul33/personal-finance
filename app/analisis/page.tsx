@@ -11,7 +11,7 @@ import {
 } from '@/actions/analysis'
 import { getPersons } from '@/actions/persons'
 import PageHeader from '@/components/PageHeader'
-import { formatCurrency, currentMonth, currentYear } from '@/lib/constants'
+import { formatCurrency, currentMonth, currentYear, MONTHS } from '@/lib/constants'
 import type { Person } from '@/lib/types'
 import { ChevronsUpDown } from 'lucide-react'
 import {
@@ -40,11 +40,6 @@ const COLOR_HEX: Record<string, string> = {
   teal: '#14b8a6',
 }
 
-const MONTH_NAMES_FULL = [
-  '', 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
-  'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember',
-]
-
 const now = new Date()
 const YEAR_OPTIONS = Array.from({ length: 5 }, (_, i) => now.getFullYear() - i)
 
@@ -61,7 +56,7 @@ function FilterRow({
           onChange={e => onMonth(Number(e.target.value))}
           className="w-full bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-100 text-sm font-medium rounded-xl pl-3 pr-8 py-2.5 border-0 outline-none appearance-none cursor-pointer"
         >
-          {MONTH_NAMES_FULL.slice(1).map((name, i) => (
+          {MONTHS.map((name, i) => (
             <option key={i + 1} value={i + 1}>{name}</option>
           ))}
         </select>
@@ -161,7 +156,7 @@ export default function AnalisisPage() {
         {/* Category Breakdown */}
         <div>
           <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
-            Pengeluaran per Kategori — {MONTH_NAMES_FULL[month]} {year}
+            Pengeluaran per Kategori — {MONTHS[month - 1]} {year}
           </h2>
           <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 p-3">
             {breakdown.length === 0 ? (
@@ -209,7 +204,7 @@ export default function AnalisisPage() {
         {persons.length > 0 && (
           <div>
             <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
-              Perbandingan per Orang — {MONTH_NAMES_FULL[month]} {year}
+              Perbandingan per Orang — {MONTHS[month - 1]} {year}
             </h2>
             <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 p-3">
               {comparison.length === 0 ? (

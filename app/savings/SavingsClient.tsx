@@ -4,7 +4,7 @@ import { useState, useTransition, useEffect, useMemo } from 'react'
 import { addSaving, deleteSaving, updateSaving } from '@/actions/savings'
 import { getPersons } from '@/actions/persons'
 import type { Saving, Person } from '@/lib/types'
-import { formatCurrency, formatDate, PERSON_COLORS, todayISO, currentMonth, currentYear } from '@/lib/constants'
+import { formatCurrency, formatDate, PERSON_COLORS, todayISO, currentMonth, currentYear, MONTHS } from '@/lib/constants'
 import { Plus, Trash2, Pencil, X, Check, Wallet, ChevronsUpDown } from 'lucide-react'
 
 interface Props {
@@ -131,10 +131,6 @@ export default function SavingsClient({ items: initialItems }: Props) {
   const [month, setMonth] = useState(currentMonth())
   const [year, setYear] = useState(currentYear())
 
-  const MONTH_NAMES = [
-    '', 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
-    'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember',
-  ]
   const now = new Date()
   const YEAR_OPTIONS = Array.from({ length: 5 }, (_, i) => now.getFullYear() - i)
 
@@ -204,7 +200,7 @@ export default function SavingsClient({ items: initialItems }: Props) {
             onChange={e => setMonth(Number(e.target.value))}
             className="w-full bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-100 text-sm font-medium rounded-xl pl-3 pr-8 py-2.5 border-0 outline-none appearance-none cursor-pointer"
           >
-            {MONTH_NAMES.slice(1).map((name, i) => (
+            {MONTHS.map((name, i) => (
               <option key={i + 1} value={i + 1}>{name}</option>
             ))}
           </select>
@@ -226,7 +222,7 @@ export default function SavingsClient({ items: initialItems }: Props) {
 
       {/* Month total */}
       <div className="bg-gray-50 dark:bg-gray-800 rounded-2xl px-4 py-3 flex items-center justify-between">
-        <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">{MONTH_NAMES[month]} {year}</span>
+        <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">{MONTHS[month - 1]} {year}</span>
         <span className={`text-sm font-bold ${
           filteredTotal >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'
         }`}>{filteredTotal >= 0 ? '+' : ''}{formatCurrency(filteredTotal)}</span>

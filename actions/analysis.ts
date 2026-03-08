@@ -1,7 +1,7 @@
 'use server'
 
 import { supabase } from '@/lib/supabase'
-import { CATEGORIES } from '@/lib/constants'
+import { CATEGORIES, MONTHS_SHORT } from '@/lib/constants'
 
 export type MonthlyTrendPoint = {
   label: string
@@ -28,8 +28,6 @@ const CHART_COLORS = [
   '#84cc16', '#06b6d4',
 ]
 
-const MONTH_NAMES = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des']
-
 export async function getMonthlyTrend(): Promise<MonthlyTrendPoint[]> {
   const now = new Date()
   const points: MonthlyTrendPoint[] = []
@@ -50,7 +48,7 @@ export async function getMonthlyTrend(): Promise<MonthlyTrendPoint[]> {
     const income  = (data ?? []).filter((t) => t.type === 'income' ).reduce((a, t) => a + (t.amount as number), 0)
     const expense = (data ?? []).filter((t) => t.type === 'expense').reduce((a, t) => a + Math.abs(t.amount as number), 0)
 
-    points.push({ label: MONTH_NAMES[m - 1], income, expense })
+    points.push({ label: MONTHS_SHORT[m - 1], income, expense })
   }
 
   return points

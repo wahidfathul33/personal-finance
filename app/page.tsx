@@ -6,14 +6,9 @@ import QuickActions from '@/components/QuickActions'
 import ThemeToggle from '@/components/ThemeToggle'
 import Link from 'next/link'
 import { Settings } from 'lucide-react'
-import { formatCurrency, currentMonth, currentYear, PERSON_COLORS } from '@/lib/constants'
+import { formatCurrency, currentMonth, currentYear, PERSON_COLORS, MONTHS } from '@/lib/constants'
 
 export const dynamic = 'force-dynamic'
-
-const MONTH_NAMES = [
-  '', 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
-  'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember',
-]
 
 export default async function HomePage() {
   const month = currentMonth()
@@ -35,7 +30,7 @@ export default async function HomePage() {
       <div className="bg-gradient-to-br from-indigo-600 to-indigo-800 px-4 pt-12 pb-6">
         <div className="flex items-center justify-between mb-5">
           <div>
-            <p className="text-indigo-200 text-xs font-medium">{MONTH_NAMES[month]} {year}</p>
+            <p className="text-indigo-200 text-xs font-medium">{MONTHS[month - 1]} {year}</p>
             <h1 className="text-white text-xl font-bold mt-0.5">Keuangan Kita</h1>
           </div>
           <div className="flex items-center gap-2">
