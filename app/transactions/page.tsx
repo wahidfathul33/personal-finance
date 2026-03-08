@@ -221,7 +221,8 @@ export default function TransactionsPage() {
 
       {showForm && (
         <TransactionForm
-          onClose={() => {
+          onClose={() => setShowForm(false)}
+          onSuccess={() => {
             setShowForm(false)
             loadTransactions()
           }}

@@ -1,19 +1,23 @@
 'use server'
 
-import { revalidatePath } from 'next/cache'
+import { revalidatePath, revalidateTag, unstable_cache } from 'next/cache'
 import { supabase } from '@/lib/supabase'
 import type { Person } from '@/lib/types'
 
-export async function getPersons(): Promise<Person[]> {
-  const { data, error } = await supabase
-    .from('persons')
-    .select('*')
-    .order('sort_order', { ascending: true })
-    .order('created_at', { ascending: true })
+export const getPersons = unstable_cache(
+  async (): Promise<Person[]> => {
+    const { data, error } = await supabase
+      .from('persons')
+      .select('*')
+      .order('sort_order', { ascending: true })
+      .order('created_at', { ascending: true })
 
-  if (error) throw error
-  return (data ?? []) as Person[]
-}
+    if (error) throw error
+    return (data ?? []) as Person[]
+  },
+  ['persons'],
+  { tags: ['persons'] }
+)
 
 export async function addPerson(name: string, color: string): Promise<Person> {
   // Get current max sort_order
@@ -32,6 +36,7 @@ export async function addPerson(name: string, color: string): Promise<Person> {
     .single()
 
   if (error) throw error
+  revalidateTag('persons', 'default')
   revalidatePath('/')
   revalidatePath('/settings')
   return data as Person
@@ -47,6 +52,7 @@ export async function updatePerson(
     .eq('id', id)
 
   if (error) throw error
+  revalidateTag('persons', 'default')
   revalidatePath('/')
   revalidatePath('/settings')
 }
@@ -54,6 +60,7 @@ export async function updatePerson(
 export async function deletePerson(id: string) {
   const { error } = await supabase.from('persons').delete().eq('id', id)
   if (error) throw error
+  revalidateTag('persons', 'default')
   revalidatePath('/')
   revalidatePath('/settings')
 }

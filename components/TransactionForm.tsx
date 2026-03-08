@@ -19,9 +19,10 @@ interface Props {
   defaultMode?: Mode
   editTransaction?: TransactionWithCategory
   onClose: () => void
+  onSuccess?: () => void
 }
 
-export default function TransactionForm({ defaultMode = 'expense', editTransaction, onClose }: Props) {
+export default function TransactionForm({ defaultMode = 'expense', editTransaction, onClose, onSuccess }: Props) {
   const isEdit = !!editTransaction
 
   const initialMode: Mode = isEdit
@@ -135,6 +136,7 @@ export default function TransactionForm({ defaultMode = 'expense', editTransacti
             note,
           })
         }
+        onSuccess?.();
         onClose()
       } catch (err) {
         alert('Gagal menyimpan transaksi')

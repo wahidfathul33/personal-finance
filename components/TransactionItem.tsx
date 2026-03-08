@@ -140,7 +140,8 @@ export default function TransactionItem({ transaction, showPerson = true, onSucc
       {editing && (
         <TransactionForm
           editTransaction={transaction}
-          onClose={() => {
+          onClose={() => setEditing(false)}
+          onSuccess={() => {
             setEditing(false)
             if (onSuccess) onSuccess()
             else router.refresh()

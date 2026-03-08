@@ -73,7 +73,8 @@ export default function QuickActions({ onSuccess }: Props) {
       {open && (
         <TransactionForm
           defaultMode={mode}
-          onClose={() => {
+          onClose={() => setOpen(false)}
+          onSuccess={() => {
             setOpen(false)
             handleSuccess()
           }}
