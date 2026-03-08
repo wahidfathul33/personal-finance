@@ -220,7 +220,7 @@ export default function TransactionForm({ defaultMode = 'expense', editTransacti
                       key={p.id}
                       type="button"
                       onClick={() => setPersonId(p.id)}
-                      className={`flex-1 min-w-[80px] py-2.5 rounded-xl text-sm font-medium border transition-colors ${
+                      className={`flex-1 min-w-[80px] py-2 rounded-xl text-sm font-medium border transition-colors ${
                         personId === p.id
                           ? colors.button
                           : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700'
@@ -244,7 +244,7 @@ export default function TransactionForm({ defaultMode = 'expense', editTransacti
                     key={src}
                     type="button"
                     onClick={() => setSavingSource(src)}
-                    className={`flex-1 py-2.5 rounded-xl text-sm font-medium border transition-colors ${
+                    className={`flex-1 py-2 rounded-xl text-sm font-medium border transition-colors ${
                       savingSource === src
                         ? src === 'tabungan'
                           ? 'bg-emerald-600 text-white border-emerald-600'
@@ -267,7 +267,7 @@ export default function TransactionForm({ defaultMode = 'expense', editTransacti
                 <select
                   value={fromPersonId}
                   onChange={(e) => setFromPersonId(e.target.value)}
-                  className="w-full border border-gray-200 dark:border-gray-700 rounded-xl py-2.5 px-3 text-sm bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full border border-gray-200 dark:border-gray-700 rounded-xl h-[40px] px-3 text-sm bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 >
                   {persons.map((p) => (
                     <option key={p.id} value={p.id}>{p.name}</option>
@@ -290,7 +290,7 @@ export default function TransactionForm({ defaultMode = 'expense', editTransacti
                 <select
                   value={toPersonId}
                   onChange={(e) => setToPersonId(e.target.value)}
-                  className="w-full border border-gray-200 dark:border-gray-700 rounded-xl py-2.5 px-3 text-sm bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full border border-gray-200 dark:border-gray-700 rounded-xl h-[40px] px-3 text-sm bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 >
                   {persons.map((p) => (
                     <option key={p.id} value={p.id}>{p.name}</option>
@@ -381,7 +381,7 @@ export default function TransactionForm({ defaultMode = 'expense', editTransacti
               type="date"
               value={date}
               onChange={(e) => setDate(e.target.value)}
-              className="w-full border border-gray-200 dark:border-gray-700 rounded-xl py-2.5 px-3 text-sm bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full border border-gray-200 dark:border-gray-700 rounded-xl h-[40px] px-3 text-sm bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
           </div>
 
@@ -393,29 +393,38 @@ export default function TransactionForm({ defaultMode = 'expense', editTransacti
               value={note}
               onChange={(e) => setNote(e.target.value)}
               placeholder="Tambah catatan..."
-              className="w-full border border-gray-200 dark:border-gray-700 rounded-xl py-2.5 px-3 text-sm bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full border border-gray-200 dark:border-gray-700 rounded-xl h-[40px] px-3 text-sm bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
           </div>
         </form>
 
         {/* Sticky Save Button */}
-        <div className="px-4 py-3 border-t border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 flex-shrink-0">
-          <button
-            type="submit"
-            form="txform"
-            disabled={isPending || !amount}
-            className="w-full bg-indigo-600 text-white py-3.5 rounded-xl font-semibold text-sm hover:bg-indigo-700 active:bg-indigo-800 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
-          >
-            {isPending ? (
-              <>
-                <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
-                </svg>
-                Menyimpan...
-              </>
-            ) : isEdit ? 'Simpan Perubahan' : 'Simpan Transaksi'}
-          </button>
+        <div className="px-4 pt-3 pb-20 bg-white dark:bg-gray-900 flex-shrink-0">
+          <div className="flex gap-2">
+            <button
+              type="submit"
+              form="txform"
+              disabled={isPending || !amount}
+              className="flex-1 bg-indigo-600 text-white h-[40px] rounded-xl font-semibold text-sm border border-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+            >
+              {isPending ? (
+                <>
+                  <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                  </svg>
+                  Menyimpan...
+                </>
+              ) : isEdit ? 'Simpan Perubahan' : 'Simpan Transaksi'}
+            </button>
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex-1 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 h-[40px] rounded-xl font-semibold text-sm border border-gray-200 dark:border-gray-700 transition-colors"
+            >
+              Batal
+            </button>
+          </div>
         </div>
       </div>
     </div>

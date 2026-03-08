@@ -1,5 +1,5 @@
 export type TransactionType = 'income' | 'expense' | 'transfer'
-export type AssetType = 'gold' | 'other'
+export type AssetType = 'gold' | 'deposit' | 'other'
 
 export interface Person {
   id: string
@@ -74,6 +74,7 @@ export interface Asset {
   type: AssetType
   amount: number
   unit: string
+  note?: string | null
   created_at: string
 }
 
@@ -137,6 +138,7 @@ export interface AddAssetInput {
   type: AssetType
   amount: number
   unit: string
+  note?: string | null
 }
 
 export interface UpdateGoldPriceInput {

@@ -72,7 +72,7 @@ function EditRow({ person, onDone }: EditRowProps) {
         <input
           value={name}
           onChange={(e) => setName(e.target.value)}
-          className="w-full px-3 py-2 text-sm rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+          className="w-full px-3 h-[40px] text-sm rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-400"
         />
       </div>
       <div>
@@ -83,13 +83,13 @@ function EditRow({ person, onDone }: EditRowProps) {
         <button
           onClick={handleSave}
           disabled={isPending || !name.trim()}
-          className="flex-1 py-2 bg-indigo-500 text-white text-sm font-medium rounded-xl hover:bg-indigo-600 active:scale-95 transition-all disabled:opacity-50"
+          className="flex-1 h-[40px] bg-indigo-500 text-white text-sm font-medium rounded-xl hover:bg-indigo-600 active:scale-95 transition-all disabled:opacity-50"
         >
           {isPending ? 'Menyimpan...' : 'Simpan'}
         </button>
         <button
           onClick={onDone}
-          className="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-sm rounded-xl hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+          className="px-4 h-[40px] bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-sm rounded-xl hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
         >
           Batal
         </button>
@@ -152,10 +152,9 @@ export default function SettingsPage() {
             <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300">Orang</h2>
             <button
               onClick={() => setShowAdd((v) => !v)}
-              className="flex items-center gap-1 px-3 py-1.5 bg-indigo-500 text-white text-xs font-medium rounded-xl hover:bg-indigo-600 active:scale-95 transition-all"
+              className="w-9 h-9 flex items-center justify-center rounded-full bg-indigo-500 text-white hover:bg-indigo-600 active:scale-95 transition-all"
             >
-              <Plus size={13} />
-              Tambah
+              <Plus size={18} />
             </button>
           </div>
 
@@ -169,7 +168,7 @@ export default function SettingsPage() {
                   value={addName}
                   onChange={(e) => setAddName(e.target.value)}
                   placeholder="Nama orang..."
-                  className="w-full px-3 py-2 text-sm rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                  className="w-full px-3 h-[40px] text-sm rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-400"
                 />
               </div>
               <div>
@@ -180,13 +179,13 @@ export default function SettingsPage() {
                 <button
                   onClick={handleAdd}
                   disabled={isPending || !addName.trim()}
-                  className="flex-1 py-2 bg-indigo-500 text-white text-sm font-medium rounded-xl hover:bg-indigo-600 active:scale-95 transition-all disabled:opacity-50"
+                  className="flex-1 h-[40px] bg-indigo-500 text-white text-sm font-medium rounded-xl hover:bg-indigo-600 active:scale-95 transition-all disabled:opacity-50"
                 >
                   {isPending ? 'Menambahkan...' : 'Tambah'}
                 </button>
                 <button
                   onClick={() => { setShowAdd(false); setAddName('') }}
-                  className="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-sm rounded-xl hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                  className="px-4 h-[40px] bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-sm rounded-xl hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
                 >
                   Batal
                 </button>

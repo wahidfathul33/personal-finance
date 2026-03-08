@@ -15,7 +15,7 @@ export async function getAssets(): Promise<Asset[]> {
   if (error) throw error
   return (data ?? []).map((a) => ({
     ...a,
-    type: a.type as 'gold' | 'other',
+    type: a.type as 'gold' | 'deposit' | 'other',
   }))
 }
 
@@ -25,6 +25,7 @@ export async function addAsset(input: AddAssetInput) {
     type: input.type,
     amount: input.amount,
     unit: input.unit,
+    note: input.note ?? null,
   })
 
   if (error) throw error
@@ -38,6 +39,7 @@ export async function updateAsset(id: string, input: Partial<AddAssetInput>) {
       name: input.name,
       amount: input.amount,
       unit: input.unit,
+      ...(input.note !== undefined ? { note: input.note } : {}),
     })
     .eq('id', id)
 
@@ -94,16 +96,20 @@ export async function getAssetsSummary() {
   ])
 
   const goldAssets = assets.filter((a) => a.type === 'gold')
+  const depositAssets = assets.filter((a) => a.type === 'deposit')
   const totalGrams = goldAssets.reduce((acc, a) => acc + a.amount, 0)
   const pricePerGram = goldPrice?.price_per_gram ?? 0
   const totalGoldValue = totalGrams * pricePerGram
+  const totalDepositValue = depositAssets.reduce((acc, a) => acc + a.amount, 0)
 
   return {
     assets,
     goldAssets,
+    depositAssets,
     totalGrams,
     pricePerGram,
     totalGoldValue,
     goldPrice,
+    totalDepositValue,
   }
 }

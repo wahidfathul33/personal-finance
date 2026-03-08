@@ -5,7 +5,7 @@ import AssetsClient from './AssetsClient'
 export const dynamic = 'force-dynamic'
 
 export default async function AssetsPage() {
-  let summary = { assets: [], goldAssets: [], totalGrams: 0, pricePerGram: 0, totalGoldValue: 0, goldPrice: null } as Awaited<ReturnType<typeof getAssetsSummary>>
+  let summary = { assets: [], goldAssets: [], depositAssets: [], totalGrams: 0, pricePerGram: 0, totalGoldValue: 0, totalDepositValue: 0, goldPrice: null } as Awaited<ReturnType<typeof getAssetsSummary>>
   try {
     summary = await getAssetsSummary()
   } catch {}

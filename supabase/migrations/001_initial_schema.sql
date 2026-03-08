@@ -94,9 +94,10 @@ create index if not exists idx_savings_date on savings(date desc);
 create table if not exists assets (
   id uuid primary key default gen_random_uuid(),
   name text not null,
-  type text not null default 'gold' check (type in ('gold', 'other')),
+  type text not null default 'gold' check (type in ('gold', 'deposit', 'other')),
   amount numeric not null,
   unit text not null default 'gram',
+  note text,
   created_at timestamptz not null default now()
 );
 
