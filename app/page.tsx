@@ -52,7 +52,7 @@ export default function HomePage() {
       </div>
 
       {/* Recent Transactions */}
-      <div className="flex-1 min-h-0 overflow-y-auto px-4 pb-4">
+      <div className="px-4 pb-4">
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-sm font-semibold text-gray-800 dark:text-gray-100">Transaksi Terbaru</h2>
           <Link href="/transactions" className="text-xs text-indigo-500 font-medium">
