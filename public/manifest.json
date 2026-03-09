@@ -1,6 +1,6 @@
 {
   "name": "Keuangan Kita",
-  "short_name": "Keuangan",
+  "short_name": "Keuangan Kita",
   "description": "Aplikasi pengelola keuangan sederhana untuk keluarga atau kelompok kecil",
   "start_url": "/",
   "display": "standalone",
