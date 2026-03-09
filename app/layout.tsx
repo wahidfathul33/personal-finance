@@ -7,6 +7,12 @@ import { ToastProvider } from "@/components/Toast";
 export const metadata: Metadata = {
   title: "Keuangan Kita",
   description: "Aplikasi pengelola keuangan sederhana untuk keluarga atau kelompok kecil.",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Keuangan Kita",
+  },
 };
 
 export default function RootLayout({
