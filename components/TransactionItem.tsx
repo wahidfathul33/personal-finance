@@ -7,6 +7,7 @@ import type { TransactionWithCategory } from '@/lib/types'
 import { formatCurrency, formatDate, PERSON_COLORS } from '@/lib/constants'
 import { duplicateTransaction, deleteTransaction } from '@/actions/transactions'
 import TransactionForm from './TransactionForm'
+import ConfirmModal from './ConfirmModal'
 
 interface Props {
   transaction: TransactionWithCategory
@@ -20,6 +21,7 @@ export default function TransactionItem({ transaction, showPerson = true, onSucc
   const [loading, setLoading] = useState(false)
   const [deleted, setDeleted] = useState(false)
   const [editing, setEditing] = useState(false)
+  const [showConfirm, setShowConfirm] = useState(false)
 
   const isPositive = transaction.amount >= 0
   const amountColor = isPositive ? 'text-emerald-600' : 'text-rose-500'
@@ -40,7 +42,6 @@ export default function TransactionItem({ transaction, showPerson = true, onSucc
   }
 
   async function handleDelete() {
-    if (!confirm('Hapus transaksi ini?')) return
     setLoading(true)
     try {
       await deleteTransaction(transaction.id)
@@ -55,6 +56,14 @@ export default function TransactionItem({ transaction, showPerson = true, onSucc
   if (deleted) return null
 
   return (
+    <>
+    {showConfirm && (
+      <ConfirmModal
+        message="Hapus transaksi ini?"
+        onConfirm={() => { setShowConfirm(false); handleDelete() }}
+        onCancel={() => setShowConfirm(false)}
+      />
+    )}
     <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 overflow-hidden">
       <button
         className="w-full flex items-center gap-3 p-3 text-left"
@@ -127,7 +136,7 @@ export default function TransactionItem({ transaction, showPerson = true, onSucc
           </button>
           <div className="w-px bg-gray-100 dark:bg-gray-700" />
           <button
-            onClick={handleDelete}
+            onClick={() => setShowConfirm(true)}
             disabled={loading}
             className="flex-1 flex items-center justify-center gap-2 py-2.5 text-xs text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors"
           >
@@ -149,6 +158,7 @@ export default function TransactionItem({ transaction, showPerson = true, onSucc
         />
       )}
     </div>
+    </>
   )
 }
 

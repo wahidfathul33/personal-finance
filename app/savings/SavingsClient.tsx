@@ -6,6 +6,7 @@ import type { Saving, Person } from '@/lib/types'
 import { formatCurrency, formatDate, PERSON_COLORS, todayISO, currentMonth, currentYear, MONTHS } from '@/lib/constants'
 import { usePersons } from '@/lib/usePersons'
 import { Plus, Trash2, Pencil, X, Check, Wallet, ChevronsUpDown, ChevronDown } from 'lucide-react'
+import ConfirmModal from '@/components/ConfirmModal'
 
 interface Props {
   items: Saving[]
@@ -130,6 +131,7 @@ export default function SavingsClient({ items: initialItems, className }: Props)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
+  const [confirmId, setConfirmId] = useState<string | null>(null)
   const [month, setMonth] = useState(currentMonth())
   const [year, setYear] = useState(currentYear())
 
@@ -182,7 +184,6 @@ export default function SavingsClient({ items: initialItems, className }: Props)
   }
 
   function handleDelete(id: string) {
-    if (!confirm('Hapus tabungan ini?')) return
     startTransition(async () => {
       await deleteSaving(id)
       setItems((prev) => prev.filter((s) => s.id !== id))
@@ -190,6 +191,7 @@ export default function SavingsClient({ items: initialItems, className }: Props)
   }
 
   return (
+    <>
     <div className={`flex flex-col px-4 ${className ?? ''}`}>
       {/* Month / Year Filter */}
       <div className="flex items-center gap-2 mb-3">
@@ -374,7 +376,7 @@ export default function SavingsClient({ items: initialItems, className }: Props)
                 </button>
                 <div className="w-px bg-gray-100 dark:bg-gray-700" />
                 <button
-                  onClick={() => handleDelete(s.id)}
+                  onClick={() => setConfirmId(s.id)}
                   disabled={isPending}
                   className="flex-1 flex items-center justify-center gap-2 py-2.5 text-xs text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors"
                 >
@@ -388,5 +390,13 @@ export default function SavingsClient({ items: initialItems, className }: Props)
       })}
       </div>
     </div>
+    {confirmId && (
+      <ConfirmModal
+        message="Hapus tabungan ini?"
+        onConfirm={() => { handleDelete(confirmId); setConfirmId(null) }}
+        onCancel={() => setConfirmId(null)}
+      />
+    )}
+  </>
   )
 }

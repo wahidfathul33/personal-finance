@@ -6,6 +6,7 @@ import type { RecurringTemplate } from '@/lib/types'
 import { formatCurrency, PERSON_COLORS } from '@/lib/constants'
 import { Trash2, ToggleLeft, ToggleRight, Edit } from 'lucide-react'
 import Link from 'next/link'
+import ConfirmModal from '@/components/ConfirmModal'
 
 const TYPE_COLORS: Record<string, string> = {
   income: 'text-emerald-600 bg-emerald-50',
@@ -20,6 +21,7 @@ interface Props {
 export default function RecurringList({ templates: initial }: Props) {
   const [templates, setTemplates] = useState(initial)
   const [isPending, startTransition] = useTransition()
+  const [confirmId, setConfirmId] = useState<string | null>(null)
 
   function handleToggle(id: string, active: boolean) {
     startTransition(async () => {
@@ -31,7 +33,6 @@ export default function RecurringList({ templates: initial }: Props) {
   }
 
   function handleDelete(id: string) {
-    if (!confirm('Hapus template ini?')) return
     startTransition(async () => {
       await deleteRecurringTemplate(id)
       setTemplates((prev) => prev.filter((t) => t.id !== id))
@@ -47,6 +48,7 @@ export default function RecurringList({ templates: initial }: Props) {
   }
 
   return (
+    <>
     <div className="px-4 space-y-3 pb-8">
       {templates.map((t) => {
         const personColor = t.person?.color ?? 'indigo'
@@ -101,7 +103,7 @@ export default function RecurringList({ templates: initial }: Props) {
                     {t.active ? <ToggleRight size={16} /> : <ToggleLeft size={16} />}
                   </button>
                   <button
-                    onClick={() => handleDelete(t.id)}
+                    onClick={() => setConfirmId(t.id)}
                     disabled={isPending}
                     className="w-7 h-7 flex items-center justify-center rounded-full hover:bg-rose-50 dark:hover:bg-rose-900/20 text-gray-400 hover:text-rose-500"
                   >
@@ -114,5 +116,13 @@ export default function RecurringList({ templates: initial }: Props) {
         )
       })}
     </div>
+    {confirmId && (
+      <ConfirmModal
+        message="Hapus template ini?"
+        onConfirm={() => { handleDelete(confirmId); setConfirmId(null) }}
+        onCancel={() => setConfirmId(null)}
+      />
+    )}
+  </>
   )
 }

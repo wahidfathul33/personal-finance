@@ -3,6 +3,7 @@
 import { useState, useEffect, useTransition } from 'react'
 import { getPersons, addPerson, updatePerson, deletePerson } from '@/actions/persons'
 import { invalidatePersonsCache } from '@/lib/usePersons'
+import ConfirmModal from '@/components/ConfirmModal'
 import type { Person } from '@/lib/types'
 import { PERSON_COLORS, COLOR_OPTIONS } from '@/lib/constants'
 import PageHeader from '@/components/PageHeader'
@@ -107,6 +108,7 @@ export default function SettingsPage() {
   const [addColor, setAddColor] = useState('indigo')
   const [isPending, startTransition] = useTransition()
   const [loading, setLoading] = useState(true)
+  const [confirmPerson, setConfirmPerson] = useState<{ id: string; name: string } | null>(null)
 
   async function reload() {
     const data = await getPersons()
@@ -124,8 +126,7 @@ export default function SettingsPage() {
     reload()
   }
 
-  function handleDelete(id: string, name: string) {
-    if (!confirm(`Hapus "${name}"? Semua transaksi terkait akan terhapus.`)) return
+  function handleDelete(id: string) {
     startTransition(async () => {
       await deletePerson(id)
       invalidatePersonsCache()
@@ -146,6 +147,7 @@ export default function SettingsPage() {
   }
 
   return (
+    <>
     <div>
       <PageHeader title="Pengaturan" />
 
@@ -234,7 +236,7 @@ export default function SettingsPage() {
                             <Pencil size={14} />
                           </button>
                           <button
-                            onClick={() => handleDelete(p.id, p.name)}
+                            onClick={() => setConfirmPerson({ id: p.id, name: p.name })}
                             disabled={isPending}
                             className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-rose-50 dark:hover:bg-rose-900/20 text-gray-400 hover:text-rose-500 transition-colors"
                           >
@@ -259,5 +261,13 @@ export default function SettingsPage() {
         </div>
       </div>
     </div>
+    {confirmPerson && (
+      <ConfirmModal
+        message={`Hapus "${confirmPerson.name}"? Semua transaksi terkait akan terhapus.`}
+        onConfirm={() => { handleDelete(confirmPerson.id); setConfirmPerson(null) }}
+        onCancel={() => setConfirmPerson(null)}
+      />
+    )}
+    </>
   )
 }

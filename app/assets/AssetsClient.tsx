@@ -5,6 +5,7 @@ import { addAsset, updateAsset, deleteAsset, updateGoldPrice } from '@/actions/a
 import type { Asset } from '@/lib/types'
 import { formatCurrency, todayISO } from '@/lib/constants'
 import { Plus, Trash2, Edit2, Check, X, ChevronDown, Settings } from 'lucide-react'
+import ConfirmModal from '@/components/ConfirmModal'
 
 interface GoldPriceInfo {
   price_per_gram: number
@@ -52,6 +53,7 @@ export default function AssetsClient({ summary }: Props) {
   const [showPriceModal, setShowPriceModal] = useState(false)
   const [newPrice, setNewPrice] = useState(String(pricePerGram || ''))
   const [priceDate, setPriceDate] = useState(todayISO())
+  const [confirmId, setConfirmId] = useState<string | null>(null)
 
   function handleAddDeposit(e: React.FormEvent) {
     e.preventDefault()
@@ -125,7 +127,6 @@ export default function AssetsClient({ summary }: Props) {
   }
 
   function handleDelete(id: string) {
-    if (!confirm('Hapus aset ini?')) return
     startTransition(async () => {
       await deleteAsset(id)
       setAssets((prev) => prev.filter((a) => a.id !== id))
@@ -153,6 +154,7 @@ export default function AssetsClient({ summary }: Props) {
   const totalDepositValue = assets.filter(a => a.type === 'deposit').reduce((acc, a) => acc + a.amount, 0)
 
   return (
+    <>
     <div className="px-4 space-y-4 pb-8">
       {/* Gold Summary Card */}
       <div className="bg-gradient-to-br from-yellow-400 to-amber-500 rounded-2xl p-4 text-white relative">
@@ -390,7 +392,7 @@ export default function AssetsClient({ summary }: Props) {
                     </button>
                     <div className="w-px bg-gray-100 dark:bg-gray-700" />
                     <button
-                      onClick={() => handleDelete(asset.id)}
+                      onClick={() => setConfirmId(asset.id)}
                       disabled={isPending}
                       className="flex-1 flex items-center justify-center gap-2 py-2.5 text-xs text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors"
                     >
@@ -552,7 +554,7 @@ export default function AssetsClient({ summary }: Props) {
                       </button>
                       <div className="w-px bg-gray-100 dark:bg-gray-700" />
                       <button
-                        onClick={() => handleDelete(asset.id)}
+                        onClick={() => setConfirmId(asset.id)}
                         disabled={isPending}
                         className="flex-1 flex items-center justify-center gap-2 py-2.5 text-xs text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors"
                       >
@@ -573,5 +575,13 @@ export default function AssetsClient({ summary }: Props) {
       </div>
 
     </div>
+    {confirmId && (
+      <ConfirmModal
+        message="Hapus aset ini?"
+        onConfirm={() => { handleDelete(confirmId); setConfirmId(null) }}
+        onCancel={() => setConfirmId(null)}
+      />
+    )}
+  </>
   )
 }
