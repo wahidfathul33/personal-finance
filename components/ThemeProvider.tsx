@@ -9,11 +9,12 @@ const ThemeContext = createContext<{ theme: Theme; toggle: () => void }>({
 })
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setTheme] = useState<Theme>('dark')
+  const [theme, setTheme] = useState<Theme>('light')
 
   useEffect(() => {
     const stored = localStorage.getItem('theme') as Theme | null
-    const preferred = stored ?? 'dark'
+    const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+    const preferred = stored ?? (systemDark ? 'dark' : 'light')
     setTheme(preferred)
     document.documentElement.classList.toggle('dark', preferred === 'dark')
   }, [])
