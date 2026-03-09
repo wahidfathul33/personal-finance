@@ -219,21 +219,21 @@ export default function TransactionsPage() {
 
       {/* Stats Cards */}
       <div className="px-4 mb-3 grid grid-cols-3 gap-2">
-        <div className="bg-emerald-50 dark:bg-emerald-950/40 rounded-3xl p-4">
+        <div className="bg-emerald-50 dark:bg-emerald-950/40 rounded-2xl p-4">
           <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium mb-2">Masuk</p>
           {loading
             ? <div className="h-5 w-20 rounded-full bg-emerald-200 dark:bg-emerald-900/50 shimmer-dark" />
             : <p className="text-base font-bold text-emerald-700 dark:text-emerald-300">{formatCurrency(stats.income)}</p>
           }
         </div>
-        <div className="bg-rose-50 dark:bg-rose-950/40 rounded-3xl p-4">
+        <div className="bg-rose-50 dark:bg-rose-950/40 rounded-2xl p-4">
           <p className="text-xs text-rose-600 dark:text-rose-400 font-medium mb-2">Keluar</p>
           {loading
             ? <div className="h-5 w-20 rounded-full bg-rose-200 dark:bg-rose-900/50 shimmer-dark" />
             : <p className="text-base font-bold text-rose-700 dark:text-rose-300">{formatCurrency(Math.abs(stats.expense))}</p>
           }
         </div>
-        <div className="bg-gray-100 dark:bg-gray-800 rounded-3xl p-4">
+        <div className="bg-gray-100 dark:bg-gray-800 rounded-2xl p-4">
           <p className="text-xs text-gray-500 dark:text-gray-400 font-medium mb-2">Transaksi</p>
           {loading
             ? <div className="h-5 w-8 rounded-full bg-gray-300 dark:bg-gray-600 shimmer-dark" />

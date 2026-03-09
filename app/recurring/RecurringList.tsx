@@ -41,7 +41,7 @@ export default function RecurringList({ templates: initial }: Props) {
   if (templates.length === 0) {
     return (
       <div className="text-center py-10 text-gray-400 text-sm">
-        Belum ada template transaksi berulang
+        Belum ada template transaksi rutin
       </div>
     )
   }

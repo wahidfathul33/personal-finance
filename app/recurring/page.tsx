@@ -16,8 +16,8 @@ export default async function RecurringPage() {
   return (
     <div>
       <PageHeader
-        title="Transaksi Berulang"
-        subtitle="Template jadwal transaksi bulanan"
+        title="Transaksi Rutin"
+        subtitle="Template jadwal transaksi rutin bulanan"
         right={
           <div className="flex items-center gap-2">
             <Link

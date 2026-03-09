@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useTransition } from 'react'
 import { getPersons, addPerson, updatePerson, deletePerson } from '@/actions/persons'
+import { invalidatePersonsCache } from '@/lib/usePersons'
 import type { Person } from '@/lib/types'
 import { PERSON_COLORS, COLOR_OPTIONS } from '@/lib/constants'
 import PageHeader from '@/components/PageHeader'
@@ -118,6 +119,7 @@ export default function SettingsPage() {
   }, [])
 
   function handleDoneEdit() {
+    invalidatePersonsCache()
     setEditingId(null)
     reload()
   }
@@ -126,6 +128,7 @@ export default function SettingsPage() {
     if (!confirm(`Hapus "${name}"? Semua transaksi terkait akan terhapus.`)) return
     startTransition(async () => {
       await deletePerson(id)
+      invalidatePersonsCache()
       await reload()
     })
   }
@@ -134,6 +137,7 @@ export default function SettingsPage() {
     if (!addName.trim()) return
     startTransition(async () => {
       await addPerson(addName.trim(), addColor)
+      invalidatePersonsCache()
       setAddName('')
       setAddColor('indigo')
       setShowAdd(false)
