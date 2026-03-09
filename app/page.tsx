@@ -17,7 +17,7 @@ export default function HomePage() {
   return (
     <div className="flex flex-col min-h-[calc(100dvh-80px)]">
       {/* Header */}
-      <div className="bg-gradient-to-br from-indigo-600 to-indigo-800 px-4 pt-12 pb-6">
+      <div className="bg-gradient-to-br from-indigo-600 to-indigo-800 px-4 pt-8 pb-6">
         <div className="flex items-center justify-between mb-5">
           <div>
             <p className="text-indigo-200 text-xs font-medium">{MONTHS[month - 1]} {year}</p>

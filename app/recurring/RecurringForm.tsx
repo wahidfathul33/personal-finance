@@ -80,7 +80,7 @@ export default function RecurringForm({ template }: Props) {
             onChange={(e) => setName(e.target.value)}
             placeholder="cth: Spotify, Internet, Gaji..."
             required
-            className="w-full border border-gray-200 dark:border-gray-700 rounded-xl py-2.5 px-3 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full border border-gray-200 dark:border-gray-700 rounded-xl py-2 px-3 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
           />
         </div>
 
@@ -93,7 +93,7 @@ export default function RecurringForm({ template }: Props) {
                 key={t}
                 type="button"
                 onClick={() => { setType(t); setCategoryId('') }}
-                className={`flex-1 py-2.5 rounded-xl text-sm font-medium border transition-colors ${
+                className={`flex-1 py-2 rounded-xl text-sm font-medium border transition-colors ${
                   type === t
                     ? t === 'expense' ? 'bg-rose-500 text-white border-rose-500' : 'bg-emerald-500 text-white border-emerald-500'
                     : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-gray-200 dark:border-gray-700'
@@ -131,7 +131,7 @@ export default function RecurringForm({ template }: Props) {
             max="31"
             value={dayOfMonth}
             onChange={(e) => setDayOfMonth(e.target.value)}
-            className="w-full border border-gray-200 dark:border-gray-700 rounded-xl py-2.5 px-3 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full border border-gray-200 dark:border-gray-700 rounded-xl py-2 px-3 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
           />
         </div>
 
@@ -191,17 +191,33 @@ export default function RecurringForm({ template }: Props) {
             value={note}
             onChange={(e) => setNote(e.target.value)}
             placeholder="Opsional..."
-            className="w-full border border-gray-200 dark:border-gray-700 rounded-xl py-2.5 px-3 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full border border-gray-200 dark:border-gray-700 rounded-xl py-2 px-3 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
           />
         </div>
 
-        <button
-          type="submit"
-          disabled={isPending}
-          className="w-full bg-indigo-600 text-white py-3.5 rounded-xl font-semibold text-sm disabled:opacity-50"
-        >
-          {isPending ? 'Menyimpan...' : isEdit ? 'Simpan Perubahan' : 'Tambah Template'}
-        </button>
+        <div className="flex gap-2 pb-12">
+          <button
+            type="submit"
+            disabled={isPending || !name || !amount}
+            className="flex-1 bg-indigo-600 text-white h-[40px] rounded-xl font-semibold text-sm border border-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+          >
+            {isPending ? (
+              <>
+                <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                </svg>
+                Menyimpan...
+              </>
+            ) : isEdit ? 'Simpan Perubahan' : 'Tambah Template'}
+          </button>
+          <Link
+            href="/recurring"
+            className="flex-1 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 h-[40px] rounded-xl font-semibold text-sm border border-gray-200 dark:border-gray-700 transition-colors flex items-center justify-center"
+          >
+            Batal
+          </Link>
+        </div>
       </form>
     </div>
   )

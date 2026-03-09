@@ -196,7 +196,7 @@ export default function AssetsClient({ summary }: Props) {
           onClick={() => setShowPriceModal(false)}
         >
           <div
-            className="w-full max-w-lg bg-white dark:bg-gray-900 rounded-t-3xl p-5 pb-24 space-y-3"
+            className="w-full max-w-lg bg-white dark:bg-gray-900 rounded-t-3xl p-5 pb-20 space-y-3"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between mb-1">
@@ -230,7 +230,7 @@ export default function AssetsClient({ summary }: Props) {
                   className="w-full h-[40px] border border-gray-200 dark:border-gray-700 rounded-xl px-3 text-sm bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 focus:outline-none"
                 />
               </div>
-              <div className="flex gap-2 pt-1">
+              <div className="flex gap-2 pt-3">
                 <button
                   type="submit"
                   disabled={isPending}
