@@ -17,10 +17,10 @@ export default function HomePage() {
   return (
     <div className="flex flex-col min-h-[calc(100dvh-80px)]">
       {/* Header */}
-      <div className="bg-gradient-to-br from-indigo-600 to-indigo-800 px-4 pt-8 pb-6">
+      <div className="bg-base-gradient px-4 pt-8 pb-6">
         <div className="flex items-center justify-between mb-5">
           <div>
-            <p className="text-indigo-200 text-xs font-medium">{MONTHS[month - 1]} {year}</p>
+            <p className="text-base-200 text-xs font-medium">{MONTHS[month - 1]} {year}</p>
             <h1 className="text-white text-xl font-bold mt-0.5">Keuangan Kita</h1>
           </div>
           <div className="flex items-center gap-2">
@@ -55,7 +55,7 @@ export default function HomePage() {
       <div className="px-4 pb-4">
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-sm font-semibold text-gray-800 dark:text-gray-100">Transaksi Terbaru</h2>
-          <Link href="/transactions" className="text-xs text-indigo-500 font-medium">
+          <Link href="/transactions" className="text-xs text-base font-medium">
             Lihat semua
           </Link>
         </div>

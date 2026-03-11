@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import BottomNav from "@/components/BottomNav";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import { BaseColorProvider } from "@/components/BaseColorProvider";
 import { ToastProvider } from "@/components/Toast";
 
 export const metadata: Metadata = {
@@ -24,12 +25,14 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className="antialiased bg-gray-100 dark:bg-gray-950 min-h-screen">
         <ThemeProvider>
+          <BaseColorProvider>
           <div className="max-w-lg mx-auto min-h-screen bg-white dark:bg-gray-900 shadow-sm relative">
             <ToastProvider>
               <main className="pb-20">{children}</main>
               <BottomNav />
             </ToastProvider>
           </div>
+          </BaseColorProvider>
         </ThemeProvider>
       </body>
     </html>

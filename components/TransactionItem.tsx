@@ -120,7 +120,7 @@ export default function TransactionItem({ transaction, showPerson = true, onSucc
           <button
             onClick={() => { setEditing(true); setExpanded(false) }}
             disabled={loading}
-            className="flex-1 flex items-center justify-center gap-2 py-2.5 text-xs text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 active:bg-indigo-100 transition-colors"
+            className="flex-1 flex items-center justify-center gap-2 py-2.5 text-xs icon-btn-base transition-colors"
           >
             <Pencil size={13} />
             Edit

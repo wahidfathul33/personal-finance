@@ -6,6 +6,7 @@ import { invalidatePersonsCache } from '@/lib/usePersons'
 import ConfirmModal from '@/components/ConfirmModal'
 import type { Person } from '@/lib/types'
 import { PERSON_COLORS, COLOR_OPTIONS } from '@/lib/constants'
+import { useBaseColor, BASE_COLOR_OPTIONS, type BaseColor } from '@/components/BaseColorProvider'
 import PageHeader from '@/components/PageHeader'
 import { Pencil, Trash2, Check, X, Plus, GripVertical } from 'lucide-react'
 
@@ -74,7 +75,7 @@ function EditRow({ person, onDone }: EditRowProps) {
         <input
           value={name}
           onChange={(e) => setName(e.target.value)}
-          className="w-full px-3 h-[40px] text-sm rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+          className="w-full px-3 h-[40px] text-sm rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--base-400)]"
         />
       </div>
       <div>
@@ -85,7 +86,7 @@ function EditRow({ person, onDone }: EditRowProps) {
         <button
           onClick={handleSave}
           disabled={isPending || !name.trim()}
-          className="flex-1 h-[40px] bg-indigo-500 text-white text-sm font-medium rounded-xl hover:bg-indigo-600 active:scale-95 transition-all disabled:opacity-50"
+          className="flex-1 h-[40px] btn-base text-sm font-medium rounded-xl"
         >
           {isPending ? 'Menyimpan...' : 'Simpan'}
         </button>
@@ -109,6 +110,7 @@ export default function SettingsPage() {
   const [isPending, startTransition] = useTransition()
   const [loading, setLoading] = useState(true)
   const [confirmPerson, setConfirmPerson] = useState<{ id: string; name: string } | null>(null)
+  const { color: baseColor, setColor: setBaseColor } = useBaseColor()
 
   async function reload() {
     const data = await getPersons()
@@ -152,13 +154,47 @@ export default function SettingsPage() {
       <PageHeader title="Pengaturan" />
 
       <div className="px-4 pb-8 space-y-6">
+        {/* Base Color Section */}
+        <div>
+          <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Warna Dasar</h2>
+          <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 p-4">
+            <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">Warna aksen utama untuk navigasi dan tombol aksi.</p>
+            <div className="flex flex-wrap gap-2">
+              {BASE_COLOR_OPTIONS.map((c) => {
+                const palette = PERSON_COLORS[c]
+                const isSelected = baseColor === c
+                return (
+                  <button
+                    key={c}
+                    type="button"
+                    onClick={() => setBaseColor(c)}
+                    title={COLOR_LABELS[c] ?? c}
+                    className={`flex flex-col items-center gap-1.5 px-2 py-2 rounded-2xl border-2 transition-all ${
+                      isSelected
+                        ? 'border-gray-700 dark:border-white bg-gray-50 dark:bg-gray-700'
+                        : 'border-transparent hover:bg-gray-50 dark:hover:bg-gray-700'
+                    }`}
+                  >
+                    <div className={`w-8 h-8 rounded-full ${palette.button} flex items-center justify-center flex-shrink-0`}>
+                      {isSelected && <Check size={14} />}
+                    </div>
+                    <span className="text-[10px] font-medium text-gray-600 dark:text-gray-400 w-12 text-center leading-tight">
+                      {COLOR_LABELS[c] ?? c}
+                    </span>
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+        </div>
+
         {/* Persons Section */}
         <div>
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300">Orang</h2>
             <button
               onClick={() => setShowAdd((v) => !v)}
-              className="w-9 h-9 flex items-center justify-center rounded-full bg-indigo-500 text-white hover:bg-indigo-600 active:scale-95 transition-all"
+              className="w-9 h-9 flex items-center justify-center rounded-full btn-base"
             >
               <Plus size={18} />
             </button>
@@ -174,7 +210,7 @@ export default function SettingsPage() {
                   value={addName}
                   onChange={(e) => setAddName(e.target.value)}
                   placeholder="Nama orang..."
-                  className="w-full px-3 h-[40px] text-sm rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                  className="w-full px-3 h-[40px] text-sm rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--base-400)]"
                 />
               </div>
               <div>
@@ -185,7 +221,7 @@ export default function SettingsPage() {
                 <button
                   onClick={handleAdd}
                   disabled={isPending || !addName.trim()}
-                  className="flex-1 h-[40px] bg-indigo-500 text-white text-sm font-medium rounded-xl hover:bg-indigo-600 active:scale-95 transition-all disabled:opacity-50"
+                  className="flex-1 h-[40px] btn-base text-sm font-medium rounded-xl"
                 >
                   {isPending ? 'Menambahkan...' : 'Tambah'}
                 </button>
@@ -231,7 +267,7 @@ export default function SettingsPage() {
                         <div className="flex items-center gap-1 ml-auto">
                           <button
                             onClick={() => setEditingId(p.id)}
-                            className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-indigo-50 dark:hover:bg-indigo-900/20 text-indigo-500 transition-colors"
+                            className="w-8 h-8 flex items-center justify-center rounded-full icon-btn-base transition-colors"
                           >
                             <Pencil size={14} />
                           </button>

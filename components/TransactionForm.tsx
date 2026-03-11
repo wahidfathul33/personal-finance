@@ -406,7 +406,7 @@ export default function TransactionForm({ defaultMode = 'expense', editTransacti
               type="submit"
               form="txform"
               disabled={isPending || !amount}
-              className="flex-1 bg-indigo-600 text-white h-[40px] rounded-xl font-semibold text-sm border border-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+              className="flex-1 btn-base h-[40px] rounded-xl font-semibold text-sm flex items-center justify-center gap-2"
             >
               {isPending ? (
                 <>

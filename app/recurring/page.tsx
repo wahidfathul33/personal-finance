@@ -30,7 +30,7 @@ export default async function RecurringPage() {
             <GenerateButton />
             <Link
               href="/recurring/new"
-              className="w-9 h-9 bg-indigo-600 rounded-full flex items-center justify-center"
+              className="w-9 h-9 btn-base rounded-full flex items-center justify-center"
             >
               <Plus size={18} className="text-white" />
             </Link>

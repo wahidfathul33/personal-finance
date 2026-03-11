@@ -119,7 +119,7 @@ export default function RecurringList({ templates: initial }: Props) {
             onClick={() => setFilterType(v)}
             className={`px-3 py-1 rounded-full text-xs font-medium border transition-colors ${
               filterType === v
-                ? 'bg-indigo-600 text-white border-indigo-600'
+                ? 'filter-active'
                 : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-700'
             }`}
           >
@@ -137,7 +137,7 @@ export default function RecurringList({ templates: initial }: Props) {
             onClick={() => setFilterSource(v)}
             className={`px-3 py-1 rounded-full text-xs font-medium border transition-colors ${
               filterSource === v
-                ? 'bg-indigo-600 text-white border-indigo-600'
+                ? 'filter-active'
                 : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-700'
             }`}
           >
@@ -154,7 +154,7 @@ export default function RecurringList({ templates: initial }: Props) {
             onClick={() => setFilterPerson('all')}
             className={`px-3 py-1 rounded-full text-xs font-medium border transition-colors ${
               filterPerson === 'all'
-                ? 'bg-indigo-600 text-white border-indigo-600'
+                ? 'filter-active'
                 : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-700'
             }`}
           >
@@ -167,7 +167,7 @@ export default function RecurringList({ templates: initial }: Props) {
               onClick={() => setFilterPerson(p.id)}
               className={`px-3 py-1 rounded-full text-xs font-medium border transition-colors ${
                 filterPerson === p.id
-                  ? 'bg-indigo-600 text-white border-indigo-600'
+                  ? 'filter-active'
                   : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-700'
               }`}
             >
@@ -186,7 +186,7 @@ export default function RecurringList({ templates: initial }: Props) {
             onClick={() => setFilterActive(v)}
             className={`px-3 py-1 rounded-full text-xs font-medium border transition-colors ${
               filterActive === v
-                ? 'bg-indigo-600 text-white border-indigo-600'
+                ? 'filter-active'
                 : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-700'
             }`}
           >

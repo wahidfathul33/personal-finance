@@ -124,7 +124,7 @@ export default function PiutangSection({ initialData }: Props) {
         <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Piutang</p>
         <button
           onClick={() => setShowAddForm(!showAddForm)}
-          className="w-7 h-7 bg-indigo-600 rounded-full flex items-center justify-center"
+          className="w-7 h-7 btn-base rounded-full flex items-center justify-center"
         >
           <Plus size={14} className="text-white" />
         </button>
@@ -166,7 +166,7 @@ export default function PiutangSection({ initialData }: Props) {
             className="w-full border border-gray-200 dark:border-gray-700 rounded-xl py-2 px-3 text-sm bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 placeholder-gray-400 focus:outline-none"
           />
           <div className="flex gap-2">
-            <button type="submit" disabled={isPending} className="flex-1 bg-indigo-600 text-white py-2 rounded-xl text-sm font-medium">
+            <button type="submit" disabled={isPending} className="flex-1 btn-base py-2 rounded-xl text-sm font-medium">
               Tambah
             </button>
             <button type="button" onClick={() => setShowAddForm(false)} className="flex-1 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 py-2 rounded-xl text-sm font-medium">

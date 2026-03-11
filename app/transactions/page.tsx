@@ -115,7 +115,7 @@ export default function TransactionsPage() {
             </Link>
             <button
               onClick={() => setShowForm(true)}
-              className="w-9 h-9 flex items-center justify-center rounded-full bg-indigo-500 text-white hover:bg-indigo-600 active:scale-95 transition-all"
+              className="w-9 h-9 flex items-center justify-center rounded-full btn-base"
             >
               <Plus size={18} />
             </button>

@@ -54,7 +54,7 @@ function EditInline({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="bg-indigo-50 dark:bg-indigo-900/20 rounded-2xl border border-indigo-200 dark:border-indigo-800 p-3 space-y-2">
+    <form onSubmit={handleSubmit} className="bg-base-subtle rounded-2xl border border-base-subtle p-3 space-y-2">
       <div className="flex flex-wrap gap-2">
         {persons.map((p) => {
           const colors = PERSON_COLORS[p.color] ?? PERSON_COLORS.indigo
@@ -84,7 +84,7 @@ function EditInline({
           onChange={(e) => setAmount(e.target.value)}
           placeholder="0"
           required
-          className="w-full pl-10 pr-3 py-2.5 border border-gray-200 dark:border-gray-700 rounded-xl text-base font-semibold bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          className="w-full pl-10 pr-3 py-2.5 border border-gray-200 dark:border-gray-700 rounded-xl text-base font-semibold bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--base-500)]"
         />
       </div>
 
@@ -106,7 +106,7 @@ function EditInline({
         <button
           type="submit"
           disabled={isPending}
-          className="flex-1 bg-indigo-600 text-white py-2 rounded-xl text-sm font-medium disabled:opacity-60"
+          className="flex-1 btn-base py-2 rounded-xl text-sm font-medium"
         >
           <Check size={14} className="inline mr-1" />
           Simpan
@@ -233,7 +233,7 @@ export default function SavingsClient({ items: initialItems, className }: Props)
         <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Riwayat</p>
         <button
           onClick={() => setShowForm(!showForm)}
-          className="w-7 h-7 bg-indigo-600 rounded-full flex items-center justify-center"
+          className="w-7 h-7 btn-base rounded-full flex items-center justify-center"
         >
           <Plus size={14} className="text-white" />
         </button>
@@ -272,7 +272,7 @@ export default function SavingsClient({ items: initialItems, className }: Props)
               onChange={(e) => setAmount(e.target.value)}
               placeholder="0"
               required
-              className="w-full pl-10 pr-3 py-2.5 border border-gray-200 dark:border-gray-700 rounded-xl text-base font-semibold bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full pl-10 pr-3 py-2.5 border border-gray-200 dark:border-gray-700 rounded-xl text-base font-semibold bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--base-500)]"
             />
           </div>
           <input
@@ -289,7 +289,7 @@ export default function SavingsClient({ items: initialItems, className }: Props)
             className="w-full border border-gray-200 dark:border-gray-700 rounded-xl py-2 px-3 text-sm bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 focus:outline-none"
           />
           <div className="flex gap-2">
-            <button type="submit" disabled={isPending} className="flex-1 bg-indigo-600 text-white py-2 rounded-xl text-sm font-medium">
+            <button type="submit" disabled={isPending} className="flex-1 btn-base py-2 rounded-xl text-sm font-medium">
               Simpan
             </button>
             <button type="button" onClick={() => setShowForm(false)} className="flex-1 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 py-2 rounded-xl text-sm font-medium">
@@ -335,8 +335,8 @@ export default function SavingsClient({ items: initialItems, className }: Props)
               className="w-full flex items-center gap-3 p-3 text-left"
               onClick={() => setExpandedId(isExpanded ? null : s.id)}
             >
-              <div className="w-10 h-10 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center flex-shrink-0">
-                <Wallet size={18} className="text-indigo-600 dark:text-indigo-400" />
+              <div className="w-10 h-10 rounded-full bg-base-subtle flex items-center justify-center flex-shrink-0">
+                <Wallet size={18} className="icon-btn-base" />
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-1.5">
@@ -369,7 +369,7 @@ export default function SavingsClient({ items: initialItems, className }: Props)
                 <button
                   onClick={() => { setEditingId(s.id); setExpandedId(null) }}
                   disabled={isPending}
-                  className="flex-1 flex items-center justify-center gap-2 py-2.5 text-xs text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 active:bg-indigo-100 transition-colors"
+                  className="flex-1 flex items-center justify-center gap-2 py-2.5 text-xs icon-btn-base transition-colors"
                 >
                   <Pencil size={13} />
                   Edit

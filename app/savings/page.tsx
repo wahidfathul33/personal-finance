@@ -35,9 +35,9 @@ export default async function SavingsPage() {
             </div>
           )
         })}
-        <div className="bg-indigo-50 dark:bg-indigo-900/20 rounded-2xl p-3 text-center">
-          <p className="text-[10px] text-indigo-500 dark:text-indigo-400 font-medium mb-0.5">Total</p>
-          <p className="text-sm font-bold text-indigo-700 dark:text-indigo-300">
+        <div className="bg-base-subtle rounded-2xl p-3 text-center">
+          <p className="text-[10px] text-base-on-subtle font-medium mb-0.5">Total</p>
+          <p className="text-sm font-bold text-base-strong-subtle">
             {formatCurrency(summary.total)}
           </p>
         </div>

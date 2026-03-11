@@ -184,7 +184,7 @@ export default function AssetsClient({ summary, piutangList }: Props) {
     <div className="px-4 space-y-4 pb-8">
 
       {/* Portfolio Overview Card */}
-      <div className="bg-gradient-to-br from-indigo-600 to-violet-600 rounded-2xl p-4 text-white shadow-md">
+      <div className="bg-base-gradient rounded-2xl p-4 text-white shadow-md">
         <p className="text-white/70 text-xs font-medium mb-1">Total Kekayaan</p>
         <p className="text-3xl font-bold tracking-tight drop-shadow-sm">{formatCurrency(netWorth)}</p>
         <div className="grid grid-cols-3 gap-2 mt-3 text-xs">
@@ -266,7 +266,7 @@ export default function AssetsClient({ summary, piutangList }: Props) {
               <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Kepemilikan Emas</p>
               <button
                 onClick={() => setShowAddForm(!showAddForm)}
-                className="w-7 h-7 bg-indigo-600 rounded-full flex items-center justify-center"
+                className="w-7 h-7 btn-base rounded-full flex items-center justify-center"
               >
                 <Plus size={14} className="text-white" />
               </button>
@@ -293,7 +293,7 @@ export default function AssetsClient({ summary, piutangList }: Props) {
                   <input type="text" value={newUnit} onChange={(e) => setNewUnit(e.target.value)} placeholder="gram" className="w-20 border border-gray-200 dark:border-gray-700 rounded-xl py-2 px-3 text-sm bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 placeholder-gray-400 focus:outline-none" />
                 </div>
                 <div className="flex gap-2">
-                  <button type="submit" disabled={isPending} className="flex-1 bg-indigo-600 text-white py-2 rounded-xl text-sm font-medium">Tambah</button>
+                  <button type="submit" disabled={isPending} className="flex-1 btn-base py-2 rounded-xl text-sm font-medium">Tambah</button>
                   <button type="button" onClick={() => setShowAddForm(false)} className="flex-1 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 py-2 rounded-xl text-sm font-medium">Batal</button>
                 </div>
               </form>
@@ -330,7 +330,7 @@ export default function AssetsClient({ summary, piutangList }: Props) {
                         </button>
                         {isExpanded && (
                           <div className="flex border-t border-gray-100 dark:border-gray-700">
-                            <button onClick={() => { setEditingId(asset.id); setEditAmount(String(asset.amount)); setExpandedId(null) }} disabled={isPending} className="flex-1 flex items-center justify-center gap-2 py-2.5 text-xs text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-colors"><Edit2 size={13} />Edit</button>
+                            <button onClick={() => { setEditingId(asset.id); setEditAmount(String(asset.amount)); setExpandedId(null) }} disabled={isPending} className="flex-1 flex items-center justify-center gap-2 py-2.5 text-xs icon-btn-base transition-colors"><Edit2 size={13} />Edit</button>
                             <div className="w-px bg-gray-100 dark:bg-gray-700" />
                             <button onClick={() => setConfirmId(asset.id)} disabled={isPending} className="flex-1 flex items-center justify-center gap-2 py-2.5 text-xs text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors"><Trash2 size={13} />Hapus</button>
                           </div>
@@ -380,7 +380,7 @@ export default function AssetsClient({ summary, piutangList }: Props) {
                         </button>
                         {isExpanded && (
                           <div className="flex border-t border-gray-100 dark:border-gray-700">
-                            <button onClick={() => { setEditingId(asset.id); setEditAmount(String(asset.amount)); setExpandedId(null) }} disabled={isPending} className="flex-1 flex items-center justify-center gap-2 py-2.5 text-xs text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-colors"><Edit2 size={13} />Edit</button>
+                            <button onClick={() => { setEditingId(asset.id); setEditAmount(String(asset.amount)); setExpandedId(null) }} disabled={isPending} className="flex-1 flex items-center justify-center gap-2 py-2.5 text-xs icon-btn-base transition-colors"><Edit2 size={13} />Edit</button>
                             <div className="w-px bg-gray-100 dark:bg-gray-700" />
                             <button onClick={() => setConfirmId(asset.id)} disabled={isPending} className="flex-1 flex items-center justify-center gap-2 py-2.5 text-xs text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors"><Trash2 size={13} />Hapus</button>
                           </div>
@@ -418,7 +418,7 @@ export default function AssetsClient({ summary, piutangList }: Props) {
           <div>
             <div className="flex items-center justify-between mb-2">
               <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Deposito</p>
-              <button onClick={() => setShowAddDepositForm(!showAddDepositForm)} className="w-7 h-7 bg-indigo-600 rounded-full flex items-center justify-center">
+              <button onClick={() => setShowAddDepositForm(!showAddDepositForm)} className="w-7 h-7 btn-base rounded-full flex items-center justify-center">
                 <Plus size={14} className="text-white" />
               </button>
             </div>
@@ -432,7 +432,7 @@ export default function AssetsClient({ summary, piutangList }: Props) {
                 </div>
                 <input type="text" value={newDepositNote} onChange={(e) => setNewDepositNote(e.target.value)} placeholder="Catatan (cth: bunga 5%, JT Jun 2026)" className="w-full border border-gray-200 dark:border-gray-700 rounded-xl py-2 px-3 text-sm bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 placeholder-gray-400 focus:outline-none" />
                 <div className="flex gap-2">
-                  <button type="submit" disabled={isPending} className="flex-1 bg-indigo-600 text-white py-2 rounded-xl text-sm font-medium">Tambah</button>
+                  <button type="submit" disabled={isPending} className="flex-1 btn-base py-2 rounded-xl text-sm font-medium">Tambah</button>
                   <button type="button" onClick={() => setShowAddDepositForm(false)} className="flex-1 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 py-2 rounded-xl text-sm font-medium">Batal</button>
                 </div>
               </form>
@@ -468,7 +468,7 @@ export default function AssetsClient({ summary, piutangList }: Props) {
                       </button>
                       {isExpanded && (
                         <div className="flex border-t border-gray-100 dark:border-gray-700">
-                          <button onClick={() => { setEditingId(asset.id); setEditAmount(String(asset.amount)); setExpandedId(null) }} disabled={isPending} className="flex-1 flex items-center justify-center gap-2 py-2.5 text-xs text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-colors"><Edit2 size={13} />Edit</button>
+                          <button onClick={() => { setEditingId(asset.id); setEditAmount(String(asset.amount)); setExpandedId(null) }} disabled={isPending} className="flex-1 flex items-center justify-center gap-2 py-2.5 text-xs icon-btn-base transition-colors"><Edit2 size={13} />Edit</button>
                           <div className="w-px bg-gray-100 dark:bg-gray-700" />
                           <button onClick={() => setConfirmId(asset.id)} disabled={isPending} className="flex-1 flex items-center justify-center gap-2 py-2.5 text-xs text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors"><Trash2 size={13} />Hapus</button>
                         </div>
