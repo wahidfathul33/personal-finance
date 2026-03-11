@@ -4,7 +4,6 @@ import { revalidatePath } from 'next/cache'
 import { supabase } from '@/lib/supabase'
 import type { RecurringTemplate, AddRecurringTemplateInput } from '@/lib/types'
 import { getCategoryById, currentMonth, currentYear } from '@/lib/constants'
-import { addSaving } from '@/actions/savings'
 
 const WITH_PERSON = '*, person:persons!person_id(name, color)'
 
@@ -186,7 +185,7 @@ export async function generateRecurringTransactions() {
     await supabase.from('transactions').insert(toInsert)
   }
 
-  for (const s of savingsToInsert) {
-    await addSaving(s)
+  if (savingsToInsert.length > 0) {
+    await supabase.from('savings').insert(savingsToInsert)
   }
 }
