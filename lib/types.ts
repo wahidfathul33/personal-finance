@@ -1,5 +1,6 @@
 export type TransactionType = 'income' | 'expense' | 'transfer'
 export type AssetType = 'gold' | 'deposit' | 'other'
+export type GoldSubType = 'logam_mulia' | 'perhiasan'
 
 export interface Person {
   id: string
@@ -73,6 +74,7 @@ export interface Asset {
   id: string
   name: string
   type: AssetType
+  sub_type?: GoldSubType | null
   amount: number
   unit: string
   note?: string | null
@@ -82,6 +84,7 @@ export interface Asset {
 export interface GoldPrice {
   id: string
   price_per_gram: number
+  jewelry_price_per_gram: number | null
   date: string
   created_at: string
 }
@@ -139,6 +142,7 @@ export interface AddSavingInput {
 export interface AddAssetInput {
   name: string
   type: AssetType
+  sub_type?: GoldSubType | null
   amount: number
   unit: string
   note?: string | null
@@ -146,6 +150,7 @@ export interface AddAssetInput {
 
 export interface UpdateGoldPriceInput {
   price_per_gram: number
+  jewelry_price_per_gram?: number | null
   date: string
 }
 

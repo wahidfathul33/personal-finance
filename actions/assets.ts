@@ -16,6 +16,7 @@ export async function getAssets(): Promise<Asset[]> {
   return (data ?? []).map((a) => ({
     ...a,
     type: a.type as 'gold' | 'deposit' | 'other',
+    sub_type: a.sub_type as 'logam_mulia' | 'perhiasan' | null ?? null,
   }))
 }
 
@@ -23,6 +24,7 @@ export async function addAsset(input: AddAssetInput) {
   const { error } = await supabase.from('assets').insert({
     name: input.name,
     type: input.type,
+    sub_type: input.sub_type ?? null,
     amount: input.amount,
     unit: input.unit,
     note: input.note ?? null,
@@ -80,6 +82,7 @@ export async function getGoldPriceHistory(): Promise<GoldPrice[]> {
 export async function updateGoldPrice(input: UpdateGoldPriceInput) {
   const { error } = await supabase.from('gold_prices').insert({
     price_per_gram: input.price_per_gram,
+    jewelry_price_per_gram: input.jewelry_price_per_gram ?? null,
     date: input.date,
   })
 
@@ -96,18 +99,28 @@ export async function getAssetsSummary() {
   ])
 
   const goldAssets = assets.filter((a) => a.type === 'gold')
+  const lmAssets = goldAssets.filter((a) => a.sub_type === 'logam_mulia' || !a.sub_type)
+  const jewelryAssets = goldAssets.filter((a) => a.sub_type === 'perhiasan')
   const depositAssets = assets.filter((a) => a.type === 'deposit')
   const totalGrams = goldAssets.reduce((acc, a) => acc + a.amount, 0)
+  const totalLmGrams = lmAssets.reduce((acc, a) => acc + a.amount, 0)
+  const totalJewelryGrams = jewelryAssets.reduce((acc, a) => acc + a.amount, 0)
   const pricePerGram = goldPrice?.price_per_gram ?? 0
-  const totalGoldValue = totalGrams * pricePerGram
+  const jewelryPricePerGram = goldPrice?.jewelry_price_per_gram ?? 0
+  const totalGoldValue = totalLmGrams * pricePerGram + totalJewelryGrams * jewelryPricePerGram
   const totalDepositValue = depositAssets.reduce((acc, a) => acc + a.amount, 0)
 
   return {
     assets,
     goldAssets,
+    lmAssets,
+    jewelryAssets,
     depositAssets,
     totalGrams,
+    totalLmGrams,
+    totalJewelryGrams,
     pricePerGram,
+    jewelryPricePerGram,
     totalGoldValue,
     goldPrice,
     totalDepositValue,

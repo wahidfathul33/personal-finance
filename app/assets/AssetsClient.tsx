@@ -16,7 +16,10 @@ interface GoldPriceInfo {
 interface AssetsSummary {
   assets: Asset[]
   totalGrams: number
+  totalLmGrams: number
+  totalJewelryGrams: number
   pricePerGram: number
+  jewelryPricePerGram: number
   totalGoldValue: number
   totalDepositValue: number
   goldPrice: GoldPriceInfo | null
@@ -29,6 +32,7 @@ interface Props {
 export default function AssetsClient({ summary }: Props) {
   const [assets, setAssets] = useState(summary.assets)
   const [pricePerGram, setPricePerGram] = useState(summary.pricePerGram)
+  const [jewelryPricePerGram, setJewelryPricePerGram] = useState(summary.jewelryPricePerGram)
   const [goldPrice, setGoldPrice] = useState<GoldPriceInfo | null>(summary.goldPrice)
   const [isPending, startTransition] = useTransition()
 
@@ -37,6 +41,7 @@ export default function AssetsClient({ summary }: Props) {
   const [newName, setNewName] = useState('')
   const [newAmount, setNewAmount] = useState('')
   const [newUnit, setNewUnit] = useState('gram')
+  const [goldSubType, setGoldSubType] = useState<'logam_mulia' | 'perhiasan'>('logam_mulia')
 
   // Add deposit form
   const [showAddDepositForm, setShowAddDepositForm] = useState(false)
@@ -52,6 +57,7 @@ export default function AssetsClient({ summary }: Props) {
   // Gold price modal
   const [showPriceModal, setShowPriceModal] = useState(false)
   const [newPrice, setNewPrice] = useState(String(pricePerGram || ''))
+  const [newJewelryPrice, setNewJewelryPrice] = useState(String(jewelryPricePerGram || ''))
   const [priceDate, setPriceDate] = useState(todayISO())
   const [confirmId, setConfirmId] = useState<string | null>(null)
 
@@ -94,6 +100,7 @@ export default function AssetsClient({ summary }: Props) {
       await addAsset({
         name: newName,
         type: 'gold',
+        sub_type: goldSubType,
         amount: parseFloat(newAmount),
         unit: newUnit,
       })
@@ -103,6 +110,7 @@ export default function AssetsClient({ summary }: Props) {
           id: crypto.randomUUID(),
           name: newName,
           type: 'gold',
+          sub_type: goldSubType,
           amount: parseFloat(newAmount),
           unit: newUnit,
           created_at: new Date().toISOString(),
@@ -137,20 +145,27 @@ export default function AssetsClient({ summary }: Props) {
     e.preventDefault()
     if (!newPrice) return
     const price = parseFloat(newPrice)
+    const jewelryPrice = newJewelryPrice ? parseFloat(newJewelryPrice) : null
     const now = new Date().toISOString()
     startTransition(async () => {
       await updateGoldPrice({
         price_per_gram: price,
+        jewelry_price_per_gram: jewelryPrice,
         date: priceDate,
       })
       setPricePerGram(price)
+      if (jewelryPrice !== null) setJewelryPricePerGram(jewelryPrice)
       setGoldPrice({ price_per_gram: price, date: priceDate, created_at: now })
       setShowPriceModal(false)
     })
   }
 
+  const lmAssets = assets.filter(a => a.type === 'gold' && a.sub_type !== 'perhiasan')
+  const jewelryAssets = assets.filter(a => a.type === 'gold' && a.sub_type === 'perhiasan')
   const totalGrams = assets.filter(a => a.type === 'gold').reduce((acc, a) => acc + a.amount, 0)
-  const totalValue = totalGrams * pricePerGram
+  const totalLmGrams = lmAssets.reduce((acc, a) => acc + a.amount, 0)
+  const totalJewelryGrams = jewelryAssets.reduce((acc, a) => acc + a.amount, 0)
+  const totalValue = totalLmGrams * pricePerGram + totalJewelryGrams * jewelryPricePerGram
   const totalDepositValue = assets.filter(a => a.type === 'deposit').reduce((acc, a) => acc + a.amount, 0)
 
   return (
@@ -159,22 +174,24 @@ export default function AssetsClient({ summary }: Props) {
       {/* Gold Summary Card */}
       <div className="bg-gradient-to-br from-yellow-400 to-amber-500 rounded-2xl p-4 text-white relative">
         <button
-          onClick={() => { setNewPrice(String(pricePerGram || '')); setShowPriceModal(true) }}
+          onClick={() => { setNewPrice(String(pricePerGram || '')); setNewJewelryPrice(String(jewelryPricePerGram || '')); setShowPriceModal(true) }}
           className="absolute top-3 right-3 w-8 h-8 flex items-center justify-center rounded-full bg-white/20 hover:bg-white/30 transition-colors"
         >
           <Settings size={15} className="text-white" />
         </button>
         <p className="text-yellow-100 text-xs font-medium mb-1">Total Nilai Emas</p>
-        <p className="text-2xl font-bold mb-3">{formatCurrency(totalGrams * pricePerGram)}</p>
-        <div className="flex justify-between text-sm">
+        <p className="text-2xl font-bold mb-3">{formatCurrency(totalValue)}</p>
+        <div className="grid grid-cols-2 gap-2 text-sm">
           <div>
-            <p className="text-yellow-100 text-xs">Total Gram</p>
-            <p className="font-semibold">{totalGrams} gram</p>
+            <p className="text-yellow-100 text-xs">LM · {totalLmGrams}g</p>
+            <p className="font-semibold text-sm">
+              {pricePerGram > 0 ? formatCurrency(pricePerGram) + '/g' : 'Belum diset'}
+            </p>
           </div>
-          <div className="text-right">
-            <p className="text-yellow-100 text-xs">Harga / gram</p>
-            <p className="font-semibold">
-              {pricePerGram > 0 ? formatCurrency(pricePerGram) : 'Belum diset'}
+          <div>
+            <p className="text-yellow-100 text-xs">Perhiasan · {totalJewelryGrams}g</p>
+            <p className="font-semibold text-sm">
+              {jewelryPricePerGram > 0 ? formatCurrency(jewelryPricePerGram) + '/g' : 'Belum diset'}
             </p>
           </div>
         </div>
@@ -207,7 +224,7 @@ export default function AssetsClient({ summary }: Props) {
             </div>
             <form onSubmit={handleUpdatePrice} className="space-y-3">
               <div>
-                <label className="text-xs text-gray-500 dark:text-gray-400 mb-1 block">Harga per gram</label>
+                <label className="text-xs text-gray-500 dark:text-gray-400 mb-1 block">Harga Logam Mulia / gram</label>
                 <div className="relative">
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">Rp</span>
                   <input
@@ -218,6 +235,20 @@ export default function AssetsClient({ summary }: Props) {
                     placeholder="0"
                     className="w-full pl-10 pr-3 h-[40px] border border-gray-200 dark:border-gray-700 rounded-xl text-sm font-semibold bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 focus:outline-none"
                     autoFocus
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="text-xs text-gray-500 dark:text-gray-400 mb-1 block">Harga Perhiasan / gram</label>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">Rp</span>
+                  <input
+                    type="number"
+                    inputMode="numeric"
+                    value={newJewelryPrice}
+                    onChange={(e) => setNewJewelryPrice(e.target.value)}
+                    placeholder="0"
+                    className="w-full pl-10 pr-3 h-[40px] border border-gray-200 dark:border-gray-700 rounded-xl text-sm font-semibold bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 focus:outline-none"
                   />
                 </div>
               </div>
@@ -277,6 +308,23 @@ export default function AssetsClient({ summary }: Props) {
             onSubmit={handleAddAsset}
             className="bg-gray-50 dark:bg-gray-800 rounded-2xl p-3 mb-3 space-y-2"
           >
+            {/* Sub-type toggle */}
+            <div className="flex gap-2">
+              {(['logam_mulia', 'perhiasan'] as const).map((st) => (
+                <button
+                  key={st}
+                  type="button"
+                  onClick={() => setGoldSubType(st)}
+                  className={`flex-1 py-2 rounded-xl text-sm font-medium border transition-colors ${
+                    goldSubType === st
+                      ? 'bg-amber-500 text-white border-amber-500'
+                      : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 border-gray-200 dark:border-gray-600'
+                  }`}
+                >
+                  {st === 'logam_mulia' ? '🥇 Logam Mulia' : '💍 Perhiasan'}
+                </button>
+              ))}
+            </div>
             <input
               type="text"
               value={newName}
@@ -320,101 +368,120 @@ export default function AssetsClient({ summary }: Props) {
           </form>
         )}
 
-        {assets.filter(a => a.type === 'gold').length === 0 ? (
-          <p className="text-center text-gray-400 text-sm py-6">Belum ada aset</p>
-        ) : (
-          <div className="flex flex-col gap-2">
-            {assets.filter(a => a.type === 'gold').map((asset) => {
-              const isExpanded = expandedId === asset.id
-              return (
-              <div
-                key={asset.id}
-                className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 overflow-hidden"
-              >
-                <button
-                  className="w-full flex items-center gap-3 p-3 text-left"
-                  onClick={() => {
-                    if (editingId === asset.id) return
-                    setExpandedId(isExpanded ? null : asset.id)
-                  }}
-                >
-                  <div className="w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center flex-shrink-0">
-                    <span className="text-lg">🥇</span>
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-semibold text-gray-900 dark:text-gray-100 text-left">{asset.name}</p>
-                    {editingId === asset.id ? (
-                      <div className="flex items-center gap-1 mt-1" onClick={e => e.stopPropagation()}>
-                        <input
-                          type="number"
-                          inputMode="decimal"
-                          value={editAmount}
-                          onChange={(e) => setEditAmount(e.target.value)}
-                          className="border border-gray-200 dark:border-gray-700 rounded-lg py-1 px-2 text-sm w-24 bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 focus:outline-none"
-                          autoFocus
-                        />
-                        <span className="text-xs text-gray-500 dark:text-gray-400">{asset.unit}</span>
-                        <button onClick={() => handleUpdateAmount(asset.id)} className="w-8 h-8 flex items-center justify-center rounded-full bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 transition-colors">
-                          <Check size={16} />
-                        </button>
-                        <button onClick={() => setEditingId(null)} className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700 text-gray-500 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
-                          <X size={16} />
-                        </button>
+        {/* Logam Mulia sub-section */}
+        {lmAssets.length > 0 && (
+          <div className="mb-3">
+            <p className="text-[11px] font-semibold text-amber-600 dark:text-amber-400 mb-1.5 px-1">🥇 Logam Mulia</p>
+            <div className="flex flex-col gap-2">
+              {lmAssets.map((asset) => {
+                const isExpanded = expandedId === asset.id
+                const assetPrice = pricePerGram
+                return (
+                  <div key={asset.id} className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 overflow-hidden">
+                    <button
+                      className="w-full flex items-center gap-3 p-3 text-left"
+                      onClick={() => { if (editingId === asset.id) return; setExpandedId(isExpanded ? null : asset.id) }}
+                    >
+                      <div className="w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center flex-shrink-0">
+                        <span className="text-lg">🥇</span>
                       </div>
-                    ) : (
-                      <p className="text-xs text-gray-500 dark:text-gray-400 text-left">
-                        {asset.amount} {asset.unit}
-                        {pricePerGram > 0 && (
-                          <span className="ml-1.5 text-amber-600 dark:text-amber-400 font-medium">
-                            ≈ {formatCurrency(asset.amount * pricePerGram)}
-                          </span>
+                      <div className="flex-1">
+                        <p className="text-sm font-semibold text-gray-900 dark:text-gray-100 text-left">{asset.name}</p>
+                        {editingId === asset.id ? (
+                          <div className="flex items-center gap-1 mt-1" onClick={e => e.stopPropagation()}>
+                            <input type="number" inputMode="decimal" value={editAmount} onChange={(e) => setEditAmount(e.target.value)} className="border border-gray-200 dark:border-gray-700 rounded-lg py-1 px-2 text-sm w-24 bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 focus:outline-none" autoFocus />
+                            <span className="text-xs text-gray-500 dark:text-gray-400">{asset.unit}</span>
+                            <button onClick={() => handleUpdateAmount(asset.id)} className="w-8 h-8 flex items-center justify-center rounded-full bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600"><Check size={16} /></button>
+                            <button onClick={() => setEditingId(null)} className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700 text-gray-500"><X size={16} /></button>
+                          </div>
+                        ) : (
+                          <p className="text-xs text-gray-500 dark:text-gray-400 text-left">
+                            {asset.amount} {asset.unit}
+                            {assetPrice > 0 && <span className="ml-1.5 text-amber-600 dark:text-amber-400 font-medium">≈ {formatCurrency(asset.amount * assetPrice)}</span>}
+                          </p>
                         )}
-                      </p>
+                      </div>
+                      {editingId !== asset.id && <ChevronDown size={14} className={`text-gray-400 transition-transform flex-shrink-0 ${isExpanded ? 'rotate-180' : ''}`} />}
+                    </button>
+                    {isExpanded && (
+                      <div className="flex border-t border-gray-100 dark:border-gray-700">
+                        <button onClick={() => { setEditingId(asset.id); setEditAmount(String(asset.amount)); setExpandedId(null) }} disabled={isPending} className="flex-1 flex items-center justify-center gap-2 py-2.5 text-xs text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-colors"><Edit2 size={13} />Edit</button>
+                        <div className="w-px bg-gray-100 dark:bg-gray-700" />
+                        <button onClick={() => setConfirmId(asset.id)} disabled={isPending} className="flex-1 flex items-center justify-center gap-2 py-2.5 text-xs text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors"><Trash2 size={13} />Hapus</button>
+                      </div>
                     )}
                   </div>
-                  {editingId !== asset.id && (
-                    <ChevronDown
-                      size={14}
-                      className={`text-gray-400 transition-transform flex-shrink-0 ${isExpanded ? 'rotate-180' : ''}`}
-                    />
-                  )}
-                </button>
-
-                {isExpanded && (
-                  <div className="flex border-t border-gray-100 dark:border-gray-700">
-                    <button
-                      onClick={() => { setEditingId(asset.id); setEditAmount(String(asset.amount)); setExpandedId(null) }}
-                      disabled={isPending}
-                      className="flex-1 flex items-center justify-center gap-2 py-2.5 text-xs text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 active:bg-indigo-100 transition-colors"
-                    >
-                      <Edit2 size={13} />
-                      Edit
-                    </button>
-                    <div className="w-px bg-gray-100 dark:bg-gray-700" />
-                    <button
-                      onClick={() => setConfirmId(asset.id)}
-                      disabled={isPending}
-                      className="flex-1 flex items-center justify-center gap-2 py-2.5 text-xs text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors"
-                    >
-                      <Trash2 size={13} />
-                      Hapus
-                    </button>
-                  </div>
-                )}
-              </div>
-            )})}
-
-            {/* Total row */}
-            <div className="bg-amber-50 dark:bg-amber-900/20 rounded-2xl p-3 flex items-center justify-between">
-              <p className="text-sm font-semibold text-amber-800 dark:text-amber-300">Total</p>
-              <div className="text-right">
-                <p className="text-sm font-bold text-amber-800 dark:text-amber-300">{totalGrams} gram</p>
-                {pricePerGram > 0 && (
-                  <p className="text-xs text-amber-600 dark:text-amber-400">{formatCurrency(totalValue)}</p>
-                )}
+                )
+              })}
+              <div className="bg-amber-50 dark:bg-amber-900/20 rounded-2xl p-3 flex items-center justify-between">
+                <p className="text-sm font-semibold text-amber-800 dark:text-amber-300">Total LM</p>
+                <div className="text-right">
+                  <p className="text-sm font-bold text-amber-800 dark:text-amber-300">{totalLmGrams}g</p>
+                  {pricePerGram > 0 && <p className="text-xs text-amber-600 dark:text-amber-400">{formatCurrency(totalLmGrams * pricePerGram)}</p>}
+                </div>
               </div>
             </div>
           </div>
+        )}
+
+        {/* Perhiasan sub-section */}
+        {jewelryAssets.length > 0 && (
+          <div className="mb-3">
+            <p className="text-[11px] font-semibold text-rose-500 dark:text-rose-400 mb-1.5 px-1">💍 Perhiasan</p>
+            <div className="flex flex-col gap-2">
+              {jewelryAssets.map((asset) => {
+                const isExpanded = expandedId === asset.id
+                const assetPrice = jewelryPricePerGram
+                return (
+                  <div key={asset.id} className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 overflow-hidden">
+                    <button
+                      className="w-full flex items-center gap-3 p-3 text-left"
+                      onClick={() => { if (editingId === asset.id) return; setExpandedId(isExpanded ? null : asset.id) }}
+                    >
+                      <div className="w-10 h-10 rounded-full bg-rose-100 dark:bg-rose-900/30 flex items-center justify-center flex-shrink-0">
+                        <span className="text-lg">💍</span>
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-sm font-semibold text-gray-900 dark:text-gray-100 text-left">{asset.name}</p>
+                        {editingId === asset.id ? (
+                          <div className="flex items-center gap-1 mt-1" onClick={e => e.stopPropagation()}>
+                            <input type="number" inputMode="decimal" value={editAmount} onChange={(e) => setEditAmount(e.target.value)} className="border border-gray-200 dark:border-gray-700 rounded-lg py-1 px-2 text-sm w-24 bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 focus:outline-none" autoFocus />
+                            <span className="text-xs text-gray-500 dark:text-gray-400">{asset.unit}</span>
+                            <button onClick={() => handleUpdateAmount(asset.id)} className="w-8 h-8 flex items-center justify-center rounded-full bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600"><Check size={16} /></button>
+                            <button onClick={() => setEditingId(null)} className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700 text-gray-500"><X size={16} /></button>
+                          </div>
+                        ) : (
+                          <p className="text-xs text-gray-500 dark:text-gray-400 text-left">
+                            {asset.amount} {asset.unit}
+                            {assetPrice > 0 && <span className="ml-1.5 text-rose-500 dark:text-rose-400 font-medium">≈ {formatCurrency(asset.amount * assetPrice)}</span>}
+                          </p>
+                        )}
+                      </div>
+                      {editingId !== asset.id && <ChevronDown size={14} className={`text-gray-400 transition-transform flex-shrink-0 ${isExpanded ? 'rotate-180' : ''}`} />}
+                    </button>
+                    {isExpanded && (
+                      <div className="flex border-t border-gray-100 dark:border-gray-700">
+                        <button onClick={() => { setEditingId(asset.id); setEditAmount(String(asset.amount)); setExpandedId(null) }} disabled={isPending} className="flex-1 flex items-center justify-center gap-2 py-2.5 text-xs text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-colors"><Edit2 size={13} />Edit</button>
+                        <div className="w-px bg-gray-100 dark:bg-gray-700" />
+                        <button onClick={() => setConfirmId(asset.id)} disabled={isPending} className="flex-1 flex items-center justify-center gap-2 py-2.5 text-xs text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors"><Trash2 size={13} />Hapus</button>
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
+              <div className="bg-rose-50 dark:bg-rose-900/20 rounded-2xl p-3 flex items-center justify-between">
+                <p className="text-sm font-semibold text-rose-700 dark:text-rose-300">Total Perhiasan</p>
+                <div className="text-right">
+                  <p className="text-sm font-bold text-rose-700 dark:text-rose-300">{totalJewelryGrams}g</p>
+                  {jewelryPricePerGram > 0 && <p className="text-xs text-rose-500 dark:text-rose-400">{formatCurrency(totalJewelryGrams * jewelryPricePerGram)}</p>}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {assets.filter(a => a.type === 'gold').length === 0 && (
+          <p className="text-center text-gray-400 text-sm py-6">Belum ada aset emas</p>
         )}
       </div>
 
