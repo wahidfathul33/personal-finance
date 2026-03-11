@@ -36,9 +36,9 @@
 }
 .shimmer-dark {
   background: linear-gradient(90deg,
-    rgba(255,255,255,0.04) 25%,
-    rgba(255,255,255,0.10) 50%,
-    rgba(255,255,255,0.04) 75%
+    var(--shimmer-base) 25%,
+    var(--shimmer-peak) 50%,
+    var(--shimmer-base) 75%
   );
   background-size: 800px 100%;
   animation: shimmer 1.4s infinite linear;
@@ -47,6 +47,9 @@
 :root {
   --background: #f3f4f6;
   --foreground: #111827;
+
+  --shimmer-base: #e2e8f0;
+  --shimmer-peak: #f8fafc;
 
   /* Base color palette — overridden per [data-basecolor] */
   --base-50:  #eef2ff;
@@ -73,6 +76,9 @@
   --base-subtle-border: color-mix(in srgb, var(--base-500) 25%, transparent);
   --base-on-subtle:     var(--base-400);
   --base-strong-subtle: var(--base-300);
+
+  --shimmer-base: #374151;
+  --shimmer-peak: #4b5563;
 }
 
 [data-basecolor="violet"] {
