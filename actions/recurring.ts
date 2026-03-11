@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { supabase } from '@/lib/supabase'
 import type { RecurringTemplate, AddRecurringTemplateInput } from '@/lib/types'
 import { getCategoryById, currentMonth, currentYear } from '@/lib/constants'
+import { addSaving } from '@/actions/savings'
 
 const WITH_PERSON = '*, person:persons!person_id(name, color)'
 
@@ -37,6 +38,7 @@ export async function addRecurringTemplate(input: AddRecurringTemplateInput) {
     day_of_month: input.day_of_month,
     note: input.note || null,
     active: true,
+    source: input.source ?? 'balance',
   })
 
   if (error) throw error
@@ -59,6 +61,7 @@ export async function updateRecurringTemplate(
       amount: input.amount,
       day_of_month: input.day_of_month,
       note: input.note || null,
+      source: input.source ?? 'balance',
     })
     .eq('id', id)
 
@@ -120,6 +123,15 @@ export async function generateRecurringTransactions() {
 
   const persons = personsRaw ?? []
 
+  // Also fetch existing savings keys for this month to avoid duplicates
+  const { data: existingSavingsRaw } = await supabase
+    .from('savings')
+    .select('note')
+    .gte('date', startDate)
+    .lte('date', endDate)
+
+  const existingSavings = existingSavingsRaw ?? []
+
   const toInsert: Array<{
     date: string
     person_id: string
@@ -130,29 +142,51 @@ export async function generateRecurringTransactions() {
     group_id: string | null
   }> = []
 
+  const savingsToInsert: Array<{
+    person_id: string
+    amount: number
+    date: string
+    note: string
+  }> = []
+
   for (const template of activeTemplates) {
     const maxDay = new Date(year, month, 0).getDate()
     const day = Math.min(template.day_of_month, maxDay)
     const date = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`
     const noteKey = `[recurring:${template.id}]`
 
-    const alreadyExists = existing.some((e) => e.note && e.note.includes(noteKey))
-    if (alreadyExists) continue
-
-    const note = template.note ? `${template.note} ${noteKey}` : noteKey
-
-    // Single person — use person_id from template, fallback to first person
     const person_id = template.person_id ?? (persons[0]?.id as string)
     if (!person_id) continue
-    toInsert.push({
-      date, person_id, type: template.type,
-      category_id: template.category_id,
-      amount: template.type === 'expense' ? -template.amount : template.amount,
-      note, group_id: null,
-    })
+
+    if (template.source === 'savings') {
+      // Deduplicate against savings table
+      const alreadyExists = existingSavings.some((s) => s.note && s.note.includes(noteKey))
+      if (alreadyExists) continue
+
+      const note = template.note ? `${template.note} ${noteKey}` : noteKey
+      // expense = withdraw from savings (negative), income = deposit to savings (positive)
+      const amount = template.type === 'expense' ? -Math.abs(template.amount) : Math.abs(template.amount)
+      savingsToInsert.push({ person_id, amount, date, note })
+    } else {
+      // source === 'balance' — insert as transaction
+      const alreadyExists = existing.some((e) => e.note && e.note.includes(noteKey))
+      if (alreadyExists) continue
+
+      const note = template.note ? `${template.note} ${noteKey}` : noteKey
+      toInsert.push({
+        date, person_id, type: template.type,
+        category_id: template.category_id,
+        amount: template.type === 'expense' ? -template.amount : template.amount,
+        note, group_id: null,
+      })
+    }
   }
 
   if (toInsert.length > 0) {
     await supabase.from('transactions').insert(toInsert)
+  }
+
+  for (const s of savingsToInsert) {
+    await addSaving(s)
   }
 }

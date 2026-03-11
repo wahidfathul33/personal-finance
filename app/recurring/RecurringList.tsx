@@ -74,10 +74,15 @@ export default function RecurringList({ templates: initial }: Props) {
                     </span>
                   )}
                 </div>
-                <div className="flex items-center gap-2 mt-0.5">
+                <div className="flex items-center gap-2 mt-0.5 flex-wrap">
                   <span className="text-xs text-gray-400 dark:text-gray-500">
                     Tgl {t.day_of_month}{t.category_id ? ` · ${t.category_id}` : ''}
                   </span>
+                  {t.type !== 'transfer' && (
+                    <span className="text-[10px] px-1.5 py-0.5 rounded-full font-medium bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400">
+                      {t.source === 'savings' ? '🏦 Tabungan' : '💰 Saldo'}
+                    </span>
+                  )}
                 </div>
               </div>
               <div className="flex flex-col items-end gap-1.5 flex-shrink-0">

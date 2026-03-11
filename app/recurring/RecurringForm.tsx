@@ -26,6 +26,7 @@ export default function RecurringForm({ template }: Props) {
   const [amount, setAmount] = useState(String(template?.amount ?? ''))
   const [dayOfMonth, setDayOfMonth] = useState(String(template?.day_of_month ?? '1'))
   const [note, setNote] = useState(template?.note ?? '')
+  const [source, setSource] = useState<'balance' | 'savings'>(template?.source ?? 'balance')
 
   useEffect(() => {
     if (persons.length > 0 && !personId) setPersonId(persons[0].id)
@@ -46,6 +47,7 @@ export default function RecurringForm({ template }: Props) {
       amount: parseFloat(amount),
       day_of_month: parseInt(dayOfMonth),
       note,
+      source,
     }
 
     startTransition(async () => {
@@ -104,6 +106,31 @@ export default function RecurringForm({ template }: Props) {
             ))}
           </div>
         </div>
+
+        {/* Source */}
+        {type !== 'transfer' && (
+          <div>
+            <label className="text-xs font-medium text-gray-500 mb-1 block">
+              {type === 'expense' ? 'Dari' : 'Ke'}
+            </label>
+            <div className="flex gap-2">
+              {(['balance', 'savings'] as const).map((s) => (
+                <button
+                  key={s}
+                  type="button"
+                  onClick={() => setSource(s)}
+                  className={`flex-1 py-2 rounded-xl text-sm font-medium border transition-colors ${
+                    source === s
+                      ? 'bg-indigo-600 text-white border-indigo-600'
+                      : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-gray-200 dark:border-gray-700'
+                  }`}
+                >
+                  {s === 'balance' ? '💰 Saldo' : '🏦 Tabungan'}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Amount */}
         <div>

@@ -12,6 +12,12 @@ import type {
   TransactionFilters,
 } from '@/lib/types'
 import { getCategoryById, currentMonth, currentYear } from '@/lib/constants'
+import { adjustBalance } from '@/actions/balances'
+
+function parseDateParts(dateStr: string): { month: number; year: number } {
+  const [yearStr, monthStr] = dateStr.split('-')
+  return { month: parseInt(monthStr), year: parseInt(yearStr) }
+}
 
 const WITH_PERSON = '*, person:persons!person_id(name, color)'
 
@@ -94,6 +100,10 @@ export async function addTransaction(input: AddTransactionInput) {
   })
 
   if (error) throw error
+
+  const { month, year } = parseDateParts(input.date)
+  await adjustBalance(input.person_id, month, year, amount)
+
   revalidatePath('/')
   revalidatePath('/transactions')
 }
@@ -111,12 +121,27 @@ export async function updateTransaction(
     type: string
   }
 ) {
+  // Fetch original to reverse its balance effect
+  const { data: original } = await supabase
+    .from('transactions')
+    .select('date, amount, person_id')
+    .eq('id', id)
+    .single()
+
   const { error } = await supabase
     .from('transactions')
     .update(data)
     .eq('id', id)
 
   if (error) throw error
+
+  if (original) {
+    const { month: oldMonth, year: oldYear } = parseDateParts(original.date as string)
+    await adjustBalance(original.person_id as string, oldMonth, oldYear, -(original.amount as number))
+  }
+  const { month, year } = parseDateParts(data.date)
+  await adjustBalance(data.person_id, month, year, data.amount)
+
   revalidatePath('/')
   revalidatePath('/transactions')
 }
@@ -138,6 +163,12 @@ export async function addSplitBill(input: AddSplitBillInput) {
 
   const { error } = await supabase.from('transactions').insert(rows)
   if (error) throw error
+
+  const { month, year } = parseDateParts(input.date)
+  await Promise.all(
+    input.splits.map((s) => adjustBalance(s.person_id, month, year, -Math.abs(s.amount)))
+  )
+
   revalidatePath('/')
   revalidatePath('/transactions')
 }
@@ -171,6 +202,11 @@ export async function addTransfer(input: AddTransferInput) {
 
   const { error } = await supabase.from('transactions').insert(rows)
   if (error) throw error
+
+  const { month, year } = parseDateParts(input.date)
+  await adjustBalance(input.from_person_id, month, year, -abs)
+  await adjustBalance(input.to_person_id, month, year, abs)
+
   revalidatePath('/')
   revalidatePath('/transactions')
 }
@@ -191,6 +227,10 @@ export async function duplicateTransaction(transaction: Transaction) {
   })
 
   if (error) throw error
+
+  const { month, year } = parseDateParts(today)
+  await adjustBalance(transaction.person_id, month, year, transaction.amount as number)
+
   revalidatePath('/')
   revalidatePath('/transactions')
 }
@@ -198,8 +238,21 @@ export async function duplicateTransaction(transaction: Transaction) {
 // ─── Delete ────────────────────────────────────────────────────────────────────
 
 export async function deleteTransaction(id: string) {
+  // Fetch first to reverse its balance effect
+  const { data: tx } = await supabase
+    .from('transactions')
+    .select('date, amount, person_id')
+    .eq('id', id)
+    .single()
+
   const { error } = await supabase.from('transactions').delete().eq('id', id)
   if (error) throw error
+
+  if (tx) {
+    const { month, year } = parseDateParts(tx.date as string)
+    await adjustBalance(tx.person_id as string, month, year, -(tx.amount as number))
+  }
+
   revalidatePath('/')
   revalidatePath('/transactions')
 }

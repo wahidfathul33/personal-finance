@@ -44,6 +44,7 @@ export interface RecurringTemplate {
   day_of_month: number
   note: string | null
   active: boolean
+  source: 'balance' | 'savings'
   created_at: string
   person?: { name: string; color: string }
   category?: Category
@@ -124,6 +125,7 @@ export interface AddRecurringTemplateInput {
   amount: number
   day_of_month: number
   note: string
+  source: 'balance' | 'savings'
 }
 
 export interface AddSavingInput {

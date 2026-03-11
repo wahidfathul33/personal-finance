@@ -11,8 +11,7 @@ export async function getPersonBalance(
   const m = month ?? currentMonth()
   const y = year ?? currentYear()
 
-  // Starting balance for the month
-  const { data: balanceRow } = await supabase
+  const { data } = await supabase
     .from('balances')
     .select('amount')
     .eq('person_id', person_id)
@@ -20,22 +19,43 @@ export async function getPersonBalance(
     .eq('year', y)
     .single()
 
-  const startingBalance = (balanceRow?.amount ?? 0) as number
+  return (data?.amount ?? 0) as number
+}
 
-  // Sum of all transactions for this person this month
-  const startDate = `${y}-${String(m).padStart(2, '0')}-01`
-  const endDate = new Date(y, m, 0).toISOString().split('T')[0]
+// Adjust balance for a person in a given month/year by delta.
+// If no row exists yet, it is created with amount = 0 before adjusting.
+export async function adjustBalance(
+  person_id: string,
+  month: number,
+  year: number,
+  delta: number
+): Promise<void> {
+  // Ensure row exists
+  await supabase
+    .from('balances')
+    .upsert(
+      { person_id, month, year, amount: 0 },
+      { onConflict: 'person_id,month,year', ignoreDuplicates: true }
+    )
 
-  const { data: txRows } = await supabase
-    .from('transactions')
+  const { data } = await supabase
+    .from('balances')
     .select('amount')
     .eq('person_id', person_id)
-    .gte('date', startDate)
-    .lte('date', endDate)
+    .eq('month', month)
+    .eq('year', year)
+    .single()
 
-  const txSum = (txRows ?? []).reduce((acc, t) => acc + (t.amount as number), 0)
+  const newAmount = ((data?.amount ?? 0) as number) + delta
 
-  return startingBalance + txSum
+  const { error } = await supabase
+    .from('balances')
+    .update({ amount: newAmount })
+    .eq('person_id', person_id)
+    .eq('month', month)
+    .eq('year', year)
+
+  if (error) throw error
 }
 
 export async function getAllBalances(month?: number, year?: number) {
