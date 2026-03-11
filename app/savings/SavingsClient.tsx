@@ -26,7 +26,7 @@ function EditInline({
 }) {
   const [isPending, startTransition] = useTransition()
   const [personId, setPersonId] = useState<string>(saving.person_id)
-  const [amount, setAmount] = useState(String(saving.amount))
+  const [amount, setAmount] = useState(String(Math.abs(saving.amount)))
   const [date, setDate] = useState(saving.date)
   const [note, setNote] = useState(saving.note ?? '')
 

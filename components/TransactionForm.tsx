@@ -108,6 +108,7 @@ export default function TransactionForm({ defaultMode = 'expense', editTransacti
             category_id: categoryId,
             amount: totalAmount,
             note,
+            skip_balance: mode === 'expense' && savingSource === 'tabungan',
           })
           if (mode === 'expense' && savingSource === 'tabungan') {
             await addSaving({

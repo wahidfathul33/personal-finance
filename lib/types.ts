@@ -95,6 +95,7 @@ export interface AddTransactionInput {
   category_id: string
   amount: number
   note: string
+  skip_balance?: boolean
 }
 
 export interface SplitEntry {

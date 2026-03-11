@@ -101,8 +101,10 @@ export async function addTransaction(input: AddTransactionInput) {
 
   if (error) throw error
 
-  const { month, year } = parseDateParts(input.date)
-  await adjustBalance(input.person_id, month, year, amount)
+  if (!input.skip_balance) {
+    const { month, year } = parseDateParts(input.date)
+    await adjustBalance(input.person_id, month, year, amount)
+  }
 
   revalidatePath('/')
   revalidatePath('/transactions')
