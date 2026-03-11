@@ -19,7 +19,7 @@ async function computeToken(): Promise<string> {
     .join('')
 }
 
-export async function middleware(req: NextRequest) {
+export async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl
 
   if (pathname.startsWith('/auth')) return NextResponse.next()
