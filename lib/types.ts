@@ -167,3 +167,41 @@ export interface TransactionFilters {
   limit?: number
   offset?: number
 }
+
+// ─── Piutang ──────────────────────────────────────────────────────────────────
+
+export interface PiutangPayment {
+  id: string
+  piutang_id: string
+  amount: number
+  date: string
+  note: string | null
+  created_at: string
+}
+
+export interface Piutang {
+  id: string
+  debtor_name: string
+  amount: number
+  date: string
+  note: string | null
+  person_id: string | null
+  status: 'outstanding' | 'paid'
+  created_at: string
+  payments?: PiutangPayment[]
+}
+
+export interface AddPiutangInput {
+  debtor_name: string
+  amount: number
+  date: string
+  note?: string
+  person_id?: string | null
+}
+
+export interface AddPiutangPaymentInput {
+  piutang_id: string
+  amount: number
+  date: string
+  note?: string
+}

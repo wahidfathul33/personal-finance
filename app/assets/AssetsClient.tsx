@@ -2,10 +2,11 @@
 
 import { useState, useTransition } from 'react'
 import { addAsset, updateAsset, deleteAsset, updateGoldPrice } from '@/actions/assets'
-import type { Asset } from '@/lib/types'
+import type { Asset, Piutang } from '@/lib/types'
 import { formatCurrency, todayISO } from '@/lib/constants'
 import { Plus, Trash2, Edit2, Check, X, ChevronDown, Settings } from 'lucide-react'
 import ConfirmModal from '@/components/ConfirmModal'
+import PiutangSection from './PiutangSection'
 
 interface GoldPriceInfo {
   price_per_gram: number
@@ -27,9 +28,10 @@ interface AssetsSummary {
 
 interface Props {
   summary: AssetsSummary
+  piutangList: Piutang[]
 }
 
-export default function AssetsClient({ summary }: Props) {
+export default function AssetsClient({ summary, piutangList }: Props) {
   const [assets, setAssets] = useState(summary.assets)
   const [pricePerGram, setPricePerGram] = useState(summary.pricePerGram)
   const [jewelryPricePerGram, setJewelryPricePerGram] = useState(summary.jewelryPricePerGram)
@@ -640,6 +642,9 @@ export default function AssetsClient({ summary }: Props) {
           </div>
         )}
       </div>
+
+      {/* Piutang */}
+      <PiutangSection initialData={piutangList} />
 
     </div>
     {confirmId && (
