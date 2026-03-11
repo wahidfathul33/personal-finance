@@ -90,6 +90,8 @@ export async function addTransaction(input: AddTransactionInput) {
   const amount =
     input.type === 'expense' ? -Math.abs(input.amount) : Math.abs(input.amount)
 
+  const source = input.source ?? (input.skip_balance ? 'savings' : 'balance')
+
   const { error } = await supabase.from('transactions').insert({
     date: input.date,
     person_id: input.person_id,
@@ -97,11 +99,12 @@ export async function addTransaction(input: AddTransactionInput) {
     category_id: input.category_id || null,
     amount,
     note: input.note || null,
+    source,
   })
 
   if (error) throw error
 
-  if (!input.skip_balance) {
+  if (source !== 'savings') {
     const { month, year } = parseDateParts(input.date)
     await adjustBalance(input.person_id, month, year, amount)
   }
@@ -123,10 +126,10 @@ export async function updateTransaction(
     type: string
   }
 ) {
-  // Fetch original to reverse its balance effect
+  // Fetch original to reverse its effect
   const { data: original } = await supabase
     .from('transactions')
-    .select('date, amount, person_id')
+    .select('date, amount, person_id, source')
     .eq('id', id)
     .single()
 
@@ -137,12 +140,35 @@ export async function updateTransaction(
 
   if (error) throw error
 
+  const isSavingsSource = (original?.source as string) === 'savings'
+
   if (original) {
     const { month: oldMonth, year: oldYear } = parseDateParts(original.date as string)
-    await adjustBalance(original.person_id as string, oldMonth, oldYear, -(original.amount as number))
+    if (isSavingsSource) {
+      // Reverse old savings deduction (refund)
+      await supabase.from('savings').insert({
+        person_id: original.person_id,
+        amount: Math.abs(original.amount as number),
+        date: original.date,
+        note: 'Diperbarui – kembalikan ke tabungan',
+      })
+    } else {
+      await adjustBalance(original.person_id as string, oldMonth, oldYear, -(original.amount as number))
+    }
   }
+
   const { month, year } = parseDateParts(data.date)
-  await adjustBalance(data.person_id, month, year, data.amount)
+  if (isSavingsSource) {
+    // Apply new savings deduction
+    await supabase.from('savings').insert({
+      person_id: data.person_id,
+      amount: -Math.abs(data.amount),
+      date: data.date,
+      note: 'Diperbarui – keluar dari tabungan',
+    })
+  } else {
+    await adjustBalance(data.person_id, month, year, data.amount)
+  }
 
   revalidatePath('/')
   revalidatePath('/transactions')
@@ -240,10 +266,10 @@ export async function duplicateTransaction(transaction: Transaction) {
 // ─── Delete ────────────────────────────────────────────────────────────────────
 
 export async function deleteTransaction(id: string) {
-  // Fetch first to reverse its balance effect
+  // Fetch first to reverse its effect
   const { data: tx } = await supabase
     .from('transactions')
-    .select('date, amount, person_id')
+    .select('date, amount, person_id, source')
     .eq('id', id)
     .single()
 
@@ -252,7 +278,17 @@ export async function deleteTransaction(id: string) {
 
   if (tx) {
     const { month, year } = parseDateParts(tx.date as string)
-    await adjustBalance(tx.person_id as string, month, year, -(tx.amount as number))
+    if ((tx.source as string) === 'savings') {
+      // Refund to savings — add back the absolute value
+      await supabase.from('savings').insert({
+        person_id: tx.person_id,
+        amount: Math.abs(tx.amount as number),
+        date: tx.date,
+        note: 'Dikembalikan ke tabungan',
+      })
+    } else {
+      await adjustBalance(tx.person_id as string, month, year, -(tx.amount as number))
+    }
   }
 
   revalidatePath('/')

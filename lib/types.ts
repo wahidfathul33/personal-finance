@@ -17,6 +17,8 @@ export interface Category {
   icon?: string
 }
 
+export type TransactionSource = 'balance' | 'savings'
+
 export interface Transaction {
   id: string
   date: string
@@ -26,6 +28,7 @@ export interface Transaction {
   amount: number
   note: string | null
   group_id: string | null
+  source: TransactionSource
   created_at: string
   person?: { name: string; color: string }
   category?: Category
@@ -98,6 +101,7 @@ export interface AddTransactionInput {
   category_id: string
   amount: number
   note: string
+  source?: TransactionSource
   skip_balance?: boolean
 }
 
