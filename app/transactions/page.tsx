@@ -64,7 +64,10 @@ export default function TransactionsPage() {
     if (loadingMore || !hasMore) return
     setLoadingMore(true)
     const data = await getTransactions({ ...filters, limit: PAGE_SIZE, offset })
-    setTransactions(prev => [...prev, ...data])
+    setTransactions(prev => {
+      const seen = new Set(prev.map(t => t.id))
+      return [...prev, ...data.filter(t => !seen.has(t.id))]
+    })
     setHasMore(data.length === PAGE_SIZE)
     setOffset(prev => prev + data.length)
     setLoadingMore(false)
