@@ -7,6 +7,7 @@ import ThemeToggle from '@/components/ThemeToggle'
 import Link from 'next/link'
 import { Settings } from 'lucide-react'
 import { currentMonth, currentYear, MONTHS } from '@/lib/constants'
+import HomeThemeColor from '@/components/HomeThemeColor'
 
 export const dynamic = 'force-dynamic'
 
@@ -16,6 +17,7 @@ export default function HomePage() {
 
   return (
     <div className="flex flex-col min-h-[calc(100dvh-80px)]">
+      <HomeThemeColor />
       {/* Header */}
       <div className="bg-base-gradient px-4 pt-8 pb-6">
         <div className="flex items-center justify-between mb-5">
