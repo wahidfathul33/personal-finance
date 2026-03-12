@@ -496,7 +496,7 @@ export default function AssetsClient({ summary, piutangList }: Props) {
       <div className="fixed inset-0 z-[60] flex items-end justify-center bg-black/40" onClick={() => setShowPriceModal(false)}>
         <div className="w-full max-w-lg bg-white dark:bg-gray-900 rounded-t-3xl p-5 pb-20 space-y-3" onClick={(e) => e.stopPropagation()}>
           <div className="flex items-center justify-between mb-1">
-            <h3 className="text-sm font-bold text-gray-900 dark:text-gray-100">Update Harga Emas</h3>
+            <h3 className="text-m font-bold text-gray-900 dark:text-gray-100">Update Harga Emas</h3>
             <button onClick={() => setShowPriceModal(false)} className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 text-gray-500"><X size={16} /></button>
           </div>
           <form onSubmit={handleUpdatePrice} className="space-y-3">

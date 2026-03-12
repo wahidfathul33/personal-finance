@@ -144,15 +144,15 @@ export default function TransactionForm({ defaultMode = 'expense', editTransacti
 
   return (
     <div className="fixed inset-0 bg-black/50 z-[60] flex items-end">
-      <div className="bg-white dark:bg-gray-900 rounded-t-2xl w-full max-w-lg mx-auto max-h-[92vh] flex flex-col">
+      <div className="bg-white dark:bg-gray-900 rounded-t-3xl w-full max-w-lg mx-auto max-h-[92vh] flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between px-4 pt-4 pb-2 sticky top-0 bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800 z-10 flex-shrink-0">
-          <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100">
+        <div className="flex items-center rounded-t-3xl justify-between px-4 pt-4 pb-4 sticky top-0 bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800 z-10 flex-shrink-0">
+          <h2 className="text-m font-bold text-gray-900 dark:text-gray-100">
             {isEdit ? 'Edit Transaksi' : 'Tambah Transaksi'}
           </h2>
           <button
             onClick={onClose}
-            className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-300"
+            className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 text-gray-500"
           >
             <X size={18} />
           </button>
@@ -205,6 +205,7 @@ export default function TransactionForm({ defaultMode = 'expense', editTransacti
                 placeholder="0"
                 required
                 className="w-full pl-10 pr-3 py-3 border border-gray-200 dark:border-gray-700 rounded-xl text-lg font-semibold bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                autoFocus
               />
             </div>
           </div>
