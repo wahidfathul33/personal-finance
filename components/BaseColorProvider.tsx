@@ -8,7 +8,7 @@ export const BASE_COLOR_OPTIONS: BaseColor[] = [
 ]
 const DEFAULT: BaseColor = 'indigo'
 
-const BASE_COLOR_HEX: Record<BaseColor, string> = {
+export const BASE_COLOR_HEX: Record<BaseColor, string> = {
   indigo:  '#4f46e5',
   violet:  '#7c3aed',
   rose:    '#e11d48',

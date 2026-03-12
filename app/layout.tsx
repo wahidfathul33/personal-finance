@@ -4,6 +4,7 @@ import BottomNav from "@/components/BottomNav";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { BaseColorProvider } from "@/components/BaseColorProvider";
 import { ToastProvider } from "@/components/Toast";
+import TopLoader from "@/components/TopLoader";
 
 export const metadata: Metadata = {
   title: "Keuangan Kita",
@@ -26,6 +27,7 @@ export default function RootLayout({
       <body className="antialiased bg-gray-100 dark:bg-gray-950 min-h-screen">
         <ThemeProvider>
           <BaseColorProvider>
+          <TopLoader />
           <div className="max-w-lg mx-auto min-h-screen bg-white dark:bg-gray-900 shadow-sm relative">
             <ToastProvider>
               <main className="pb-20">{children}</main>
