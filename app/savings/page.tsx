@@ -27,17 +27,17 @@ export default async function SavingsPage() {
         {persons.map((p) => {
           const colors = PERSON_COLORS[p.color] ?? PERSON_COLORS.indigo
           return (
-            <div key={p.id} className={`${colors.card.bg} rounded-2xl p-3 text-center`}>
-              <p className={`text-[10px] font-medium mb-0.5 ${colors.card.label}`}>{p.name}</p>
-              <p className={`text-sm font-bold ${colors.card.value}`}>
+            <div key={p.id} className={`${colors.card.bg} rounded-2xl p-4`}>
+              <p className={`text-xs font-medium mb-1 ${colors.card.label}`}>{p.name}</p>
+              <p className={`font-bold ${colors.card.value}`}>
                 {formatCurrency(summary.byPerson[p.name] ?? 0)}
               </p>
             </div>
           )
         })}
-        <div className="bg-base-subtle rounded-2xl p-3 text-center">
-          <p className="text-[10px] text-base-on-subtle font-medium mb-0.5">Total</p>
-          <p className="text-sm font-bold text-base-strong-subtle">
+        <div className="bg-emerald-50 dark:bg-emerald-900/20 rounded-2xl p-4">
+          <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium mb-1">Total</p>
+          <p className="font-bold text-emerald-700 dark:text-emerald-300">
             {formatCurrency(summary.total)}
           </p>
         </div>

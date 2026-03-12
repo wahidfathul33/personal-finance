@@ -10,13 +10,13 @@ export async function StatsSection() {
     <div className="grid grid-cols-2 gap-3">
       <div className="bg-white dark:bg-gray-800 rounded-2xl p-3 border border-gray-100 dark:border-gray-700">
         <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Pemasukan</p>
-        <p className="text-base font-bold text-emerald-600 dark:text-emerald-400">
+        <p className="font-bold text-emerald-600 dark:text-emerald-400">
           +{formatCurrency(stats.income)}
         </p>
       </div>
       <div className="bg-white dark:bg-gray-800 rounded-2xl p-3 border border-gray-100 dark:border-gray-700">
         <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Pengeluaran</p>
-        <p className="text-base font-bold text-rose-600 dark:text-rose-400">
+        <p className="font-bold text-rose-600 dark:text-rose-400">
           -{formatCurrency(stats.expense)}
         </p>
       </div>

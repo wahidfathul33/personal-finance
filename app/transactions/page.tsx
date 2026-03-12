@@ -155,7 +155,7 @@ export default function TransactionsPage() {
           onClick={() => setShowFilters(v => !v)}
           className={`w-10 h-10 flex-shrink-0 flex items-center justify-center rounded-xl transition-colors ${
             showFilters || hasActiveFilters
-              ? 'bg-indigo-500 text-white'
+              ? 'filter-active'
               : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300'
           }`}
         >
@@ -173,7 +173,7 @@ export default function TransactionsPage() {
                 onClick={() => setPersonFilter('all')}
                 className={`py-2 rounded-2xl text-sm font-medium transition-colors ${
                   personFilter === 'all'
-                    ? 'bg-indigo-500 text-white'
+                    ? 'filter-active'
                     : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300'
                 }`}
               >
@@ -208,7 +208,7 @@ export default function TransactionsPage() {
                   onClick={() => setTypeFilter(opt.value)}
                   className={`py-2 rounded-2xl text-sm font-medium transition-colors ${
                     typeFilter === opt.value
-                      ? 'bg-indigo-500 text-white'
+                      ? 'filter-active'
                       : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300'
                   }`}
                 >
@@ -223,24 +223,24 @@ export default function TransactionsPage() {
       {/* Stats Cards */}
       <div className="px-4 mb-3 grid grid-cols-3 gap-2">
         <div className="bg-emerald-50 dark:bg-emerald-950/40 rounded-2xl p-4">
-          <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium mb-2">Masuk</p>
+          <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium mb-1">Masuk</p>
           {loading
             ? <div className="h-5 w-20 rounded-full bg-emerald-200 dark:bg-emerald-900/50 shimmer-dark" />
-            : <p className="text-base font-bold text-emerald-700 dark:text-emerald-300">{formatCurrency(stats.income)}</p>
+            : <p className="font-bold text-emerald-700 dark:text-emerald-300">{formatCurrency(stats.income)}</p>
           }
         </div>
         <div className="bg-rose-50 dark:bg-rose-950/40 rounded-2xl p-4">
-          <p className="text-xs text-rose-600 dark:text-rose-400 font-medium mb-2">Keluar</p>
+          <p className="text-xs text-rose-600 dark:text-rose-400 font-medium mb-1">Keluar</p>
           {loading
             ? <div className="h-5 w-20 rounded-full bg-rose-200 dark:bg-rose-900/50 shimmer-dark" />
-            : <p className="text-base font-bold text-rose-700 dark:text-rose-300">{formatCurrency(Math.abs(stats.expense))}</p>
+            : <p className="font-bold text-rose-700 dark:text-rose-300">{formatCurrency(Math.abs(stats.expense))}</p>
           }
         </div>
         <div className="bg-gray-100 dark:bg-gray-800 rounded-2xl p-4">
-          <p className="text-xs text-gray-500 dark:text-gray-400 font-medium mb-2">Transaksi</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400 font-medium mb-1">Transaksi</p>
           {loading
             ? <div className="h-5 w-8 rounded-full bg-gray-300 dark:bg-gray-600 shimmer-dark" />
-            : <p className="text-base font-bold text-gray-700 dark:text-gray-200">{stats.count}</p>
+            : <p className="font-bold text-gray-700 dark:text-gray-200">{stats.count}</p>
           }
         </div>
       </div>
