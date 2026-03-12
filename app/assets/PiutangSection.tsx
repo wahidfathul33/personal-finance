@@ -144,10 +144,10 @@ export default function PiutangSection({ initialData }: Props) {
           <div className="relative">
             <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">Rp</span>
             <input
-              type="number"
+              type="text"
               inputMode="numeric"
-              value={newAmount}
-              onChange={(e) => setNewAmount(e.target.value)}
+              value={newAmount ? newAmount.replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}
+              onChange={(e) => setNewAmount(e.target.value.replace(/\D/g, ''))}
               placeholder="Nominal"
               className="w-full pl-10 pr-3 py-2 border border-gray-200 dark:border-gray-700 rounded-xl text-sm bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 placeholder-gray-400 focus:outline-none"
             />
@@ -288,10 +288,10 @@ export default function PiutangSection({ initialData }: Props) {
                             Rp
                           </span>
                           <input
-                            type="number"
+                            type="text"
                             inputMode="numeric"
-                            value={payAmount}
-                            onChange={(e) => setPayAmount(e.target.value)}
+                            value={payAmount ? payAmount.replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}
+                            onChange={(e) => setPayAmount(e.target.value.replace(/\D/g, ''))}
                             placeholder={`Maks ${formatCurrency(remaining)}`}
                             className="w-full pl-10 pr-3 py-2 border border-gray-200 dark:border-gray-700 rounded-xl text-sm bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 placeholder-gray-400 focus:outline-none"
                             autoFocus

@@ -308,7 +308,7 @@ export default function AssetsClient({ summary, piutangList }: Props) {
                     const isExpanded = expandedId === asset.id
                     return (
                       <div key={asset.id} className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 overflow-hidden">
-                        <button className="w-full flex items-center gap-3 p-3 text-left" onClick={() => { if (editingId === asset.id) return; setExpandedId(isExpanded ? null : asset.id) }}>
+                        <div className="w-full flex items-center gap-3 p-3 text-left cursor-pointer" onClick={() => { if (editingId === asset.id) return; setExpandedId(isExpanded ? null : asset.id) }}>
                           <div className="w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center flex-shrink-0"><span className="text-lg">🥇</span></div>
                           <div className="flex-1">
                             <p className="text-sm font-semibold text-gray-900 dark:text-gray-100 text-left">{asset.name}</p>
@@ -327,7 +327,7 @@ export default function AssetsClient({ summary, piutangList }: Props) {
                             )}
                           </div>
                           {editingId !== asset.id && <ChevronDown size={14} className={`text-gray-400 transition-transform flex-shrink-0 ${isExpanded ? 'rotate-180' : ''}`} />}
-                        </button>
+                        </div>
                         {isExpanded && (
                           <div className="flex border-t border-gray-100 dark:border-gray-700">
                             <button onClick={() => { setEditingId(asset.id); setEditAmount(String(asset.amount)); setExpandedId(null) }} disabled={isPending} className="flex-1 flex items-center justify-center gap-2 py-2.5 text-xs icon-btn-base transition-colors"><Edit2 size={13} />Edit</button>
@@ -358,7 +358,7 @@ export default function AssetsClient({ summary, piutangList }: Props) {
                     const isExpanded = expandedId === asset.id
                     return (
                       <div key={asset.id} className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 overflow-hidden">
-                        <button className="w-full flex items-center gap-3 p-3 text-left" onClick={() => { if (editingId === asset.id) return; setExpandedId(isExpanded ? null : asset.id) }}>
+                        <div className="w-full flex items-center gap-3 p-3 text-left cursor-pointer" onClick={() => { if (editingId === asset.id) return; setExpandedId(isExpanded ? null : asset.id) }}>
                           <div className="w-10 h-10 rounded-full bg-rose-100 dark:bg-rose-900/30 flex items-center justify-center flex-shrink-0"><span className="text-lg">💍</span></div>
                           <div className="flex-1">
                             <p className="text-sm font-semibold text-gray-900 dark:text-gray-100 text-left">{asset.name}</p>
@@ -377,7 +377,7 @@ export default function AssetsClient({ summary, piutangList }: Props) {
                             )}
                           </div>
                           {editingId !== asset.id && <ChevronDown size={14} className={`text-gray-400 transition-transform flex-shrink-0 ${isExpanded ? 'rotate-180' : ''}`} />}
-                        </button>
+                        </div>
                         {isExpanded && (
                           <div className="flex border-t border-gray-100 dark:border-gray-700">
                             <button onClick={() => { setEditingId(asset.id); setEditAmount(String(asset.amount)); setExpandedId(null) }} disabled={isPending} className="flex-1 flex items-center justify-center gap-2 py-2.5 text-xs icon-btn-base transition-colors"><Edit2 size={13} />Edit</button>
@@ -428,7 +428,7 @@ export default function AssetsClient({ summary, piutangList }: Props) {
                 <input type="text" value={newDepositName} onChange={(e) => setNewDepositName(e.target.value)} placeholder="Nama (cth: BCA 3 Bulan, Mandiri...)" className="w-full border border-gray-200 dark:border-gray-700 rounded-xl py-2 px-3 text-sm bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 placeholder-gray-400 focus:outline-none" />
                 <div className="relative">
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">Rp</span>
-                  <input type="number" inputMode="numeric" value={newDepositAmount} onChange={(e) => setNewDepositAmount(e.target.value)} placeholder="Nominal" className="w-full pl-10 pr-3 py-2 border border-gray-200 dark:border-gray-700 rounded-xl text-sm bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 placeholder-gray-400 focus:outline-none" />
+                  <input type="text" inputMode="numeric" value={newDepositAmount ? newDepositAmount.replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''} onChange={(e) => setNewDepositAmount(e.target.value.replace(/\D/g, ''))} placeholder="Nominal" className="w-full pl-10 pr-3 py-2 border border-gray-200 dark:border-gray-700 rounded-xl text-sm bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 placeholder-gray-400 focus:outline-none" />
                 </div>
                 <input type="text" value={newDepositNote} onChange={(e) => setNewDepositNote(e.target.value)} placeholder="Catatan (cth: bunga 5%, JT Jun 2026)" className="w-full border border-gray-200 dark:border-gray-700 rounded-xl py-2 px-3 text-sm bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 placeholder-gray-400 focus:outline-none" />
                 <div className="flex gap-2">
@@ -453,7 +453,7 @@ export default function AssetsClient({ summary, piutangList }: Props) {
                           {editingId === asset.id ? (
                             <div className="flex items-center gap-1 mt-1" onClick={e => e.stopPropagation()}>
                               <span className="text-xs text-gray-400">Rp</span>
-                              <input type="number" inputMode="numeric" value={editAmount} onChange={(e) => setEditAmount(e.target.value)} className="border border-gray-200 dark:border-gray-700 rounded-lg py-1 px-2 text-sm w-32 bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 focus:outline-none" autoFocus />
+                              <input type="text" inputMode="numeric" value={editAmount ? editAmount.replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''} onChange={(e) => setEditAmount(e.target.value.replace(/\D/g, ''))} className="border border-gray-200 dark:border-gray-700 rounded-lg py-1 px-2 text-sm w-32 bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 focus:outline-none" autoFocus />
                               <button onClick={() => handleUpdateAmount(asset.id)} className="w-8 h-8 flex items-center justify-center rounded-full bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600"><Check size={16} /></button>
                               <button onClick={() => setEditingId(null)} className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700 text-gray-500"><X size={16} /></button>
                             </div>
@@ -504,14 +504,14 @@ export default function AssetsClient({ summary, piutangList }: Props) {
               <label className="text-xs text-gray-500 dark:text-gray-400 mb-1 block">Harga Logam Mulia / gram</label>
               <div className="relative">
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">Rp</span>
-                <input type="number" inputMode="numeric" value={newPrice} onChange={(e) => setNewPrice(e.target.value)} placeholder="0" className="w-full pl-10 pr-3 h-[40px] border border-gray-200 dark:border-gray-700 rounded-xl text-sm font-semibold bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 focus:outline-none" autoFocus />
+                <input type="text" inputMode="numeric" value={newPrice ? newPrice.replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''} onChange={(e) => setNewPrice(e.target.value.replace(/\D/g, ''))} placeholder="0" className="w-full pl-10 pr-3 h-[40px] border border-gray-200 dark:border-gray-700 rounded-xl text-sm font-semibold bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 focus:outline-none" autoFocus />
               </div>
             </div>
             <div>
               <label className="text-xs text-gray-500 dark:text-gray-400 mb-1 block">Harga Perhiasan / gram</label>
               <div className="relative">
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">Rp</span>
-                <input type="number" inputMode="numeric" value={newJewelryPrice} onChange={(e) => setNewJewelryPrice(e.target.value)} placeholder="0" className="w-full pl-10 pr-3 h-[40px] border border-gray-200 dark:border-gray-700 rounded-xl text-sm font-semibold bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 focus:outline-none" />
+                <input type="text" inputMode="numeric" value={newJewelryPrice ? newJewelryPrice.replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''} onChange={(e) => setNewJewelryPrice(e.target.value.replace(/\D/g, ''))} placeholder="0" className="w-full pl-10 pr-3 h-[40px] border border-gray-200 dark:border-gray-700 rounded-xl text-sm font-semibold bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 focus:outline-none" />
               </div>
             </div>
             <div>

@@ -112,7 +112,7 @@ export default function RecurringList({ templates: initial }: Props) {
     <div className="px-4 pb-4 space-y-2">
       {/* Tipe */}
       <div className="flex gap-1.5 flex-wrap">
-        {(['all', 'expense', 'income', 'transfer'] as FilterType[]).map((v) => (
+        {(['all', 'expense', 'income'] as FilterType[]).map((v) => (
           <button
             key={v}
             type="button"
@@ -123,7 +123,7 @@ export default function RecurringList({ templates: initial }: Props) {
                 : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-700'
             }`}
           >
-            {v === 'all' ? 'Semua Tipe' : v === 'expense' ? '− Pengeluaran' : v === 'income' ? '+ Pemasukan' : '⇄ Transfer'}
+            {v === 'all' ? 'Semua Tipe' : v === 'expense' ? '− Pengeluaran' : '+ Pemasukan'}
           </button>
         ))}
       </div>

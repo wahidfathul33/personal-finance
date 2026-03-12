@@ -196,11 +196,11 @@ export default function TransactionForm({ defaultMode = 'expense', editTransacti
             <div className="relative">
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm font-medium">Rp</span>
               <input
-                type="number"
+                type="text"
                 inputMode="numeric"
-                value={amount}
+                value={amount ? amount.replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}
                 onChange={(e) =>
-                  mode === 'split' ? handleSplitEqualChange(e.target.value) : setAmount(e.target.value)
+                  mode === 'split' ? handleSplitEqualChange(e.target.value.replace(/\D/g, '')) : setAmount(e.target.value.replace(/\D/g, ''))
                 }
                 placeholder="0"
                 required
@@ -328,12 +328,12 @@ export default function TransactionForm({ defaultMode = 'expense', editTransacti
                       PERSON_COLORS[p.color]?.badge ?? PERSON_COLORS.indigo.badge
                     }`}>{p.name}</span>
                     <input
-                      type="number"
+                      type="text"
                       inputMode="numeric"
-                      value={splitAmounts[p.id] ?? ''}
+                      value={splitAmounts[p.id] ? (splitAmounts[p.id] ?? '').replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}
                       onChange={(e) => {
                         setSplitType('custom')
-                        setSplitAmounts((prev) => ({ ...prev, [p.id]: e.target.value }))
+                        setSplitAmounts((prev) => ({ ...prev, [p.id]: e.target.value.replace(/\D/g, '') }))
                       }}
                       readOnly={splitType === 'equal'}
                       placeholder="0"

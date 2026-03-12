@@ -138,10 +138,10 @@ export default function RecurringForm({ template }: Props) {
           <div className="relative">
             <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm font-medium">Rp</span>
             <input
-              type="number"
+              type="text"
               inputMode="numeric"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
+              value={amount ? amount.replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}
+              onChange={(e) => setAmount(e.target.value.replace(/\D/g, ''))}
               placeholder="0"
               required
               className="w-full pl-10 pr-3 py-3 border border-gray-200 dark:border-gray-700 rounded-xl text-lg font-semibold bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
