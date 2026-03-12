@@ -42,6 +42,7 @@ export function BaseColorProvider({ children }: { children: React.ReactNode }) {
     setColorState(c)
     localStorage.setItem('baseColor', c)
     apply(c)
+    window.dispatchEvent(new CustomEvent('basecolorchange', { detail: c }))
   }
 
   return (
