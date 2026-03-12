@@ -5,6 +5,7 @@ import { ThemeProvider } from "@/components/ThemeProvider";
 import { BaseColorProvider } from "@/components/BaseColorProvider";
 import { ToastProvider } from "@/components/Toast";
 import TopLoader from "@/components/TopLoader";
+import RegisterSW from "@/components/RegisterSW";
 
 export const viewport: Viewport = {
   viewportFit: 'cover',
@@ -51,6 +52,7 @@ export default function RootLayout({
         <ThemeProvider>
           <BaseColorProvider>
           <TopLoader />
+          <RegisterSW />
           <div className="max-w-lg mx-auto min-h-screen bg-white dark:bg-gray-900 shadow-sm relative">
             <ToastProvider>
               <main className="pb-20">{children}</main>
