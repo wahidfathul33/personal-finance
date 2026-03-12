@@ -39,11 +39,11 @@ export default function RootLayout({
             if(window.location.pathname==='/'){
               var base=localStorage.getItem('baseColor')||'indigo';
               meta.content=colorMap[base]||colorMap.indigo;
-            } else {
-              var stored=localStorage.getItem('theme');
-              var dark=stored==='dark'||(stored==null&&window.matchMedia('(prefers-color-scheme: dark)').matches);
-              meta.content=dark?bgMap.dark:bgMap.light;
+              return;
             }
+            var stored=localStorage.getItem('theme');
+            var dark=stored==='dark'||(stored==null&&window.matchMedia('(prefers-color-scheme: dark)').matches);
+            meta.content=dark?bgMap.dark:bgMap.light;
           })();
         `}} />
       </head>

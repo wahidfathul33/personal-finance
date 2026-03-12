@@ -13,17 +13,6 @@ const THEME_BG: Record<Theme, string> = {
   dark:  '#111827',
 }
 
-const BASE_COLOR_HEX: Record<string, string> = {
-  indigo: '#4f46e5',
-  violet: '#7c3aed',
-  rose: '#e11d48',
-  emerald: '#059669',
-  blue: '#2563eb',
-  amber: '#d97706',
-  pink: '#db2777',
-  teal: '#0d9488',
-}
-
 function syncThemeColor(theme: Theme) {
   let meta = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]')
   if (!meta) {
@@ -31,11 +20,9 @@ function syncThemeColor(theme: Theme) {
     meta.name = 'theme-color'
     document.head.appendChild(meta)
   }
-  if (window.location.pathname === '/') {
-    const base = localStorage.getItem('baseColor') ?? 'indigo'
-    meta.content = BASE_COLOR_HEX[base] ?? BASE_COLOR_HEX.indigo
-    return
-  }
+
+  // Home uses its own accent-based theme color via HomeThemeColor.
+  if (window.location.pathname === '/') return
 
   meta.content = THEME_BG[theme]
 }
