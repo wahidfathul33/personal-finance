@@ -36,15 +36,6 @@ export function BaseColorProvider({ children }: { children: React.ReactNode }) {
 
   function apply(c: BaseColor) {
     document.documentElement.setAttribute('data-basecolor', c)
-    const meta = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]')
-    if (meta) {
-      meta.content = BASE_COLOR_HEX[c]
-    } else {
-      const m = document.createElement('meta')
-      m.name = 'theme-color'
-      m.content = BASE_COLOR_HEX[c]
-      document.head.appendChild(m)
-    }
   }
 
   function setColor(c: BaseColor) {

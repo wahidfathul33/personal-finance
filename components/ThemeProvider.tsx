@@ -8,6 +8,21 @@ const ThemeContext = createContext<{ theme: Theme; toggle: () => void }>({
   toggle: () => {},
 })
 
+const THEME_BG: Record<Theme, string> = {
+  light: '#ffffff',
+  dark:  '#111827',
+}
+
+function syncThemeColor(theme: Theme) {
+  let meta = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]')
+  if (!meta) {
+    meta = document.createElement('meta')
+    meta.name = 'theme-color'
+    document.head.appendChild(meta)
+  }
+  meta.content = THEME_BG[theme]
+}
+
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setTheme] = useState<Theme>('light')
 
@@ -17,6 +32,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     const preferred = stored ?? (systemDark ? 'dark' : 'light')
     setTheme(preferred)
     document.documentElement.classList.toggle('dark', preferred === 'dark')
+    syncThemeColor(preferred)
   }, [])
 
   function toggle() {
@@ -24,6 +40,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       const next: Theme = prev === 'light' ? 'dark' : 'light'
       localStorage.setItem('theme', next)
       document.documentElement.classList.toggle('dark', next === 'dark')
+      syncThemeColor(next)
       return next
     })
   }
