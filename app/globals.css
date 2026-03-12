@@ -187,6 +187,13 @@
   color: white;
   border-color: var(--base-600);
 }
+#nprogress .bar {
+  background: var(--base-600) !important;
+}
+#nprogress .peg {
+  box-shadow: 0 0 10px var(--base-600), 0 0 5px var(--base-600) !important;
+}
+
 .bg-base-subtle     { background-color: var(--base-subtle-bg); }
 .border-base-subtle { border-color: var(--base-subtle-border); }
 .text-base-on-subtle     { color: var(--base-on-subtle); }
