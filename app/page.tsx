@@ -19,7 +19,7 @@ export default function HomePage() {
     <div className="flex flex-col min-h-[calc(100dvh-80px)]">
       <HomeThemeColor />
       {/* Header */}
-      <div className="bg-base-gradient px-4 pt-8 pb-6">
+      <div className="bg-base-gradient px-4 pb-6" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 2rem)' }}>
         <div className="flex items-center justify-between mb-5">
           <div>
             <p className="text-base-200 text-xs font-medium">{MONTHS[month - 1]} {year}</p>
