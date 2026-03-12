@@ -32,6 +32,12 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setTheme] = useState<Theme>('light')
   const pathname = usePathname()
 
+  function themeFromSetting(): Theme {
+    const stored = localStorage.getItem('theme') as Theme | null
+    if (stored === 'light' || stored === 'dark') return stored
+    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+  }
+
   useEffect(() => {
     const media = window.matchMedia('(prefers-color-scheme: dark)')
 
@@ -74,12 +80,6 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   }, [pathname, theme])
 
   useEffect(() => {
-    function themeFromSetting(): Theme {
-      const stored = localStorage.getItem('theme') as Theme | null
-      if (stored === 'light' || stored === 'dark') return stored
-      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
-    }
-
     function onDocumentClick(e: MouseEvent) {
       const target = e.target as HTMLElement | null
       const anchor = target?.closest('a[href]') as HTMLAnchorElement | null
@@ -98,9 +98,29 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       }
     }
 
+    function onVisibilityChange() {
+      if (document.visibilityState === 'visible') {
+        syncThemeColor(themeFromSetting())
+      }
+    }
+
+    function onPopState() {
+      syncThemeColor(themeFromSetting())
+    }
+
+    function onPageShow() {
+      syncThemeColor(themeFromSetting())
+    }
+
     document.addEventListener('click', onDocumentClick, true)
+    window.addEventListener('popstate', onPopState)
+    window.addEventListener('pageshow', onPageShow)
+    document.addEventListener('visibilitychange', onVisibilityChange)
     return () => {
       document.removeEventListener('click', onDocumentClick, true)
+      window.removeEventListener('popstate', onPopState)
+      window.removeEventListener('pageshow', onPageShow)
+      document.removeEventListener('visibilitychange', onVisibilityChange)
     }
   }, [])
 
