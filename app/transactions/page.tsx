@@ -39,6 +39,15 @@ export default function TransactionsPage() {
   const [statsData, setStatsData] = useState<{ income: number; expense: number; count: number } | null>(null)
   const sentinelRef = useRef<HTMLDivElement>(null)
 
+  // Buka form otomatis jika dibuka via app shortcut (?action=new)
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    if (params.get('action') === 'new') {
+      setShowForm(true)
+      window.history.replaceState({}, '', '/transactions')
+    }
+  }, [])
+
   const filters = useMemo(() => ({
     month,
     year,

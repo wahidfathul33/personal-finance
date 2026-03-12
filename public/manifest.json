@@ -9,6 +9,36 @@
   "orientation": "portrait",
   "scope": "/",
   "categories": ["finance", "productivity", "business"],
+  "shortcuts": [
+    {
+      "name": "Catat Transaksi",
+      "short_name": "Transaksi",
+      "description": "Tambah transaksi baru",
+      "url": "/transactions?action=new",
+      "icons": [{ "src": "/android-chrome-192x192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Lihat Tabungan",
+      "short_name": "Tabungan",
+      "description": "Rekap tabungan bersama",
+      "url": "/savings",
+      "icons": [{ "src": "/android-chrome-192x192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Lihat Aset",
+      "short_name": "Aset",
+      "description": "Emas & kekayaan",
+      "url": "/assets",
+      "icons": [{ "src": "/android-chrome-192x192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Analisis",
+      "short_name": "Analisis",
+      "description": "Analisis keuangan bulanan",
+      "url": "/analisis",
+      "icons": [{ "src": "/android-chrome-192x192.png", "sizes": "192x192" }]
+    }
+  ],
   "icons": [
     {
       "src": "/android-chrome-192x192.png",
