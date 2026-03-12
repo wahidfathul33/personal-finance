@@ -20,7 +20,7 @@ export async function BalancesSection() {
       </div>
       <div className="bg-white/10 rounded-2xl p-3">
         <p className="text-base-200 text-xs mb-1">Total Bersama</p>
-        <p className={`text-xl font-bold ${balances.total >= 0 ? 'text-white' : 'text-rose-300'}`}>
+        <p className={`text-lg font-bold ${balances.total >= 0 ? 'text-white' : 'text-rose-300'}`}>
           {formatCurrency(balances.total)}
         </p>
       </div>

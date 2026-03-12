@@ -36,6 +36,7 @@ export default function TransactionsPage() {
   const [offset, setOffset] = useState(0)
   const [showFilters, setShowFilters] = useState(false)
   const [showForm, setShowForm] = useState(false)
+  const [statsData, setStatsData] = useState<{ income: number; expense: number; count: number } | null>(null)
   const sentinelRef = useRef<HTMLDivElement>(null)
 
   const filters = useMemo(() => ({
@@ -49,6 +50,14 @@ export default function TransactionsPage() {
     const data = await getPersons()
     setPersons(data)
   }, [])
+
+  const loadStats = useCallback(async () => {
+    setStatsData(null)
+    const data = await getTransactions({ ...filters })
+    const income = data.filter(tx => tx.type === 'income').reduce((s, tx) => s + tx.amount, 0)
+    const expense = data.filter(tx => tx.type === 'expense').reduce((s, tx) => s + tx.amount, 0)
+    setStatsData({ income, expense, count: data.length })
+  }, [filters])
 
   const loadTransactions = useCallback(async () => {
     setLoading(true)
@@ -75,6 +84,7 @@ export default function TransactionsPage() {
 
   useEffect(() => { loadPersons() }, [loadPersons])
   useEffect(() => { loadTransactions() }, [loadTransactions])
+  useEffect(() => { loadStats() }, [loadStats])
 
   // Infinite scroll via IntersectionObserver
   useEffect(() => {
@@ -87,16 +97,6 @@ export default function TransactionsPage() {
     observer.observe(el)
     return () => observer.disconnect()
   }, [loadMore])
-
-  const stats = useMemo(() => {
-    const income = transactions
-      .filter(tx => tx.type === 'income')
-      .reduce((s, tx) => s + tx.amount, 0)
-    const expense = transactions
-      .filter(tx => tx.type === 'expense')
-      .reduce((s, tx) => s + tx.amount, 0)
-    return { income, expense, count: transactions.length }
-  }, [transactions])
 
   const hasActiveFilters = personFilter !== 'all' || typeFilter !== 'all'
 
@@ -221,26 +221,26 @@ export default function TransactionsPage() {
       )}
 
       {/* Stats Cards */}
-      <div className="px-4 mb-3 grid grid-cols-3 gap-2">
+      <div className="px-4 mb-3 grid grid-cols-[1fr_1fr_0.7fr] gap-2">
         <div className="bg-emerald-50 dark:bg-emerald-950/40 rounded-2xl p-4">
           <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium mb-1">Masuk</p>
-          {loading
+          {statsData === null
             ? <div className="h-5 w-20 rounded-full bg-emerald-200 dark:bg-emerald-900/50 shimmer-dark" />
-            : <p className="font-bold text-emerald-700 dark:text-emerald-300">{formatCurrency(stats.income)}</p>
+            : <p className="font-bold text-emerald-700 dark:text-emerald-300">{formatCurrency(statsData.income)}</p>
           }
         </div>
         <div className="bg-rose-50 dark:bg-rose-950/40 rounded-2xl p-4">
           <p className="text-xs text-rose-600 dark:text-rose-400 font-medium mb-1">Keluar</p>
-          {loading
+          {statsData === null
             ? <div className="h-5 w-20 rounded-full bg-rose-200 dark:bg-rose-900/50 shimmer-dark" />
-            : <p className="font-bold text-rose-700 dark:text-rose-300">{formatCurrency(Math.abs(stats.expense))}</p>
+            : <p className="font-bold text-rose-700 dark:text-rose-300">{formatCurrency(Math.abs(statsData.expense))}</p>
           }
         </div>
         <div className="bg-gray-100 dark:bg-gray-800 rounded-2xl p-4">
           <p className="text-xs text-gray-500 dark:text-gray-400 font-medium mb-1">Transaksi</p>
-          {loading
+          {statsData === null
             ? <div className="h-5 w-8 rounded-full bg-gray-300 dark:bg-gray-600 shimmer-dark" />
-            : <p className="font-bold text-gray-700 dark:text-gray-200">{stats.count}</p>
+            : <p className="font-bold text-gray-700 dark:text-gray-200">{statsData.count}</p>
           }
         </div>
       </div>
@@ -258,7 +258,7 @@ export default function TransactionsPage() {
       ) : (
         <div className="px-4 space-y-2 pb-4">
           {transactions.map((tx) => (
-            <TransactionItem key={tx.id} transaction={tx} onSuccess={loadTransactions} />
+            <TransactionItem key={tx.id} transaction={tx} onSuccess={() => { loadTransactions(); loadStats() }} />
           ))}
           {hasMore && (
             <div ref={sentinelRef} className="py-4 text-center text-sm text-gray-400">
@@ -275,6 +275,7 @@ export default function TransactionsPage() {
           onSuccess={() => {
             setShowForm(false)
             loadTransactions()
+            loadStats()
           }}
         />
       )}
