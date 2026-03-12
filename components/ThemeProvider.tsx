@@ -1,6 +1,7 @@
 'use client'
 
 import { createContext, useContext, useEffect, useState } from 'react'
+import { usePathname } from 'next/navigation'
 
 type Theme = 'light' | 'dark'
 const ThemeContext = createContext<{ theme: Theme; toggle: () => void }>({
@@ -29,6 +30,7 @@ function syncThemeColor(theme: Theme) {
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setTheme] = useState<Theme>('light')
+  const pathname = usePathname()
 
   useEffect(() => {
     const media = window.matchMedia('(prefers-color-scheme: dark)')
@@ -63,6 +65,42 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     return () => {
       media.removeEventListener('change', onMediaChange)
       window.removeEventListener('storage', onStorage)
+    }
+  }, [])
+
+  useEffect(() => {
+    // Keep theme-color correct on route changes (especially leaving home).
+    syncThemeColor(theme)
+  }, [pathname, theme])
+
+  useEffect(() => {
+    function themeFromSetting(): Theme {
+      const stored = localStorage.getItem('theme') as Theme | null
+      if (stored === 'light' || stored === 'dark') return stored
+      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+    }
+
+    function onDocumentClick(e: MouseEvent) {
+      const target = e.target as HTMLElement | null
+      const anchor = target?.closest('a[href]') as HTMLAnchorElement | null
+      if (!anchor) return
+
+      const href = anchor.getAttribute('href')
+      if (!href || href.startsWith('#') || href.startsWith('javascript:')) return
+
+      const url = new URL(anchor.href, window.location.origin)
+      if (url.origin !== window.location.origin) return
+
+      // Before navigating away from home, force neutral theme-color
+      // so the top loading line doesn't keep the home accent color.
+      if (url.pathname !== '/') {
+        syncThemeColor(themeFromSetting())
+      }
+    }
+
+    document.addEventListener('click', onDocumentClick, true)
+    return () => {
+      document.removeEventListener('click', onDocumentClick, true)
     }
   }, [])
 
