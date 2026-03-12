@@ -48,7 +48,7 @@ export default function RootLayout({
           })();
         `}} />
       </head>
-      <body className="antialiased bg-gray-100 dark:bg-gray-950 min-h-screen">
+      <body className="antialiased bg-white dark:bg-gray-900 min-h-screen">
         <ThemeProvider>
           <BaseColorProvider>
           <TopLoader />
