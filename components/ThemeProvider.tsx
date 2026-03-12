@@ -32,7 +32,10 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     const preferred = stored ?? (systemDark ? 'dark' : 'light')
     setTheme(preferred)
     document.documentElement.classList.toggle('dark', preferred === 'dark')
-    syncThemeColor(preferred)
+    // Jangan timpa theme-color di halaman home — HomeThemeColor yang mengatur
+    if (window.location.pathname !== '/') {
+      syncThemeColor(preferred)
+    }
   }, [])
 
   function toggle() {
