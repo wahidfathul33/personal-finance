@@ -257,6 +257,7 @@ export default function AnalisisPage() {
                       <Tooltip
                         formatter={(value: unknown) => formatCurrency(Number(value))}
                         contentStyle={{ fontSize: 12 }}
+                        itemSorter={(item) => persons.findIndex(p => p.name === item.dataKey)}
                       />
                       {persons.map((p) => (
                         <Bar
