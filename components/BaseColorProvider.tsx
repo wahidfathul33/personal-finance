@@ -8,17 +8,6 @@ export const BASE_COLOR_OPTIONS: BaseColor[] = [
 ]
 const DEFAULT: BaseColor = 'indigo'
 
-export const BASE_COLOR_HEX: Record<BaseColor, string> = {
-  indigo:  '#4f46e5',
-  violet:  '#7c3aed',
-  rose:    '#e11d48',
-  emerald: '#059669',
-  blue:    '#2563eb',
-  amber:   '#d97706',
-  pink:    '#db2777',
-  teal:    '#0d9488',
-}
-
 const BaseColorContext = createContext<{
   color: BaseColor
   setColor: (c: BaseColor) => void
@@ -42,7 +31,6 @@ export function BaseColorProvider({ children }: { children: React.ReactNode }) {
     setColorState(c)
     localStorage.setItem('baseColor', c)
     apply(c)
-    window.dispatchEvent(new CustomEvent('basecolorchange', { detail: c }))
   }
 
   return (

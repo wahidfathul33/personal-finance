@@ -32,15 +32,9 @@ export default function RootLayout({
         <meta name="theme-color" content="#ffffff" />
         <script dangerouslySetInnerHTML={{ __html: `
           (function(){
-            var colorMap={indigo:'#4f46e5',violet:'#7c3aed',rose:'#e11d48',emerald:'#059669',blue:'#2563eb',amber:'#d97706',pink:'#db2777',teal:'#0d9488'};
             var bgMap={light:'#ffffff',dark:'#111827'};
             var meta=document.querySelector('meta[name="theme-color"]');
             if(!meta) return;
-            if(window.location.pathname==='/'){
-              var base=localStorage.getItem('baseColor')||'indigo';
-              meta.content=colorMap[base]||colorMap.indigo;
-              return;
-            }
             var stored=localStorage.getItem('theme');
             var dark=stored==='dark'||(stored==null&&window.matchMedia('(prefers-color-scheme: dark)').matches);
             meta.content=dark?bgMap.dark:bgMap.light;
