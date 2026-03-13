@@ -80,9 +80,9 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   }, [pathname, theme])
 
   useEffect(() => {
-    function onDocumentClick(e: MouseEvent) {
-      const target = e.target as HTMLElement | null
-      const anchor = target?.closest('a[href]') as HTMLAnchorElement | null
+    function maybeNeutralizeForNavTarget(target: EventTarget | null) {
+      const el = target as HTMLElement | null
+      const anchor = el?.closest('a[href]') as HTMLAnchorElement | null
       if (!anchor) return
 
       const href = anchor.getAttribute('href')
@@ -91,11 +91,22 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       const url = new URL(anchor.href, window.location.origin)
       if (url.origin !== window.location.origin) return
 
-      // Before navigating away from home, force neutral theme-color
-      // so the top loading line doesn't keep the home accent color.
-      if (url.pathname !== '/') {
+      // Make this change only when leaving home.
+      if (window.location.pathname === '/' && url.pathname !== '/') {
         syncThemeColor(themeFromSetting())
       }
+    }
+
+    function onDocumentClick(e: MouseEvent) {
+      maybeNeutralizeForNavTarget(e.target)
+    }
+
+    function onPointerDown(e: PointerEvent) {
+      maybeNeutralizeForNavTarget(e.target)
+    }
+
+    function onTouchStart(e: TouchEvent) {
+      maybeNeutralizeForNavTarget(e.target)
     }
 
     function onVisibilityChange() {
@@ -112,11 +123,16 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       syncThemeColor(themeFromSetting())
     }
 
+    // pointer/touch happen earlier than click on mobile, reducing accent-color carry-over.
+    document.addEventListener('pointerdown', onPointerDown, true)
+    document.addEventListener('touchstart', onTouchStart, true)
     document.addEventListener('click', onDocumentClick, true)
     window.addEventListener('popstate', onPopState)
     window.addEventListener('pageshow', onPageShow)
     document.addEventListener('visibilitychange', onVisibilityChange)
     return () => {
+      document.removeEventListener('pointerdown', onPointerDown, true)
+      document.removeEventListener('touchstart', onTouchStart, true)
       document.removeEventListener('click', onDocumentClick, true)
       window.removeEventListener('popstate', onPopState)
       window.removeEventListener('pageshow', onPageShow)
