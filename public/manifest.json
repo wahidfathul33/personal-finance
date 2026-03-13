@@ -15,51 +15,51 @@
       "short_name": "Transaksi",
       "description": "Tambah transaksi baru",
       "url": "/transactions?action=new",
-      "icons": [{ "src": "/android-chrome-192x192.png", "sizes": "192x192" }]
+      "icons": [{ "src": "/icons/android-chrome-192x192.png", "sizes": "192x192" }]
     },
     {
       "name": "Lihat Tabungan",
       "short_name": "Tabungan",
       "description": "Rekap tabungan bersama",
       "url": "/savings",
-      "icons": [{ "src": "/android-chrome-192x192.png", "sizes": "192x192" }]
+      "icons": [{ "src": "/icons/android-chrome-192x192.png", "sizes": "192x192" }]
     },
     {
       "name": "Lihat Aset",
       "short_name": "Aset",
       "description": "Emas & kekayaan",
       "url": "/assets",
-      "icons": [{ "src": "/android-chrome-192x192.png", "sizes": "192x192" }]
+      "icons": [{ "src": "/icons/android-chrome-192x192.png", "sizes": "192x192" }]
     },
     {
       "name": "Analisis",
       "short_name": "Analisis",
       "description": "Analisis keuangan bulanan",
       "url": "/analisis",
-      "icons": [{ "src": "/android-chrome-192x192.png", "sizes": "192x192" }]
+      "icons": [{ "src": "/icons/android-chrome-192x192.png", "sizes": "192x192" }]
     }
   ],
   "icons": [
     {
-      "src": "/android-chrome-192x192.png",
+      "src": "/icons/android-chrome-192x192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/android-chrome-512x512.png",
+      "src": "/icons/android-chrome-512x512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/android-chrome-192x192.png",
+      "src": "/icons/android-chrome-192x192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "maskable"
     },
     {
-      "src": "/android-chrome-512x512.png",
+      "src": "/icons/android-chrome-512x512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
