@@ -1,6 +1,6 @@
 import { getTransactions } from '@/actions/transactions'
 import { generateRecurringTransactions } from '@/actions/recurring'
-import TransactionItem, { TransactionItemSkeleton } from '@/components/TransactionItem'
+import TransactionItem, { TransactionItemSkeleton } from '@/components/transaction/TransactionItem'
 import { currentMonth, currentYear } from '@/lib/constants'
 
 export async function RecentSection() {

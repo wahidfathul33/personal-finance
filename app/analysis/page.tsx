@@ -10,8 +10,8 @@ import {
   type PersonComparisonItem,
 } from '@/actions/analysis'
 import { getPersons } from '@/actions/persons'
-import PageHeader from '@/components/PageHeader'
-import { formatCurrency, currentMonth, currentYear, MONTHS } from '@/lib/constants'
+import PageHeader from '@/components/layout/PageHeader'
+import { formatCurrency, currentMonth, currentYear, MONTHS, COLOR_HEX, YEAR_OPTIONS } from '@/lib/constants'
 import type { Person } from '@/lib/types'
 import { ChevronsUpDown } from 'lucide-react'
 import {
@@ -27,20 +27,6 @@ import {
   PieChart,
   Pie,
 } from 'recharts'
-
-const COLOR_HEX: Record<string, string> = {
-  indigo: '#6366f1',
-  pink: '#ec4899',
-  emerald: '#10b981',
-  blue: '#3b82f6',
-  violet: '#8b5cf6',
-  amber: '#f59e0b',
-  rose: '#f43f5e',
-  teal: '#14b8a6',
-}
-
-const now = new Date()
-const YEAR_OPTIONS = Array.from({ length: 5 }, (_, i) => now.getFullYear() - i)
 
 function FilterRow({
   month, year, onMonth, onYear,

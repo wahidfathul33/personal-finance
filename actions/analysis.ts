@@ -1,7 +1,7 @@
 'use server'
 
 import { supabase } from '@/lib/supabase'
-import { CATEGORIES, MONTHS_SHORT } from '@/lib/constants'
+import { CATEGORIES, MONTHS_SHORT, } from '@/lib/constants'
 
 export type MonthlyTrendPoint = {
   label: string

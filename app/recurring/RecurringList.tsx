@@ -6,7 +6,7 @@ import type { RecurringTemplate } from '@/lib/types'
 import { formatCurrency, PERSON_COLORS } from '@/lib/constants'
 import { Trash2, ToggleLeft, ToggleRight, Edit, ChevronDown, SlidersHorizontal } from 'lucide-react'
 import Link from 'next/link'
-import ConfirmModal from '@/components/ConfirmModal'
+import ConfirmModal from '@/components/ui/ConfirmModal'
 import { usePersons } from '@/lib/usePersons'
 
 const TYPE_COLORS: Record<string, string> = {

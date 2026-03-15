@@ -11,7 +11,7 @@ export async function BalancesSection() {
       <div className="grid grid-cols-2 gap-3 mb-3">
         {balances.people.map((p) => (
           <div key={p.id} className="bg-white/10 rounded-2xl p-3">
-            <p className="text-base-200 text-xs mb-1">{p.name}</p>
+            <p className="text-base-200 text-xs mb-1">Saldo {p.name}</p>
             <p className={`text-lg font-bold ${p.amount >= 0 ? 'text-white' : 'text-rose-300'}`}>
               {formatCurrency(p.amount)}
             </p>
@@ -19,7 +19,7 @@ export async function BalancesSection() {
         ))}
       </div>
       <div className="bg-white/10 rounded-2xl p-3">
-        <p className="text-base-200 text-xs mb-1">Total Bersama</p>
+        <p className="text-base-200 text-xs mb-1">Total Saldo</p>
         <p className={`text-lg font-bold ${balances.total >= 0 ? 'text-white' : 'text-rose-300'}`}>
           {formatCurrency(balances.total)}
         </p>

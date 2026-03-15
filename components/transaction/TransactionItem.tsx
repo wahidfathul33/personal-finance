@@ -7,7 +7,7 @@ import type { TransactionWithCategory } from '@/lib/types'
 import { formatCurrency, formatDate, PERSON_COLORS } from '@/lib/constants'
 import { duplicateTransaction, deleteTransaction } from '@/actions/transactions'
 import TransactionForm from './TransactionForm'
-import ConfirmModal from './ConfirmModal'
+import ConfirmModal from '@/components/ui/ConfirmModal'
 
 interface Props {
   transaction: TransactionWithCategory

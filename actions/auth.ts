@@ -2,7 +2,6 @@
 
 import { createHmac } from 'crypto'
 import { cookies } from 'next/headers'
-import { redirect } from 'next/navigation'
 
 const COOKIE_NAME = 'pf_auth'
 
@@ -11,7 +10,7 @@ function computeToken(pin: string): string {
   return createHmac('sha256', secret).update(pin).digest('hex')
 }
 
-export async function verifyPin(pin: string): Promise<{ error: string } | undefined> {
+export async function verifyPin(pin: string): Promise<{ error: string } | { success: true }> {
   const expected = process.env.AUTH_PIN
   if (!expected) return { error: 'AUTH_PIN belum dikonfigurasi' }
   if (pin !== expected) return { error: 'PIN salah' }
@@ -26,5 +25,5 @@ export async function verifyPin(pin: string): Promise<{ error: string } | undefi
     path: '/',
   })
 
-  redirect('/')
+  return { success: true }
 }

@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Plus, ArrowLeftRight, Split } from 'lucide-react'
-import TransactionForm from '@/components/TransactionForm'
+import TransactionForm from '@/components/transaction/TransactionForm'
 
 type Mode = 'expense' | 'income' | 'split' | 'transfer'
 

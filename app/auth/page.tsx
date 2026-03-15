@@ -1,15 +1,17 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { useRouter } from 'next/navigation'
 import { verifyPin } from '@/actions/auth'
 import { Delete } from 'lucide-react'
-import ThemeToggle from '@/components/ThemeToggle'
+import ThemeToggle from '@/components/ui/ThemeToggle'
 
 const PIN_LENGTH = Number(process.env.NEXT_PUBLIC_PIN_LENGTH ?? 6)
 
 const KEYS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '', '0', 'del']
 
 export default function AuthPage() {
+  const router = useRouter()
   const [pin, setPin] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -27,13 +29,16 @@ export default function AuthPage() {
     setLoading(true)
     setError('')
     const result = await verifyPin(value)
-    if (result?.error) {
+    if ('error' in result) {
       setError(result.error)
       setPin('')
       setShake(true)
       setTimeout(() => setShake(false), 400)
+      setLoading(false)
+    } else {
+      router.push('/')
+      router.refresh()
     }
-    setLoading(false)
   }
 
   function handleKey(digit: string) {

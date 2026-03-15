@@ -3,10 +3,10 @@
 import { useState, useTransition, useEffect, useMemo } from 'react'
 import { addSaving, deleteSaving, updateSaving } from '@/actions/savings'
 import type { Saving, Person } from '@/lib/types'
-import { formatCurrency, formatDate, PERSON_COLORS, todayISO, currentMonth, currentYear, MONTHS } from '@/lib/constants'
+import { formatCurrency, formatDate, PERSON_COLORS, todayISO, currentMonth, currentYear, MONTHS, YEAR_OPTIONS } from '@/lib/constants'
 import { usePersons } from '@/lib/usePersons'
 import { Plus, Trash2, Pencil, X, Check, Wallet, ChevronsUpDown, ChevronDown } from 'lucide-react'
-import ConfirmModal from '@/components/ConfirmModal'
+import ConfirmModal from '@/components/ui/ConfirmModal'
 
 interface Props {
   items: Saving[]
@@ -136,7 +136,6 @@ export default function SavingsClient({ items: initialItems, className }: Props)
   const [year, setYear] = useState(currentYear())
 
   const now = new Date()
-  const YEAR_OPTIONS = Array.from({ length: 5 }, (_, i) => now.getFullYear() - i)
 
   const filteredItems = useMemo(() => {
     return items.filter((s) => {

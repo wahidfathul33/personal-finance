@@ -1,7 +1,10 @@
 'use client'
 
 import { useState, useTransition, useEffect } from 'react'
-import { X, ArrowLeftRight } from 'lucide-react'
+import { X } from 'lucide-react'
+import TransactionFormExpenseIncomeFields from './TransactionFormExpenseIncomeFields'
+import TransactionFormTransferFields from './TransactionFormTransferFields'
+import TransactionFormSplitFields from './TransactionFormSplitFields'
 import {
   addTransaction,
   addSplitBill,
@@ -9,9 +12,9 @@ import {
   updateTransaction,
 } from '@/actions/transactions'
 import { addSaving } from '@/actions/savings'
-import { EXPENSE_CATEGORIES, INCOME_CATEGORIES, PERSON_COLORS, todayISO } from '@/lib/constants'
+import { EXPENSE_CATEGORIES, INCOME_CATEGORIES, todayISO } from '@/lib/constants'
 import { usePersons } from '@/lib/usePersons'
-import type { Person, TransactionType, TransactionWithCategory } from '@/lib/types'
+import type {TransactionType, TransactionWithCategory } from '@/lib/types'
 
 type Mode = 'expense' | 'income' | 'split' | 'transfer'
 
@@ -210,146 +213,39 @@ export default function TransactionForm({ defaultMode = 'expense', editTransacti
             </div>
           </div>
 
-          {/* Person selector (expense/income) */}
+          {/* Person selector + expense source (expense/income) */}
           {(mode === 'expense' || mode === 'income') && (
-            <div>
-              <label className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 block">Siapa</label>
-              <div className="flex flex-wrap gap-2">
-                {persons.map((p) => {
-                  const colors = PERSON_COLORS[p.color] ?? PERSON_COLORS.indigo
-                  return (
-                    <button
-                      key={p.id}
-                      type="button"
-                      onClick={() => setPersonId(p.id)}
-                      className={`flex-1 min-w-[80px] py-2 rounded-xl text-sm font-medium border transition-colors ${
-                        personId === p.id
-                          ? colors.button
-                          : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700'
-                      }`}
-                    >
-                      {p.name}
-                    </button>
-                  )
-                })}
-              </div>
-            </div>
-          )}
-
-          {/* Expense source: Saldo or Tabungan */}
-          {mode === 'expense' && (
-            <div>
-              <label className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 block">Sumber Dana</label>
-              <div className="flex gap-2">
-                {(['saldo', 'tabungan'] as const).map((src) => (
-                  <button
-                    key={src}
-                    type="button"
-                    onClick={() => setSavingSource(src)}
-                    className={`flex-1 py-2 rounded-xl text-sm font-medium border transition-colors ${
-                      savingSource === src
-                        ? src === 'tabungan'
-                          ? 'bg-emerald-600 text-white border-emerald-600'
-                          : 'bg-indigo-600 text-white border-indigo-600'
-                        : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700'
-                    }`}
-                  >
-                    {src === 'saldo' ? '💳 Saldo' : '🏦 Tabungan'}
-                  </button>
-                ))}
-              </div>
-            </div>
+            <TransactionFormExpenseIncomeFields
+              persons={persons}
+              personId={personId}
+              setPersonId={setPersonId}
+              mode={mode}
+              savingSource={savingSource}
+              setSavingSource={setSavingSource}
+            />
           )}
 
           {/* Transfer persons */}
           {mode === 'transfer' && (
-            <div className="flex items-center gap-2">
-              <div className="flex-1">
-                <label className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 block">Dari</label>
-                <select
-                  value={fromPersonId}
-                  onChange={(e) => setFromPersonId(e.target.value)}
-                  className="w-full border border-gray-200 dark:border-gray-700 rounded-xl h-[40px] px-3 text-sm bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                >
-                  {persons.map((p) => (
-                    <option key={p.id} value={p.id}>{p.name}</option>
-                  ))}
-                </select>
-              </div>
-              <button
-                type="button"
-                onClick={() => {
-                  const tmp = fromPersonId
-                  setFromPersonId(toPersonId)
-                  setToPersonId(tmp)
-                }}
-                className="mt-5 w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-300 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 hover:text-indigo-600 transition-colors flex-shrink-0"
-              >
-                <ArrowLeftRight size={14} />
-              </button>
-              <div className="flex-1">
-                <label className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 block">Ke</label>
-                <select
-                  value={toPersonId}
-                  onChange={(e) => setToPersonId(e.target.value)}
-                  className="w-full border border-gray-200 dark:border-gray-700 rounded-xl h-[40px] px-3 text-sm bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                >
-                  {persons.map((p) => (
-                    <option key={p.id} value={p.id}>{p.name}</option>
-                  ))}
-                </select>
-              </div>
-            </div>
+            <TransactionFormTransferFields
+              persons={persons}
+              fromPersonId={fromPersonId}
+              setFromPersonId={setFromPersonId}
+              toPersonId={toPersonId}
+              setToPersonId={setToPersonId}
+            />
           )}
 
           {/* Split details */}
           {mode === 'split' && (
-            <div className="space-y-3">
-              <div className="flex gap-2">
-                {(['equal', 'custom'] as const).map((t) => (
-                  <button
-                    key={t}
-                    type="button"
-                    onClick={() => setSplitType(t)}
-                    className={`flex-1 py-2 rounded-xl text-sm font-medium border transition-colors ${
-                      splitType === t
-                        ? 'bg-indigo-600 text-white border-indigo-600'
-                        : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-gray-200 dark:border-gray-700'
-                    }`}
-                  >
-                    {t === 'equal' ? 'Rata' : 'Custom'}
-                  </button>
-                ))}
-              </div>
-              <div className="space-y-2">
-                {persons.map((p) => (
-                  <div key={p.id} className="flex items-center gap-2">
-                    <span className={`text-xs px-2 py-1 rounded-full font-medium w-20 text-center ${
-                      PERSON_COLORS[p.color]?.badge ?? PERSON_COLORS.indigo.badge
-                    }`}>{p.name}</span>
-                    <input
-                      type="text"
-                      inputMode="numeric"
-                      value={splitAmounts[p.id] ? (splitAmounts[p.id] ?? '').replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}
-                      onChange={(e) => {
-                        setSplitType('custom')
-                        setSplitAmounts((prev) => ({ ...prev, [p.id]: e.target.value.replace(/\D/g, '') }))
-                      }}
-                      readOnly={splitType === 'equal'}
-                      placeholder="0"
-                      className="flex-1 border border-gray-200 dark:border-gray-700 rounded-xl py-2 px-3 text-sm bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 read-only:bg-gray-50 dark:read-only:bg-gray-700"
-                    />
-                  </div>
-                ))}
-              </div>
-              {splitType === 'equal' && totalAmount > 0 && (
-                <p className="text-xs text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800 rounded-lg px-3 py-2">
-                  {persons.length > 0
-                    ? persons.map((p) => `${p.name}: Rp ${(splitAmounts[p.id] ? parseInt(splitAmounts[p.id]).toLocaleString('id-ID') : '0')}`).join(' · ')
-                    : ''}
-                </p>
-              )}
-            </div>
+            <TransactionFormSplitFields
+              persons={persons}
+              splitAmounts={splitAmounts}
+              setSplitAmounts={setSplitAmounts}
+              splitType={splitType}
+              setSplitType={setSplitType}
+              totalAmount={totalAmount}
+            />
           )}
 
           {/* Category */}

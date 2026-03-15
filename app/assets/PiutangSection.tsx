@@ -5,7 +5,7 @@ import { addPiutang, deletePiutang, addPiutangPayment, deletePiutangPayment } fr
 import type { Piutang } from '@/lib/types'
 import { formatCurrency, todayISO } from '@/lib/constants'
 import { Plus, Trash2, ChevronDown, Check, X, Clock } from 'lucide-react'
-import ConfirmModal from '@/components/ConfirmModal'
+import ConfirmModal from '@/components/ui/ConfirmModal'
 
 interface Props {
   initialData: Piutang[]

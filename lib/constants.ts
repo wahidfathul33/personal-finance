@@ -94,6 +94,29 @@ export const PERSON_COLORS: Record<string, {
 // All available color options for the settings page picker
 export const COLOR_OPTIONS = Object.keys(PERSON_COLORS)
 
+// Hex values for charts (matches Person.color keys)
+export const COLOR_HEX: Record<string, string> = {
+  indigo:  '#6366f1',
+  pink:    '#ec4899',
+  emerald: '#10b981',
+  blue:    '#3b82f6',
+  violet:  '#8b5cf6',
+  amber:   '#f59e0b',
+  rose:    '#f43f5e',
+  teal:    '#14b8a6',
+}
+
+export const COLOR_LABELS: Record<string, string> = {
+  indigo: 'Indigo',
+  pink: 'Merah Muda',
+  emerald: 'Hijau',
+  blue: 'Biru',
+  violet: 'Ungu',
+  amber: 'Kuning',
+  rose: 'Merah',
+  teal: 'Teal',
+}
+
 export const MONTHS = [
   'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
   'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember',
@@ -132,3 +155,5 @@ export function currentMonth(): number {
 export function currentYear(): number {
   return new Date().getFullYear()
 }
+
+export const YEAR_OPTIONS = Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i)

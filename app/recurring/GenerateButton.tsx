@@ -4,7 +4,7 @@ import { useTransition } from 'react'
 import { generateRecurringTransactions } from '@/actions/recurring'
 import { RefreshCw } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import { useToast } from '@/components/Toast'
+import { useToast } from '@/components/providers/Toast'
 
 export default function GenerateButton() {
   const [isPending, startTransition] = useTransition()

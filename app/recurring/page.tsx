@@ -1,5 +1,5 @@
 import { getRecurringTemplates } from '@/actions/recurring'
-import PageHeader from '@/components/PageHeader'
+import PageHeader from '@/components/layout/PageHeader'
 import RecurringList from './RecurringList'
 import GenerateButton from './GenerateButton'
 import Link from 'next/link'

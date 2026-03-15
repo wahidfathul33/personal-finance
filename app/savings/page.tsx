@@ -1,6 +1,6 @@
 import { getSavingsSummary } from '@/actions/savings'
 import { getPersons } from '@/actions/persons'
-import PageHeader from '@/components/PageHeader'
+import PageHeader from '@/components/layout/PageHeader'
 import SavingsClient from './SavingsClient'
 import { formatCurrency, PERSON_COLORS } from '@/lib/constants'
 import type { Saving } from '@/lib/types'

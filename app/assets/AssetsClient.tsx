@@ -5,7 +5,7 @@ import { addAsset, updateAsset, deleteAsset, updateGoldPrice } from '@/actions/a
 import type { Asset, Piutang } from '@/lib/types'
 import { formatCurrency, todayISO } from '@/lib/constants'
 import { Plus, Trash2, Edit2, Check, X, ChevronDown, Settings } from 'lucide-react'
-import ConfirmModal from '@/components/ConfirmModal'
+import ConfirmModal from '@/components/ui/ConfirmModal'
 import PiutangSection from './PiutangSection'
 
 interface GoldPriceInfo {

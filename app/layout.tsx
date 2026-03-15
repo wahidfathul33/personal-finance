@@ -1,10 +1,10 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
-import BottomNav from "@/components/BottomNav";
-import { ThemeProvider } from "@/components/ThemeProvider";
-import { BaseColorProvider } from "@/components/BaseColorProvider";
-import { ToastProvider } from "@/components/Toast";
-import RegisterSW from "@/components/RegisterSW";
+import BottomNav from "@/components/layout/BottomNav";
+import { ThemeProvider } from "@/components/providers/ThemeProvider";
+import { BaseColorProvider } from "@/components/providers/BaseColorProvider";
+import { ToastProvider } from "@/components/providers/Toast";
+import RegisterSW from "@/components/providers/RegisterSW";
 
 export const viewport: Viewport = {
   viewportFit: 'cover',

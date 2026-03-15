@@ -3,23 +3,12 @@
 import { useState, useEffect, useTransition } from 'react'
 import { getPersons, addPerson, updatePerson, deletePerson } from '@/actions/persons'
 import { invalidatePersonsCache } from '@/lib/usePersons'
-import ConfirmModal from '@/components/ConfirmModal'
+import ConfirmModal from '@/components/ui/ConfirmModal'
 import type { Person } from '@/lib/types'
-import { PERSON_COLORS, COLOR_OPTIONS } from '@/lib/constants'
-import { useBaseColor, BASE_COLOR_OPTIONS, type BaseColor } from '@/components/BaseColorProvider'
-import PageHeader from '@/components/PageHeader'
+import { PERSON_COLORS, COLOR_OPTIONS, COLOR_LABELS } from '@/lib/constants'
+import { useBaseColor, BASE_COLOR_OPTIONS } from '@/components/providers/BaseColorProvider'
+import PageHeader from '@/components/layout/PageHeader'
 import { Pencil, Trash2, Check, X, Plus, GripVertical } from 'lucide-react'
-
-const COLOR_LABELS: Record<string, string> = {
-  indigo: 'Indigo',
-  pink: 'Merah Muda',
-  emerald: 'Hijau',
-  blue: 'Biru',
-  violet: 'Ungu',
-  amber: 'Kuning',
-  rose: 'Merah',
-  teal: 'Teal',
-}
 
 function ColorPicker({
   value,

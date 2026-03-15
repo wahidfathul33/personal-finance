@@ -3,13 +3,13 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { getTransactions } from '@/actions/transactions'
 import { getPersons } from '@/actions/persons'
-import TransactionItem, { TransactionItemSkeleton } from '@/components/TransactionItem'
-import TransactionForm from '@/components/TransactionForm'
-import PageHeader from '@/components/PageHeader'
+import TransactionItem, { TransactionItemSkeleton } from '@/components/transaction/TransactionItem'
+import TransactionForm from '@/components/transaction/TransactionForm'
+import PageHeader from '@/components/layout/PageHeader'
 import Link from 'next/link'
 import type { TransactionWithCategory } from '@/lib/types'
 import type { Person } from '@/lib/types'
-import { currentMonth, currentYear, PERSON_COLORS, formatCurrency, MONTHS } from '@/lib/constants'
+import { currentMonth, currentYear, PERSON_COLORS, formatCurrency, MONTHS, YEAR_OPTIONS } from '@/lib/constants'
 import { Plus, CalendarDays, SlidersHorizontal, ChevronsUpDown } from 'lucide-react'
 
 const TYPE_OPTIONS = [
@@ -21,7 +21,6 @@ const TYPE_OPTIONS = [
 
 const PAGE_SIZE = 20
 const now = new Date()
-const YEAR_OPTIONS = Array.from({ length: 5 }, (_, i) => now.getFullYear() - i)
 
 export default function TransactionsPage() {
   const [transactions, setTransactions] = useState<TransactionWithCategory[]>([])
