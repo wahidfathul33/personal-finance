@@ -7,6 +7,7 @@ import { formatCurrency, formatDate, PERSON_COLORS, todayISO, currentMonth, curr
 import { usePersons } from '@/lib/usePersons'
 import { Plus, Trash2, Pencil, X, Check, Wallet, ChevronsUpDown, ChevronDown } from 'lucide-react'
 import ConfirmModal from '@/components/ui/ConfirmModal'
+import { useHideAmounts } from '@/lib/HideAmountsContext'
 
 interface Props {
   items: Saving[]
@@ -127,6 +128,12 @@ function EditInline({
 export default function SavingsClient({ items: initialItems, className }: Props) {
   const [items, setItems] = useState(initialItems)
   const persons = usePersons()
+  const { hidden } = useHideAmounts()
+  const fmt = (v: number, signed = false) => {
+    if (hidden) return '••••••'
+    const prefix = signed && v > 0 ? '+' : ''
+    return prefix + formatCurrency(v)
+  }
   const [showForm, setShowForm] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [expandedId, setExpandedId] = useState<string | null>(null)
@@ -225,7 +232,7 @@ export default function SavingsClient({ items: initialItems, className }: Props)
         <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">{MONTHS[month - 1]} {year}</span>
         <span className={`text-sm font-bold ${
           filteredTotal >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'
-        }`}>{filteredTotal >= 0 ? '+' : ''}{formatCurrency(filteredTotal)}</span>
+        }`}>{fmt(filteredTotal, true)}</span>
       </div>
 
       <div className="flex items-center justify-between mb-3">
@@ -354,7 +361,7 @@ export default function SavingsClient({ items: initialItems, className }: Props)
                     ? 'text-emerald-600 dark:text-emerald-400'
                     : 'text-rose-600 dark:text-rose-400'
                 }`}>
-                  {s.amount >= 0 ? '+' : ''}{formatCurrency(s.amount)}
+                  {fmt(s.amount, true)}
                 </p>
                 <ChevronDown
                   size={14}

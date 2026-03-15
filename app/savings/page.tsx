@@ -2,8 +2,10 @@ import { getSavingsSummary } from '@/actions/savings'
 import { getPersons } from '@/actions/persons'
 import PageHeader from '@/components/layout/PageHeader'
 import SavingsClient from './SavingsClient'
-import { formatCurrency, PERSON_COLORS } from '@/lib/constants'
+import { PERSON_COLORS } from '@/lib/constants'
 import type { Saving } from '@/lib/types'
+import HiddenAmount from '@/components/ui/HiddenAmount'
+import HideToggle from '@/components/ui/HideToggle'
 
 export const dynamic = 'force-dynamic'
 
@@ -17,7 +19,7 @@ export default async function SavingsPage() {
 
   return (
     <div className="flex flex-col h-[calc(100dvh-80px)]">
-      <PageHeader title="Tabungan" subtitle="Rekap tabungan bersama" />
+      <PageHeader title="Tabungan" subtitle="Rekap tabungan bersama" right={<HideToggle />} />
 
       {/* Summary Cards */}
       <div
@@ -29,7 +31,7 @@ export default async function SavingsPage() {
             <div key={p.id} className={`${colors.card.bg} rounded-2xl p-3`}>
               <p className={`text-xs mb-1 ${colors.card.label}`}>{p.name}</p>
               <p className={`text-lg font-bold ${colors.card.value}`}>
-                {formatCurrency(summary.byPerson[p.name] ?? 0)}
+                <HiddenAmount value={summary.byPerson[p.name] ?? 0} />
               </p>
             </div>
           )
@@ -38,7 +40,7 @@ export default async function SavingsPage() {
       <div className="bg-emerald-50 dark:bg-emerald-900/20 rounded-2xl p-4 ms-4 me-4 mb-3">
           <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium mb-1">Total</p>
           <p className="text-lg font-bold text-emerald-700 dark:text-emerald-300">
-            {formatCurrency(summary.total)}
+            <HiddenAmount value={summary.total} />
           </p>
       </div>
 

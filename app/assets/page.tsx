@@ -3,6 +3,7 @@ import { getPiutang } from '@/actions/piutang'
 import PageHeader from '@/components/layout/PageHeader'
 import AssetsClient from './AssetsClient'
 import type { Piutang } from '@/lib/types'
+import HideToggle from '@/components/ui/HideToggle'
 
 export const dynamic = 'force-dynamic'
 
@@ -18,7 +19,7 @@ export default async function AssetsPage() {
 
   return (
     <div>
-      <PageHeader title="Aset" subtitle="Emas & Kekayaan" />
+      <PageHeader title="Aset" subtitle="Emas & Kekayaan" right={<HideToggle />} />
       <AssetsClient summary={summary} piutangList={piutangList} />
     </div>
   )

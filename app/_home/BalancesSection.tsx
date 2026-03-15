@@ -1,5 +1,6 @@
 import { getAllBalances } from '@/actions/balances'
 import { formatCurrency, currentMonth, currentYear } from '@/lib/constants'
+import HiddenAmount from '@/components/ui/HiddenAmount'
 
 export async function BalancesSection() {
   const month = currentMonth()
@@ -13,7 +14,7 @@ export async function BalancesSection() {
           <div key={p.id} className="bg-white/10 rounded-2xl p-3">
             <p className="text-base-200 text-xs mb-1">Saldo {p.name}</p>
             <p className={`text-lg font-bold ${p.amount >= 0 ? 'text-white' : 'text-rose-300'}`}>
-              {formatCurrency(p.amount)}
+              <HiddenAmount value={p.amount} />
             </p>
           </div>
         ))}
@@ -21,7 +22,7 @@ export async function BalancesSection() {
       <div className="bg-white/10 rounded-2xl p-3">
         <p className="text-base-200 text-xs mb-1">Total Saldo</p>
         <p className={`text-lg font-bold ${balances.total >= 0 ? 'text-white' : 'text-rose-300'}`}>
-          {formatCurrency(balances.total)}
+          <HiddenAmount value={balances.total} />
         </p>
       </div>
     </>

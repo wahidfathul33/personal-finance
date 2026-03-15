@@ -7,6 +7,7 @@ import { formatCurrency, todayISO } from '@/lib/constants'
 import { Plus, Trash2, Edit2, Check, X, ChevronDown, Settings } from 'lucide-react'
 import ConfirmModal from '@/components/ui/ConfirmModal'
 import PiutangSection from './PiutangSection'
+import { useHideAmounts } from '@/lib/HideAmountsContext'
 
 interface GoldPriceInfo {
   price_per_gram: number
@@ -37,6 +38,8 @@ export default function AssetsClient({ summary, piutangList }: Props) {
   const [jewelryPricePerGram, setJewelryPricePerGram] = useState(summary.jewelryPricePerGram)
   const [goldPrice, setGoldPrice] = useState<GoldPriceInfo | null>(summary.goldPrice)
   const [isPending, startTransition] = useTransition()
+  const { hidden } = useHideAmounts()
+  const fmt = (v: number) => hidden ? '••••••' : formatCurrency(v)
 
   // Add asset form
   const [showAddForm, setShowAddForm] = useState(false)
@@ -186,19 +189,19 @@ export default function AssetsClient({ summary, piutangList }: Props) {
       {/* Portfolio Overview Card */}
       <div className="bg-base-gradient rounded-2xl p-4 text-white shadow-md">
         <p className="text-white/70 text-xs font-medium mb-1">Total Kekayaan</p>
-        <p className="text-3xl font-bold tracking-tight drop-shadow-sm">{formatCurrency(netWorth)}</p>
+        <p className="text-3xl font-bold tracking-tight drop-shadow-sm">{fmt(netWorth)}</p>
         <div className="grid grid-cols-3 gap-2 mt-3 text-xs">
           <div className="bg-white/10 rounded-xl p-2">
             <p className="text-white/70 mb-0.5">Emas</p>
-            <p className="font-semibold text-sm">{formatCurrency(totalValue)}</p>
+            <p className="font-semibold text-sm">{fmt(totalValue)}</p>
           </div>
           <div className="bg-white/10 rounded-xl p-2">
             <p className="text-white/70 mb-0.5">Deposito</p>
-            <p className="font-semibold text-sm">{formatCurrency(totalDepositValue)}</p>
+            <p className="font-semibold text-sm">{fmt(totalDepositValue)}</p>
           </div>
           <div className="bg-white/10 rounded-xl p-2">
             <p className="text-white/70 mb-0.5">Piutang</p>
-            <p className="font-semibold text-sm">{formatCurrency(totalPiutangOutstanding)}</p>
+            <p className="font-semibold text-sm">{fmt(totalPiutangOutstanding)}</p>
           </div>
         </div>
       </div>
@@ -238,7 +241,7 @@ export default function AssetsClient({ summary, piutangList }: Props) {
               <Settings size={15} className="text-white" />
             </button>
             <p className="text-white/70 text-xs font-medium mb-1">Total Nilai Emas</p>
-            <p className="text-2xl font-bold drop-shadow-sm">{formatCurrency(totalValue)}</p>
+            <p className="text-2xl font-bold drop-shadow-sm">{fmt(totalValue)}</p>
             <div className="grid grid-cols-2 gap-2 mt-3">
               <div className="bg-white/15 rounded-xl p-2">
                 <p className="text-white/70 text-[11px] mb-0.5">🥇 LM · {totalLmGrams}g</p>
@@ -322,7 +325,7 @@ export default function AssetsClient({ summary, piutangList }: Props) {
                             ) : (
                               <p className="text-xs text-gray-500 dark:text-gray-400">
                                 {asset.amount} {asset.unit}
-                                {pricePerGram > 0 && <span className="ml-1.5 text-amber-600 dark:text-amber-400 font-medium">≈ {formatCurrency(asset.amount * pricePerGram)}</span>}
+                                {pricePerGram > 0 && <span className="ml-1.5 text-amber-600 dark:text-amber-400 font-medium">≈ {fmt(asset.amount * pricePerGram)}</span>}
                               </p>
                             )}
                           </div>
@@ -342,7 +345,7 @@ export default function AssetsClient({ summary, piutangList }: Props) {
                     <p className="text-sm font-semibold text-amber-800 dark:text-amber-300">Total LM</p>
                     <div className="text-right">
                       <p className="text-sm font-bold text-amber-800 dark:text-amber-300">{totalLmGrams}g</p>
-                      {pricePerGram > 0 && <p className="text-xs text-amber-600 dark:text-amber-400">{formatCurrency(totalLmGrams * pricePerGram)}</p>}
+                      {pricePerGram > 0 && <p className="text-xs text-amber-600 dark:text-amber-400">{fmt(totalLmGrams * pricePerGram)}</p>}
                     </div>
                   </div>
                 </div>
@@ -372,7 +375,7 @@ export default function AssetsClient({ summary, piutangList }: Props) {
                             ) : (
                               <p className="text-xs text-gray-500 dark:text-gray-400">
                                 {asset.amount} {asset.unit}
-                                {jewelryPricePerGram > 0 && <span className="ml-1.5 text-rose-500 dark:text-rose-400 font-medium">≈ {formatCurrency(asset.amount * jewelryPricePerGram)}</span>}
+                                {jewelryPricePerGram > 0 && <span className="ml-1.5 text-rose-500 dark:text-rose-400 font-medium">≈ {fmt(asset.amount * jewelryPricePerGram)}</span>}
                               </p>
                             )}
                           </div>
@@ -392,7 +395,7 @@ export default function AssetsClient({ summary, piutangList }: Props) {
                     <p className="text-sm font-semibold text-rose-700 dark:text-rose-300">Total Perhiasan</p>
                     <div className="text-right">
                       <p className="text-sm font-bold text-rose-700 dark:text-rose-300">{totalJewelryGrams}g</p>
-                      {jewelryPricePerGram > 0 && <p className="text-xs text-rose-500 dark:text-rose-400">{formatCurrency(totalJewelryGrams * jewelryPricePerGram)}</p>}
+                      {jewelryPricePerGram > 0 && <p className="text-xs text-rose-500 dark:text-rose-400">{fmt(totalJewelryGrams * jewelryPricePerGram)}</p>}
                     </div>
                   </div>
                 </div>
@@ -412,7 +415,7 @@ export default function AssetsClient({ summary, piutangList }: Props) {
           {/* Deposit Summary Card */}
           <div className="bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl p-4 text-white shadow-md">
             <p className="text-white/70 text-xs font-medium mb-1">Total Deposito</p>
-            <p className="text-2xl font-bold drop-shadow-sm">{formatCurrency(totalDepositValue)}</p>
+            <p className="text-2xl font-bold drop-shadow-sm">{fmt(totalDepositValue)}</p>
           </div>
 
           <div>
@@ -459,7 +462,7 @@ export default function AssetsClient({ summary, piutangList }: Props) {
                             </div>
                           ) : (
                             <div>
-                              <p className="text-sm font-semibold text-blue-600 dark:text-blue-400 text-left">{formatCurrency(asset.amount)}</p>
+                              <p className="text-sm font-semibold text-blue-600 dark:text-blue-400 text-left">{fmt(asset.amount)}</p>
                               {asset.note && <p className="text-xs text-gray-400 dark:text-gray-500 text-left">{asset.note}</p>}
                             </div>
                           )}
@@ -478,7 +481,7 @@ export default function AssetsClient({ summary, piutangList }: Props) {
                 })}
                 <div className="bg-blue-50 dark:bg-blue-900/20 rounded-2xl p-3 flex items-center justify-between">
                   <p className="text-sm font-semibold text-blue-800 dark:text-blue-300">Total Deposito</p>
-                  <p className="text-sm font-bold text-blue-800 dark:text-blue-300">{formatCurrency(totalDepositValue)}</p>
+                  <p className="text-sm font-bold text-blue-800 dark:text-blue-300">{fmt(totalDepositValue)}</p>
                 </div>
               </div>
             )}

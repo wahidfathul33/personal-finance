@@ -4,6 +4,7 @@ import { StatsSection, StatsSkeleton } from './_home/StatsSection'
 import { RecentSection, RecentSkeleton } from './_home/RecentSection'
 import QuickActions from '@/components/home/QuickActions'
 import ThemeToggle from '@/components/ui/ThemeToggle'
+import HideToggle from '@/components/ui/HideToggle'
 import Link from 'next/link'
 import { Settings } from 'lucide-react'
 import { currentMonth, currentYear, MONTHS } from '@/lib/constants'
@@ -24,6 +25,7 @@ export default function HomePage() {
             <h1 className="text-white text-xl font-bold mt-0.5">Keuangan Kita</h1>
           </div>
           <div className="flex items-center gap-2">
+            <HideToggle className="bg-white/20 text-white hover:bg-white/30" />
             <ThemeToggle />
             <Link
               href="/settings"

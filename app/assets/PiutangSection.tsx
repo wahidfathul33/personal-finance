@@ -6,6 +6,7 @@ import type { Piutang } from '@/lib/types'
 import { formatCurrency, todayISO } from '@/lib/constants'
 import { Plus, Trash2, ChevronDown, Check, X, Clock } from 'lucide-react'
 import ConfirmModal from '@/components/ui/ConfirmModal'
+import { useHideAmounts } from '@/lib/HideAmountsContext'
 
 interface Props {
   initialData: Piutang[]
@@ -14,6 +15,8 @@ interface Props {
 export default function PiutangSection({ initialData }: Props) {
   const [piutangList, setPiutangList] = useState<Piutang[]>(initialData)
   const [isPending, startTransition] = useTransition()
+  const { hidden } = useHideAmounts()
+  const fmt = (v: number) => hidden ? '••••••' : formatCurrency(v)
 
   const [showAddForm, setShowAddForm] = useState(false)
   const [newDebtorName, setNewDebtorName] = useState('')
@@ -115,7 +118,7 @@ export default function PiutangSection({ initialData }: Props) {
       {/* Summary Card */}
       <div className="bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl p-4 text-white mb-4 shadow-md">
         <p className="text-white/80 text-xs font-medium mb-1">Total Piutang</p>
-        <p className="text-2xl font-bold drop-shadow-sm">{formatCurrency(totalOutstanding)}</p>
+        <p className="text-2xl font-bold drop-shadow-sm">{fmt(totalOutstanding)}</p>
         <p className="text-white/80 text-xs mt-1">{outstanding.length} tagihan aktif</p>
       </div>
 
@@ -201,10 +204,10 @@ export default function PiutangSection({ initialData }: Props) {
                     <p className="text-xs text-gray-500 dark:text-gray-400">
                       Sisa:{' '}
                       <span className="text-emerald-600 dark:text-emerald-400 font-medium">
-                        {formatCurrency(remaining)}
+                        {fmt(remaining)}
                       </span>
                       {paidAmt > 0 && (
-                        <span className="ml-1 text-gray-400">/ {formatCurrency(p.amount)}</span>
+                        <span className="ml-1 text-gray-400">/ {fmt(p.amount)}</span>
                       )}
                     </p>
                     {paidAmt > 0 && (
@@ -234,7 +237,7 @@ export default function PiutangSection({ initialData }: Props) {
                           year: 'numeric',
                         })}
                       </p>
-                      <p>Total: {formatCurrency(p.amount)}</p>
+                      <p>Total: {fmt(p.amount)}</p>
                       {p.note && <p>Catatan: {p.note}</p>}
                     </div>
 
@@ -252,7 +255,7 @@ export default function PiutangSection({ initialData }: Props) {
                             >
                               <div>
                                 <p className="text-sm font-bold text-gray-900 dark:text-gray-100">
-                                  {formatCurrency(pay.amount)}
+                                  {fmt(pay.amount)}
                                 </p>
                                 <p className="text-[11px] text-gray-500 dark:text-gray-400">
                                   {new Date(pay.date).toLocaleDateString('id-ID', {
@@ -394,7 +397,7 @@ export default function PiutangSection({ initialData }: Props) {
                       <p className="text-sm font-semibold text-gray-700 dark:text-gray-300">
                         {p.debtor_name}
                       </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">{formatCurrency(p.amount)} · Lunas</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">{fmt(p.amount)} · Lunas</p>
                     </div>
                     <button
                       onClick={() => setConfirmDeleteId(p.id)}
