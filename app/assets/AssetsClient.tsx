@@ -516,7 +516,7 @@ export default function AssetsClient({ summary, piutangList }: Props) {
             </div>
             <div>
               <label className="text-xs text-gray-500 dark:text-gray-400 mb-1 block">Tanggal</label>
-              <input type="date" value={priceDate} onChange={(e) => setPriceDate(e.target.value)} className="w-full h-[40px] border border-gray-200 dark:border-gray-700 rounded-xl px-3 text-sm bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 focus:outline-none" />
+              <input type="date" value={priceDate} onChange={(e) => setPriceDate(e.target.value)} className="w-full h-[40px] border border-gray-200 dark:border-gray-700 rounded-xl px-3 text-sm bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 focus:outline-none appearance-none" />
             </div>
             <div className="flex gap-2 pt-3">
               <button type="submit" disabled={isPending} className="flex-1 bg-amber-500 text-white h-[40px] rounded-xl text-sm font-semibold">Simpan</button>

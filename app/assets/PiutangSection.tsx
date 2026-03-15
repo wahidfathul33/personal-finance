@@ -156,7 +156,7 @@ export default function PiutangSection({ initialData }: Props) {
             type="date"
             value={newDate}
             onChange={(e) => setNewDate(e.target.value)}
-            className="w-full border border-gray-200 dark:border-gray-700 rounded-xl py-2 px-3 text-sm bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 focus:outline-none"
+            className="w-full border border-gray-200 dark:border-gray-700 rounded-xl py-2 px-3 text-sm bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 focus:outline-none appearance-none"
           />
           <input
             type="text"
@@ -301,7 +301,7 @@ export default function PiutangSection({ initialData }: Props) {
                           type="date"
                           value={payDate}
                           onChange={(e) => setPayDate(e.target.value)}
-                          className="w-full border border-gray-200 dark:border-gray-700 rounded-xl py-2 px-3 text-sm bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 focus:outline-none"
+                          className="w-full border border-gray-200 dark:border-gray-700 rounded-xl py-2 px-3 text-sm bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 focus:outline-none appearance-none"
                         />
                         <input
                           type="text"

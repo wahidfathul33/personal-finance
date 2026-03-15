@@ -92,7 +92,7 @@ function EditInline({
         type="date"
         value={date}
         onChange={(e) => setDate(e.target.value)}
-        className="w-full h-10 border border-gray-200 dark:border-gray-700 rounded-xl px-3 text-sm bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 focus:outline-none"
+        className="w-full h-10 border border-gray-200 dark:border-gray-700 rounded-xl px-3 text-sm bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 focus:outline-none appearance-none"
       />
       <input
         type="text"
@@ -278,7 +278,7 @@ export default function SavingsClient({ items: initialItems, className }: Props)
             type="date"
             value={date}
             onChange={(e) => setDate(e.target.value)}
-            className="w-full h-10 border border-gray-200 dark:border-gray-700 rounded-xl px-3 text-sm bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 focus:outline-none"
+            className="w-full h-10 border border-gray-200 dark:border-gray-700 rounded-xl px-3 text-sm bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 focus:outline-none appearance-none"
           />
           <input
             type="text"
