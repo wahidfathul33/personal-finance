@@ -64,6 +64,44 @@
       "type": "image/png",
       "purpose": "maskable"
     }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshoot/home.jpeg",
+      "type": "image/jpeg",
+      "form_factor": "narrow",
+      "label": "Dashboard — ringkasan saldo dan transaksi terbaru"
+    },
+    {
+      "src": "/screenshoot/trx.jpeg",
+      "type": "image/jpeg",
+      "form_factor": "narrow",
+      "label": "Transaksi — catat pemasukan, pengeluaran, dan transfer"
+    },
+    {
+      "src": "/screenshoot/saving.jpeg",
+      "type": "image/jpeg",
+      "form_factor": "narrow",
+      "label": "Tabungan — kelola tabungan per anggota"
+    },
+    {
+      "src": "/screenshoot/asset.jpeg",
+      "type": "image/jpeg",
+      "form_factor": "narrow",
+      "label": "Aset — emas, deposito, dan piutang"
+    },
+    {
+      "src": "/screenshoot/chart.jpeg",
+      "type": "image/jpeg",
+      "form_factor": "narrow",
+      "label": "Analisis — grafik keuangan per periode"
+    },
+    {
+      "src": "/screenshoot/auth.jpeg",
+      "type": "image/jpeg",
+      "form_factor": "narrow",
+      "label": "Auth — login dengan PIN"
+    }
   ]
 }
 

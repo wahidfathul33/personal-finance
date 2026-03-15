@@ -1,6 +1,16 @@
 # Keuangan Kita
 
-Aplikasi pengelola keuangan sederhana untuk keluarga atau kelompok kecil. Dibangun dengan Next.js, Supabase, dan Tailwind CSS. Mendukung PWA (installable di mobile).
+Aplikasi pengelola keuangan sederhana untuk keluarga atau kelompok kecil.
+
+## Screenshot
+
+| Dashboard | Transaksi | Tabungan |
+|:---------:|:---------:|:--------:|
+| ![Dashboard](public/screenshoot/home.jpeg) | ![Transaksi](public/screenshoot/trx.jpeg) | ![Tabungan](public/screenshoot/saving.jpeg) |
+
+| Aset | Analisis | Auth |
+|:----:|:--------:|:----:|
+| ![Aset](public/screenshoot/asset.jpeg) | ![Analisis](public/screenshoot/chart.jpeg) | ![Auth](public/screenshoot/auth.jpeg) | Dibangun dengan Next.js, Supabase, dan Tailwind CSS. Mendukung PWA (installable di mobile).
 
 ## Fitur
 
