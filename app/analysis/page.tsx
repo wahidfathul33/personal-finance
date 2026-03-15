@@ -26,7 +26,6 @@ import {
   Line,
   PieChart,
   Pie,
-  Cell,
 } from 'recharts'
 
 const COLOR_HEX: Record<string, string> = {
@@ -196,18 +195,14 @@ export default function AnalisisPage() {
                 <div className="flex-shrink-0">
                   <PieChart width={140} height={140}>
                     <Pie
-                      data={breakdown}
+                      data={breakdown.map(item => ({ ...item, fill: item.color }))}
                       cx={65}
                       cy={65}
                       innerRadius={40}
                       outerRadius={65}
                       paddingAngle={2}
                       dataKey="amount"
-                    >
-                      {breakdown.map((entry, i) => (
-                        <Cell key={i} fill={entry.color} />
-                      ))}
-                    </Pie>
+                    />
                   </PieChart>
                 </div>
                 <div className="flex-1 space-y-1.5">

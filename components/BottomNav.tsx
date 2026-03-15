@@ -7,7 +7,7 @@ import { LayoutDashboard, ListOrdered, Wallet, Gem, BarChart2 } from 'lucide-rea
 const NAV_ITEMS = [
   { href: '/', label: 'Home', icon: LayoutDashboard },
   { href: '/transactions', label: 'Transaksi', icon: ListOrdered },
-  { href: '/analisis', label: 'Analisis', icon: BarChart2 },
+  { href: '/analysis', label: 'Analisis', icon: BarChart2 },
   { href: '/savings', label: 'Tabungan', icon: Wallet },
   { href: '/assets', label: 'Aset', icon: Gem },
 ]
