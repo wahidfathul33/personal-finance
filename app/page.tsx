@@ -3,7 +3,6 @@ import { BalancesSection, BalancesSkeleton } from './_home/BalancesSection'
 import { StatsSection, StatsSkeleton } from './_home/StatsSection'
 import { RecentSection, RecentSkeleton } from './_home/RecentSection'
 import QuickActions from '@/components/home/QuickActions'
-import ThemeToggle from '@/components/ui/ThemeToggle'
 import HideToggle from '@/components/ui/HideToggle'
 import Link from 'next/link'
 import { Settings } from 'lucide-react'
@@ -26,7 +25,6 @@ export default function HomePage() {
           </div>
           <div className="flex items-center gap-2">
             <HideToggle className="bg-white/20 text-white hover:bg-white/30" />
-            <ThemeToggle />
             <Link
               href="/settings"
               className="w-9 h-9 flex items-center justify-center rounded-full bg-white/20 text-white hover:bg-white/30 transition-colors"

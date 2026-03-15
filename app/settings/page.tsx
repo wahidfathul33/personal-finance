@@ -8,7 +8,8 @@ import type { Person } from '@/lib/types'
 import { PERSON_COLORS, COLOR_OPTIONS, COLOR_LABELS } from '@/lib/constants'
 import { useBaseColor, BASE_COLOR_OPTIONS } from '@/components/providers/BaseColorProvider'
 import PageHeader from '@/components/layout/PageHeader'
-import { Pencil, Trash2, Check, X, Plus, GripVertical } from 'lucide-react'
+import { Pencil, Trash2, Check, X, Plus, GripVertical, Moon, Sun } from 'lucide-react'
+import { useTheme } from '@/components/providers/ThemeProvider'
 
 function ColorPicker({
   value,
@@ -100,6 +101,7 @@ export default function SettingsPage() {
   const [loading, setLoading] = useState(true)
   const [confirmPerson, setConfirmPerson] = useState<{ id: string; name: string } | null>(null)
   const { color: baseColor, setColor: setBaseColor } = useBaseColor()
+  const { theme, toggle: toggleTheme } = useTheme()
 
   async function reload() {
     const data = await getPersons()
@@ -143,6 +145,32 @@ export default function SettingsPage() {
       <PageHeader title="Pengaturan" />
 
       <div className="px-4 pb-8 space-y-6">
+        {/* Appearance Section */}
+        <div>
+          <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Tampilan</h2>
+          <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 divide-y divide-gray-100 dark:divide-gray-700">
+            <div className="flex items-center justify-between px-4 py-3">
+              <div className="flex items-center gap-3">
+                {theme === 'dark' ? <Moon size={16} className="text-gray-500 dark:text-gray-400" /> : <Sun size={16} className="text-gray-500 dark:text-gray-400" />}
+                <span className="text-sm text-gray-800 dark:text-gray-100">Mode Gelap</span>
+              </div>
+              <button
+                onClick={toggleTheme}
+                className={`relative w-11 h-6 rounded-full transition-colors duration-200 ${
+                  theme === 'dark' ? 'bg-[var(--base-500)]' : 'bg-gray-200 dark:bg-gray-700'
+                }`}
+                aria-label="Toggle dark mode"
+              >
+                <span
+                  className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform duration-200 ${
+                    theme === 'dark' ? 'translate-x-5' : 'translate-x-0'
+                  }`}
+                />
+              </button>
+            </div>
+          </div>
+        </div>
+
         {/* Base Color Section */}
         <div>
           <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Warna Dasar</h2>
