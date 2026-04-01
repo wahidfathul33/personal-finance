@@ -154,16 +154,6 @@ export async function addDepositWithTransaction(input: {
 
   if (input.deduct_from_balance) {
     const { month, year } = parseDateParts(input.date)
-    const { error: txError } = await supabase.from('transactions').insert({
-      date: input.date,
-      person_id: input.person_id,
-      type: 'expense',
-      category_id: 'deposit',
-      amount: -Math.abs(input.amount),
-      note: `Setor deposito: ${input.name}`,
-      group_id: null,
-    })
-    if (txError) throw txError
     await adjustBalance(input.person_id, month, year, -Math.abs(input.amount))
   }
 

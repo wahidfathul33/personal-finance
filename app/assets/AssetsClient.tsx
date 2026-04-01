@@ -3,7 +3,7 @@
 import { useState, useTransition } from 'react'
 import { addAsset, updateAsset, deleteAsset, updateGoldPrice, addDepositWithTransaction, cairkanDeposito } from '@/actions/assets'
 import type { Asset, Piutang, Person } from '@/lib/types'
-import { formatCurrency, todayISO } from '@/lib/constants'
+import { formatCurrency, todayISO, PERSON_COLORS } from '@/lib/constants'
 import { Plus, Trash2, Edit2, X, ChevronDown, Settings, LogOut } from 'lucide-react'
 import ConfirmModal from '@/components/ui/ConfirmModal'
 import PiutangSection from './PiutangSection'
@@ -464,18 +464,53 @@ export default function AssetsClient({ summary, piutangList, persons }: Props) {
                   <input type="text" inputMode="numeric" value={newDepositAmount ? newDepositAmount.replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''} onChange={(e) => setNewDepositAmount(e.target.value.replace(/\D/g, ''))} placeholder="Nominal" className="w-full pl-10 pr-3 py-2 border border-gray-200 dark:border-gray-700 rounded-xl text-sm bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 placeholder-gray-400 focus:outline-none" />
                 </div>
                 <input type="text" value={newDepositNote} onChange={(e) => setNewDepositNote(e.target.value)} placeholder="Catatan (cth: bunga 5%, JT Jun 2026)" className="w-full border border-gray-200 dark:border-gray-700 rounded-xl py-2 px-3 text-sm bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 placeholder-gray-400 focus:outline-none" />
-                <div className="flex gap-2">
-                  <input type="date" value={newDepositDate} onChange={(e) => setNewDepositDate(e.target.value)} className="flex-1 border border-gray-200 dark:border-gray-700 rounded-xl py-2 px-3 text-sm bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 focus:outline-none appearance-none" />
-                  {persons.length > 0 && (
-                    <select value={newDepositPersonId} onChange={(e) => setNewDepositPersonId(e.target.value)} className="flex-1 border border-gray-200 dark:border-gray-700 rounded-xl py-2 px-3 text-sm bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 focus:outline-none">
-                      {persons.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
-                    </select>
-                  )}
-                </div>
-                <label className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300 cursor-pointer">
-                  <input type="checkbox" checked={newDepositDeduct} onChange={(e) => setNewDepositDeduct(e.target.checked)} className="rounded" />
-                  Potong dari balance
-                </label>
+                <button
+                  type="button"
+                  onClick={() => setNewDepositDeduct(v => !v)}
+                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium border transition-colors ${
+                    newDepositDeduct
+                      ? 'bg-indigo-50 dark:bg-indigo-900/30 border-indigo-300 dark:border-indigo-700 text-indigo-700 dark:text-indigo-300'
+                      : 'bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300'
+                  }`}
+                >
+                  <span>Potong dari saldo</span>
+                  <span className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors ${
+                    newDepositDeduct
+                      ? 'bg-indigo-600 border-indigo-600'
+                      : 'border-gray-300 dark:border-gray-600'
+                  }`}>
+                    {newDepositDeduct && (
+                      <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
+                        <path d="M1 4L3.5 6.5L9 1" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    )}
+                  </span>
+                </button>
+                {newDepositDeduct && persons.length > 0 && (
+                  <div>
+                    <label className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 block">Potong saldo siapa</label>
+                    <div className="flex flex-wrap gap-2">
+                      {persons.map((p) => {
+                        const colors = PERSON_COLORS[p.color] ?? PERSON_COLORS.indigo
+                        return (
+                          <button
+                            key={p.id}
+                            type="button"
+                            onClick={() => setNewDepositPersonId(p.id)}
+                            className={`flex-1 min-w-[80px] py-2 rounded-xl text-sm font-medium border transition-colors ${
+                              newDepositPersonId === p.id
+                                ? colors.button
+                                : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-gray-200 dark:border-gray-700'
+                            }`}
+                          >
+                            {p.name}
+                          </button>
+                        )
+                      })}
+                    </div>
+                    <input type="date" value={newDepositDate} onChange={(e) => setNewDepositDate(e.target.value)} className="mt-2 w-full border border-gray-200 dark:border-gray-700 rounded-xl py-2 px-3 text-sm bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 focus:outline-none appearance-none" />
+                  </div>
+                )}
                 <div className="flex gap-2">
                   <button type="submit" disabled={isPending} className="flex-1 btn-base py-2 rounded-xl text-sm font-medium">Tambah</button>
                   <button type="button" onClick={() => setShowAddDepositForm(false)} className="flex-1 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 py-2 rounded-xl text-sm font-medium">Batal</button>
