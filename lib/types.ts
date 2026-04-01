@@ -197,6 +197,7 @@ export interface AddPiutangInput {
   date: string
   note?: string
   person_id?: string | null
+  deduct_from_balance?: boolean
 }
 
 export interface AddPiutangPaymentInput {
@@ -204,4 +205,5 @@ export interface AddPiutangPaymentInput {
   amount: number
   date: string
   note?: string
+  to_person_id?: string | null
 }

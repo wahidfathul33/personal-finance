@@ -3,6 +3,12 @@
 import { revalidatePath } from 'next/cache'
 import { supabase } from '@/lib/supabase'
 import type { Piutang, PiutangPayment, AddPiutangInput, AddPiutangPaymentInput } from '@/lib/types'
+import { adjustBalance } from '@/actions/balances'
+
+function parseDateParts(dateStr: string): { month: number; year: number } {
+  const [yearStr, monthStr] = dateStr.split('-')
+  return { month: parseInt(monthStr), year: parseInt(yearStr) }
+}
 
 export async function getPiutang(): Promise<Piutang[]> {
   const { data, error } = await supabase
@@ -26,6 +32,22 @@ export async function addPiutang(input: AddPiutangInput): Promise<Piutang> {
     .select()
     .single()
   if (error) throw error
+
+  if (input.deduct_from_balance && input.person_id) {
+    const { month, year } = parseDateParts(input.date)
+    const { error: txError } = await supabase.from('transactions').insert({
+      date: input.date,
+      person_id: input.person_id,
+      type: 'transfer',
+      category_id: 'transfer',
+      amount: -Math.abs(input.amount),
+      note: `Piutang ke ${input.debtor_name}`,
+      group_id: null,
+    })
+    if (txError) throw txError
+    await adjustBalance(input.person_id, month, year, -Math.abs(input.amount))
+  }
+
   revalidatePath('/assets')
   return data as unknown as Piutang
 }
@@ -50,6 +72,27 @@ export async function addPiutangPayment(
     .select()
     .single()
   if (error) throw error
+
+  if (input.to_person_id) {
+    const { month, year } = parseDateParts(input.date)
+    // Fetch debtor name for note
+    const { data: piutangRow } = await supabase
+      .from('piutang')
+      .select('debtor_name')
+      .eq('id', input.piutang_id)
+      .single()
+    const { error: txError } = await supabase.from('transactions').insert({
+      date: input.date,
+      person_id: input.to_person_id,
+      type: 'transfer',
+      category_id: 'transfer',
+      amount: Math.abs(input.amount),
+      note: `Bayar piutang${piutangRow ? ` dari ${piutangRow.debtor_name}` : ''}`,
+      group_id: null,
+    })
+    if (txError) throw txError
+    await adjustBalance(input.to_person_id, month, year, Math.abs(input.amount))
+  }
 
   // Recalculate status
   const { data: piutang } = await supabase

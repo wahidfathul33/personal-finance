@@ -2,17 +2,18 @@
 
 import { useState, useTransition } from 'react'
 import { addPiutang, deletePiutang, addPiutangPayment, deletePiutangPayment } from '@/actions/piutang'
-import type { Piutang } from '@/lib/types'
-import { formatCurrency, todayISO } from '@/lib/constants'
+import type { Piutang, Person } from '@/lib/types'
+import { formatCurrency, todayISO, PERSON_COLORS } from '@/lib/constants'
 import { Plus, Trash2, ChevronDown, Check, X, Clock } from 'lucide-react'
 import ConfirmModal from '@/components/ui/ConfirmModal'
 import { useHideAmounts } from '@/lib/HideAmountsContext'
 
 interface Props {
   initialData: Piutang[]
+  persons: Person[]
 }
 
-export default function PiutangSection({ initialData }: Props) {
+export default function PiutangSection({ initialData, persons }: Props) {
   const [piutangList, setPiutangList] = useState<Piutang[]>(initialData)
   const [isPending, startTransition] = useTransition()
   const { hidden } = useHideAmounts()
@@ -23,11 +24,14 @@ export default function PiutangSection({ initialData }: Props) {
   const [newAmount, setNewAmount] = useState('')
   const [newDate, setNewDate] = useState(todayISO())
   const [newNote, setNewNote] = useState('')
+  const [newDeductFromBalance, setNewDeductFromBalance] = useState(false)
+  const [newPersonId, setNewPersonId] = useState(persons[0]?.id ?? '')
 
   const [addingPaymentFor, setAddingPaymentFor] = useState<string | null>(null)
   const [payAmount, setPayAmount] = useState('')
   const [payDate, setPayDate] = useState(todayISO())
   const [payNote, setPayNote] = useState('')
+  const [payToPersonId, setPayToPersonId] = useState('')
 
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const [showPaidHistory, setShowPaidHistory] = useState(false)
@@ -54,12 +58,15 @@ export default function PiutangSection({ initialData }: Props) {
         amount: parseFloat(newAmount),
         date: newDate,
         note: newNote || undefined,
+        deduct_from_balance: newDeductFromBalance,
+        person_id: newDeductFromBalance ? newPersonId : undefined,
       })
       setPiutangList((prev) => [{ ...result, payments: [] }, ...prev])
       setNewDebtorName('')
       setNewAmount('')
       setNewDate(todayISO())
       setNewNote('')
+      setNewDeductFromBalance(false)
       setShowAddForm(false)
     })
   }
@@ -80,6 +87,7 @@ export default function PiutangSection({ initialData }: Props) {
         amount: parseFloat(payAmount),
         date: payDate,
         note: payNote || undefined,
+        to_person_id: payToPersonId || null,
       })
       setPiutangList((prev) =>
         prev.map((p) => {
@@ -91,6 +99,7 @@ export default function PiutangSection({ initialData }: Props) {
       setPayAmount('')
       setPayDate(todayISO())
       setPayNote('')
+      setPayToPersonId('')
       setAddingPaymentFor(null)
     })
   }
@@ -155,6 +164,53 @@ export default function PiutangSection({ initialData }: Props) {
               className="w-full pl-10 pr-3 py-2 border border-gray-200 dark:border-gray-700 rounded-xl text-sm bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 placeholder-gray-400 focus:outline-none"
             />
           </div>
+          {/* Deduct from balance toggle */}
+          <button
+            type="button"
+            onClick={() => setNewDeductFromBalance((v) => !v)}
+            className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium border transition-colors ${
+              newDeductFromBalance
+                ? 'bg-indigo-50 dark:bg-indigo-900/30 border-indigo-300 dark:border-indigo-700 text-indigo-700 dark:text-indigo-300'
+                : 'bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300'
+            }`}
+          >
+            <span>Potong dari saldo</span>
+            <span className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors ${
+              newDeductFromBalance
+                ? 'bg-indigo-600 border-indigo-600'
+                : 'border-gray-300 dark:border-gray-600'
+            }`}>
+              {newDeductFromBalance && (
+                <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
+                  <path d="M1 4L3.5 6.5L9 1" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              )}
+            </span>
+          </button>
+          {newDeductFromBalance && persons.length > 0 && (
+            <div>
+              <label className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 block">Potong saldo</label>
+              <div className="flex flex-wrap gap-2">
+                {persons.map((p) => {
+                  const colors = PERSON_COLORS[p.color] ?? PERSON_COLORS.indigo
+                  return (
+                    <button
+                      key={p.id}
+                      type="button"
+                      onClick={() => setNewPersonId(p.id)}
+                      className={`flex-1 min-w-[80px] py-2 rounded-xl text-sm font-medium border transition-colors ${
+                        newPersonId === p.id
+                          ? colors.button
+                          : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-gray-200 dark:border-gray-700'
+                      }`}
+                    >
+                      {p.name}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+          )}
           <input
             type="date"
             value={newDate}
@@ -300,6 +356,32 @@ export default function PiutangSection({ initialData }: Props) {
                             autoFocus
                           />
                         </div>
+                        {/* Masuk ke */}
+                        {persons.length > 0 && (
+                          <div>
+                            <label className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 block">Masuk ke</label>
+                            <div className="flex flex-wrap gap-2">
+                              {persons.map((per) => {
+                                const colors = PERSON_COLORS[per.color] ?? PERSON_COLORS.indigo
+                                const isSelected = payToPersonId === per.id
+                                return (
+                                  <button
+                                    key={per.id}
+                                    type="button"
+                                    onClick={() => setPayToPersonId(isSelected ? '' : per.id)}
+                                    className={`flex-1 min-w-[80px] py-2 rounded-xl text-xs font-semibold border transition-colors ${
+                                      isSelected
+                                        ? colors.button
+                                        : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-gray-200 dark:border-gray-700'
+                                    }`}
+                                  >
+                                    {per.name}
+                                  </button>
+                                )
+                              })}
+                            </div>
+                          </div>
+                        )}
                         <input
                           type="date"
                           value={payDate}
@@ -338,6 +420,7 @@ export default function PiutangSection({ initialData }: Props) {
                             setPayAmount('')
                             setPayDate(todayISO())
                             setPayNote('')
+                            setPayToPersonId('')
                           }}
                           className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors font-medium"
                         >
