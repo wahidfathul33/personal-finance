@@ -3,9 +3,9 @@
 @tailwind utilities;
 
 /* Prevent iOS Safari auto-zoom on input focus (triggered when font-size < 16px) */
-@layer base {
+@supports (-webkit-touch-callout: none) {
   input, textarea, select {
-    font-size: 16px;
+    font-size: 16px !important;
   }
 }
 @keyframes fade-in-up {
