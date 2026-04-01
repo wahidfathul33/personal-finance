@@ -20,6 +20,7 @@ export const CATEGORIES: Category[] = [
   { id: 'bonus',         name: 'Bonus',        type: 'income',  icon: '🎁' },
   { id: 'other_income',  name: 'Lainnya',      type: 'income',  icon: '💵' },
   // All / Transfer
+  { id: 'deposit',       name: 'Deposito',     type: 'all',     icon: '🏦' },
   { id: 'transfer',      name: 'Transfer',     type: 'transfer', icon: '↔️' },
   { id: 'other',         name: 'Lainnya',      type: 'all',     icon: '📌' },
 ]

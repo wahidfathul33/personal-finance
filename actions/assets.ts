@@ -3,6 +3,12 @@
 import { revalidatePath } from 'next/cache'
 import { supabase } from '@/lib/supabase'
 import type { Asset, GoldPrice, AddAssetInput, UpdateGoldPriceInput } from '@/lib/types'
+import { adjustBalance } from '@/actions/balances'
+
+function parseDateParts(dateStr: string): { month: number; year: number } {
+  const [yearStr, monthStr] = dateStr.split('-')
+  return { month: parseInt(monthStr), year: parseInt(yearStr) }
+}
 
 // ─── Assets ───────────────────────────────────────────────────────────────────
 
@@ -125,4 +131,73 @@ export async function getAssetsSummary() {
     goldPrice,
     totalDepositValue,
   }
+}
+
+// ─── Deposit: Setor (potong balance) ─────────────────────────────────────────
+
+export async function addDepositWithTransaction(input: {
+  name: string
+  amount: number
+  note: string | null
+  person_id: string
+  date: string
+  deduct_from_balance: boolean
+}) {
+  const { error } = await supabase.from('assets').insert({
+    name: input.name,
+    type: 'deposit',
+    amount: input.amount,
+    unit: 'IDR',
+    note: input.note ?? null,
+  })
+  if (error) throw error
+
+  if (input.deduct_from_balance) {
+    const { month, year } = parseDateParts(input.date)
+    const { error: txError } = await supabase.from('transactions').insert({
+      date: input.date,
+      person_id: input.person_id,
+      type: 'expense',
+      category_id: 'deposit',
+      amount: -Math.abs(input.amount),
+      note: `Setor deposito: ${input.name}`,
+      group_id: null,
+    })
+    if (txError) throw txError
+    await adjustBalance(input.person_id, month, year, -Math.abs(input.amount))
+  }
+
+  revalidatePath('/assets')
+}
+
+// ─── Deposit: Cairkan (masuk ke balance) ─────────────────────────────────────
+
+export async function cairkanDeposito(input: {
+  asset_id: string
+  asset_name: string
+  person_id: string
+  date: string
+  pokok: number
+  bunga: number
+}) {
+  const total = input.pokok + input.bunga
+  const { month, year } = parseDateParts(input.date)
+
+  const { error: txError } = await supabase.from('transactions').insert({
+    date: input.date,
+    person_id: input.person_id,
+    type: 'income',
+    category_id: 'deposit',
+    amount: total,
+    note: `Cairkan deposito: ${input.asset_name}${input.bunga > 0 ? ` (bunga: ${input.bunga.toLocaleString('id-ID')})` : ''}`,
+    group_id: null,
+  })
+  if (txError) throw txError
+
+  await adjustBalance(input.person_id, month, year, total)
+
+  const { error: delError } = await supabase.from('assets').delete().eq('id', input.asset_id)
+  if (delError) throw delError
+
+  revalidatePath('/assets')
 }
