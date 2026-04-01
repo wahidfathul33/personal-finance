@@ -149,10 +149,18 @@ export async function generateRecurringTransactions() {
     note: string
   }> = []
 
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+
   for (const template of activeTemplates) {
     const maxDay = new Date(year, month, 0).getDate()
     const day = Math.min(template.day_of_month, maxDay)
     const date = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`
+
+    // Only generate if the scheduled date is today or in the past
+    const scheduledDate = new Date(date)
+    if (scheduledDate > today) continue
+
     const noteKey = `[recurring:${template.id}]`
 
     const person_id = template.person_id ?? (persons[0]?.id as string)
