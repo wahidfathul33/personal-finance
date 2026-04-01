@@ -3,6 +3,25 @@
 import { supabase } from '@/lib/supabase'
 import { currentMonth, currentYear } from '@/lib/constants'
 
+async function getPreviousMonthBalance(
+  person_id: string,
+  month: number,
+  year: number
+): Promise<number> {
+  const prevMonth = month === 1 ? 12 : month - 1
+  const prevYear = month === 1 ? year - 1 : year
+
+  const { data } = await supabase
+    .from('balances')
+    .select('amount')
+    .eq('person_id', person_id)
+    .eq('month', prevMonth)
+    .eq('year', prevYear)
+    .single()
+
+  return (data?.amount ?? 0) as number
+}
+
 export async function getPersonBalance(
   person_id: string,
   month?: number,
@@ -19,26 +38,21 @@ export async function getPersonBalance(
     .eq('year', y)
     .single()
 
-  return (data?.amount ?? 0) as number
+  if (data) return data.amount as number
+
+  // No row for this month yet — roll over from previous month
+  return getPreviousMonthBalance(person_id, m, y)
 }
 
 // Adjust balance for a person in a given month/year by delta.
-// If no row exists yet, it is created with amount = 0 before adjusting.
+// If no row exists yet, it is created starting from the previous month's balance.
 export async function adjustBalance(
   person_id: string,
   month: number,
   year: number,
   delta: number
 ): Promise<void> {
-  // Ensure row exists
-  await supabase
-    .from('balances')
-    .upsert(
-      { person_id, month, year, amount: 0 },
-      { onConflict: 'person_id,month,year', ignoreDuplicates: true }
-    )
-
-  const { data } = await supabase
+  const { data: existing } = await supabase
     .from('balances')
     .select('amount')
     .eq('person_id', person_id)
@@ -46,7 +60,17 @@ export async function adjustBalance(
     .eq('year', year)
     .single()
 
-  const newAmount = ((data?.amount ?? 0) as number) + delta
+  if (!existing) {
+    // Initialize from previous month's balance (rollover)
+    const prevBalance = await getPreviousMonthBalance(person_id, month, year)
+    const { error } = await supabase
+      .from('balances')
+      .insert({ person_id, month, year, amount: prevBalance + delta })
+    if (error) throw error
+    return
+  }
+
+  const newAmount = (existing.amount as number) + delta
 
   const { error } = await supabase
     .from('balances')

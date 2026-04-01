@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { supabase } from '@/lib/supabase'
 import type { RecurringTemplate, AddRecurringTemplateInput } from '@/lib/types'
 import { getCategoryById, currentMonth, currentYear } from '@/lib/constants'
+import { adjustBalance } from '@/actions/balances'
 
 const WITH_PERSON = '*, person:persons!person_id(name, color)'
 
@@ -182,7 +183,13 @@ export async function generateRecurringTransactions() {
   }
 
   if (toInsert.length > 0) {
-    await supabase.from('transactions').insert(toInsert)
+    const { error: txError } = await supabase.from('transactions').insert(toInsert)
+    if (txError) throw txError
+
+    // Adjust balances for each generated recurring transaction
+    await Promise.all(
+      toInsert.map((tx) => adjustBalance(tx.person_id, month, year, tx.amount))
+    )
   }
 
   if (savingsToInsert.length > 0) {
