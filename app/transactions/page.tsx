@@ -9,7 +9,7 @@ import PageHeader from '@/components/layout/PageHeader'
 import Link from 'next/link'
 import type { TransactionWithCategory } from '@/lib/types'
 import type { Person } from '@/lib/types'
-import { currentMonth, currentYear, PERSON_COLORS, formatCurrency, MONTHS, YEAR_OPTIONS } from '@/lib/constants'
+import { currentMonth, currentYear, PERSON_COLORS, formatCurrency, MONTHS, YEAR_OPTIONS, CATEGORIES } from '@/lib/constants'
 import { Plus, CalendarDays, SlidersHorizontal, ChevronsUpDown } from 'lucide-react'
 
 const TYPE_OPTIONS = [
@@ -27,6 +27,7 @@ export default function TransactionsPage() {
   const [persons, setPersons] = useState<Person[]>([])
   const [personFilter, setPersonFilter] = useState<string>('all')
   const [typeFilter, setTypeFilter] = useState<string>('all')
+  const [categoryFilter, setCategoryFilter] = useState<string>('all')
   const [month, setMonth] = useState(currentMonth())
   const [year, setYear] = useState(currentYear())
   const [loading, setLoading] = useState(true)
@@ -52,7 +53,8 @@ export default function TransactionsPage() {
     year,
     person_id: personFilter === 'all' ? undefined : personFilter,
     type: typeFilter === 'all' ? undefined : (typeFilter as TransactionWithCategory['type']),
-  }), [month, year, personFilter, typeFilter])
+    category_id: categoryFilter === 'all' ? undefined : categoryFilter,
+  }), [month, year, personFilter, typeFilter, categoryFilter])
 
   const loadPersons = useCallback(async () => {
     const data = await getPersons()
@@ -106,7 +108,14 @@ export default function TransactionsPage() {
     return () => observer.disconnect()
   }, [loadMore])
 
-  const hasActiveFilters = personFilter !== 'all' || typeFilter !== 'all'
+  const hasActiveFilters = personFilter !== 'all' || typeFilter !== 'all' || categoryFilter !== 'all'
+
+  const visibleCategories = useMemo(() => {
+    if (typeFilter === 'expense') return CATEGORIES.filter(c => c.type === 'expense')
+    if (typeFilter === 'income') return CATEGORIES.filter(c => c.type === 'income')
+    if (typeFilter === 'transfer') return CATEGORIES.filter(c => c.type === 'transfer')
+    return CATEGORIES.filter(c => c.type !== 'transfer')
+  }, [typeFilter])
 
   return (
     <div className="flex flex-col h-[calc(100dvh-80px)]">
@@ -213,7 +222,7 @@ export default function TransactionsPage() {
               {TYPE_OPTIONS.map((opt) => (
                 <button
                   key={opt.value}
-                  onClick={() => setTypeFilter(opt.value)}
+                  onClick={() => { setTypeFilter(opt.value); setCategoryFilter('all') }}
                   className={`py-2 rounded-2xl text-sm font-medium transition-colors ${
                     typeFilter === opt.value
                       ? 'filter-active'
@@ -223,6 +232,23 @@ export default function TransactionsPage() {
                   {opt.label}
                 </button>
               ))}
+            </div>
+          </div>
+
+          {/* Category Filter */}
+          <div className="px-4">
+            <div className="relative">
+              <select
+                value={categoryFilter}
+                onChange={e => setCategoryFilter(e.target.value)}
+                className="w-full bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-100 text-sm font-medium rounded-xl pl-3 pr-8 py-2.5 border-0 outline-none appearance-none cursor-pointer"
+              >
+                <option value="all">Semua Kategori</option>
+                {visibleCategories.map((cat) => (
+                  <option key={cat.id} value={cat.id}>{cat.icon} {cat.name}</option>
+                ))}
+              </select>
+              <ChevronsUpDown size={14} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
             </div>
           </div>
         </div>
