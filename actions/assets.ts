@@ -154,6 +154,16 @@ export async function addDepositWithTransaction(input: {
 
   if (input.deduct_from_balance) {
     const { month, year } = parseDateParts(input.date)
+    const { error: txError } = await supabase.from('transactions').insert({
+      date: input.date,
+      person_id: input.person_id,
+      type: 'transfer',
+      category_id: 'transfer',
+      amount: -Math.abs(input.amount),
+      note: `Transfer ke Deposito: ${input.name}`,
+      group_id: null,
+    })
+    if (txError) throw txError
     await adjustBalance(input.person_id, month, year, -Math.abs(input.amount))
   }
 
@@ -173,15 +183,31 @@ export async function cairkanDeposito(input: {
   const total = input.pokok + input.bunga
   const { month, year } = parseDateParts(input.date)
 
-  const { error: txError } = await supabase.from('transactions').insert({
-    date: input.date,
-    person_id: input.person_id,
-    type: 'income',
-    category_id: 'deposit',
-    amount: total,
-    note: `Cairkan deposito: ${input.asset_name}${input.bunga > 0 ? ` (bunga: ${input.bunga.toLocaleString('id-ID')})` : ''}`,
-    group_id: null,
-  })
+  const rows: object[] = [
+    {
+      date: input.date,
+      person_id: input.person_id,
+      type: 'transfer',
+      category_id: 'transfer',
+      amount: input.pokok,
+      note: `Cairkan Deposito: ${input.asset_name}`,
+      group_id: null,
+    },
+  ]
+
+  if (input.bunga > 0) {
+    rows.push({
+      date: input.date,
+      person_id: input.person_id,
+      type: 'income',
+      category_id: 'investment',
+      amount: input.bunga,
+      note: `Bunga Deposito: ${input.asset_name}`,
+      group_id: null,
+    })
+  }
+
+  const { error: txError } = await supabase.from('transactions').insert(rows)
   if (txError) throw txError
 
   await adjustBalance(input.person_id, month, year, total)
