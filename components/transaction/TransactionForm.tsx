@@ -147,7 +147,7 @@ export default function TransactionForm({ defaultMode = 'expense', editTransacti
 
   return (
     <div className="fixed inset-0 bg-black/50 z-[60] flex items-end">
-      <div className="bg-white dark:bg-gray-900 rounded-t-3xl w-full max-w-lg mx-auto max-h-[92vh] flex flex-col">
+      <div className="bg-white dark:bg-gray-900 w-full max-w-lg mx-auto h-full flex flex-col">
         {/* Header */}
         <div className="flex items-center rounded-t-3xl justify-between px-4 pt-4 pb-4 bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800 flex-shrink-0">
           <h2 className="text-m font-bold text-gray-900 dark:text-gray-100">
