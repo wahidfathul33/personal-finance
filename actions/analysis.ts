@@ -30,28 +30,38 @@ const CHART_COLORS = [
 
 export async function getMonthlyTrend(): Promise<MonthlyTrendPoint[]> {
   const now = new Date()
-  const points: MonthlyTrendPoint[] = []
 
+  // Hitung range 6 bulan sekaligus — 1 query, bukan 6
+  const oldest = new Date(now.getFullYear(), now.getMonth() - 5, 1)
+  const startDate = `${oldest.getFullYear()}-${String(oldest.getMonth() + 1).padStart(2, '0')}-01`
+  const endDate   = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().split('T')[0]
+
+  const { data } = await supabase
+    .from('transactions')
+    .select('amount, type, date')
+    .gte('date', startDate)
+    .lte('date', endDate)
+    .in('type', ['income', 'expense'])
+
+  // Aggregate per bulan di memory
+  const buckets: Record<string, { income: number; expense: number }> = {}
   for (let i = 5; i >= 0; i--) {
     const d = new Date(now.getFullYear(), now.getMonth() - i, 1)
-    const m = d.getMonth() + 1
-    const y = d.getFullYear()
-    const startDate = `${y}-${String(m).padStart(2, '0')}-01`
-    const endDate = new Date(y, m, 0).toISOString().split('T')[0]
-
-    const { data } = await supabase
-      .from('transactions')
-      .select('amount, type')
-      .gte('date', startDate)
-      .lte('date', endDate)
-
-    const income  = (data ?? []).filter((t) => t.type === 'income' ).reduce((a, t) => a + (t.amount as number), 0)
-    const expense = (data ?? []).filter((t) => t.type === 'expense').reduce((a, t) => a + Math.abs(t.amount as number), 0)
-
-    points.push({ label: MONTHS_SHORT[m - 1], income, expense })
+    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+    buckets[key] = { income: 0, expense: 0 }
   }
 
-  return points
+  for (const t of data ?? []) {
+    const key = (t.date as string).slice(0, 7) // "YYYY-MM"
+    if (!buckets[key]) continue
+    if (t.type === 'income')  buckets[key].income  += t.amount as number
+    if (t.type === 'expense') buckets[key].expense += Math.abs(t.amount as number)
+  }
+
+  return Object.entries(buckets).map(([key, val]) => {
+    const [y, m] = key.split('-')
+    return { label: MONTHS_SHORT[parseInt(m) - 1], ...val }
+  })
 }
 
 export async function getCategoryBreakdown(month: number, year: number): Promise<CategoryBreakdownItem[]> {

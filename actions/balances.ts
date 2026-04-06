@@ -86,22 +86,27 @@ export async function getAllBalances(month?: number, year?: number) {
   const m = month ?? currentMonth()
   const y = year ?? currentYear()
 
-  // Get all persons
-  const { data: persons } = await supabase
-    .from('persons')
-    .select('id, name, color')
-    .order('sort_order', { ascending: true })
+  // Fetch persons + current month balances + prev month balances in 3 parallel queries
+  const prevMonth = m === 1 ? 12 : m - 1
+  const prevYear  = m === 1 ? y - 1 : y
+
+  const [{ data: persons }, { data: currRows }, { data: prevRows }] = await Promise.all([
+    supabase.from('persons').select('id, name, color').order('sort_order', { ascending: true }),
+    supabase.from('balances').select('person_id, amount').eq('month', m).eq('year', y),
+    supabase.from('balances').select('person_id, amount').eq('month', prevMonth).eq('year', prevYear),
+  ])
 
   if (!persons?.length) return { people: [], total: 0 }
 
-  const balances = await Promise.all(
-    persons.map(async (p) => ({
-      id: p.id as string,
-      name: p.name as string,
-      color: p.color as string,
-      amount: await getPersonBalance(p.id as string, m, y),
-    }))
-  )
+  const currMap = Object.fromEntries((currRows ?? []).map((r) => [r.person_id as string, r.amount as number]))
+  const prevMap = Object.fromEntries((prevRows ?? []).map((r) => [r.person_id as string, r.amount as number]))
+
+  const balances = persons.map((p) => ({
+    id: p.id as string,
+    name: p.name as string,
+    color: p.color as string,
+    amount: (currMap[p.id as string] ?? prevMap[p.id as string] ?? 0) as number,
+  }))
 
   const total = balances.reduce((acc, b) => acc + b.amount, 0)
   return { people: balances, total }
