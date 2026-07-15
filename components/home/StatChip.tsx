@@ -76,24 +76,24 @@ export default function StatChip({
     <motion.div
       whileHover={{ scale: 1.02 }}
       whileTap={{ scale: 0.98 }}
-      className={cn('rounded-2xl p-3.5 shadow-sm', v.card, className)}
+      className={cn('rounded-2xl p-3 sm:p-3.5 shadow-sm', v.card, className)}
     >
-      <div className="flex items-start gap-3">
+      <div className="flex items-start gap-2.5 sm:gap-3">
         {/* Icon Circle */}
-        <div className={cn('w-10 h-10 rounded-full flex items-center justify-center shrink-0', v.iconBg)}>
+        <div className={cn('w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center shrink-0', v.iconBg)}>
           <span className={cn(v.iconText)}>
-            {variant === 'income' && <ArrowUpRight size={20} strokeWidth={2.5} />}
-            {variant === 'expense' && <ArrowDownRight size={20} strokeWidth={2.5} />}
-            {variant === 'default' && <TrendingUp size={20} strokeWidth={2.5} />}
+            {variant === 'income' && <ArrowUpRight size={18} strokeWidth={2.5} />}
+            {variant === 'expense' && <ArrowDownRight size={18} strokeWidth={2.5} />}
+            {variant === 'default' && <TrendingUp size={18} strokeWidth={2.5} />}
           </span>
         </div>
         <div className="flex-1 min-w-0">
-          <p className={cn('text-xs font-medium', v.label)}>{label}</p>
-          <p className={cn('text-lg font-bold amount mt-0.5', v.amount)}>
+          <p className={cn('text-xs font-medium truncate', v.label)}>{label}</p>
+          <p className={cn('text-sm sm:text-lg font-bold amount mt-0.5 truncate', v.amount)}>
             {hidden ? '••••••' : formatCurrency(value)}
           </p>
           {changeLabel && !hidden && (
-            <p className={cn('text-[11px] mt-0.5', v.trend)}>{changeLabel}</p>
+            <p className={cn('text-[11px] mt-0.5 truncate', v.trend)}>{changeLabel}</p>
           )}
         </div>
       </div>
@@ -102,10 +102,10 @@ export default function StatChip({
       {persons && persons.length > 0 && !hidden && (
         <div className="mt-3 pt-2.5 border-t border-gray-100 dark:border-base-700 space-y-1.5">
           {persons.map((p) => (
-            <div key={p.name} className="flex items-center gap-2">
+            <div key={p.name} className="flex items-center gap-1.5 flex-wrap">
               <div className={cn('w-2 h-2 rounded-full shrink-0', resolveDotColor(p.color))} />
-              <span className="text-[11px] text-gray-500 dark:text-gray-400 shrink-0">{p.name}</span>
-              <span className="text-[11px] font-semibold amount ml-auto">{formatCurrency(p.amount)}</span>
+              <span className="text-[11px] text-gray-500 dark:text-gray-400 shrink-0 truncate max-w-[3.5rem]">{p.name}</span>
+              <span className="text-[11px] font-semibold amount ml-auto truncate">{formatCurrency(p.amount)}</span>
               {p.change && p.change.value !== '0%' && (
                 <span className={cn(
                   'text-[10px] font-medium shrink-0 inline-flex items-center gap-0.5',
