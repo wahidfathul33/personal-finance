@@ -1,27 +1,68 @@
 import type { Category } from './types'
+import {
+  UtensilsCrossed, Car, ShoppingBag, Pill, Clapperboard, FileText,
+  BookOpen, Home, Sparkles, Smartphone, HeartHandshake, Wallet,
+  Briefcase, TrendingUp, Gift, Banknote, ArrowLeftRight, Pin,
+  type LucideIcon,
+} from 'lucide-react'
+
+/* ─── Icon Map: string name → Lucide component ─── */
+export const CATEGORY_ICON_MAP: Record<string, LucideIcon> = {
+  UtensilsCrossed, Car, ShoppingBag, Pill, Clapperboard, FileText,
+  BookOpen, Home, Sparkles, Smartphone, HeartHandshake, Wallet,
+  Briefcase, TrendingUp, Gift, Banknote, ArrowLeftRight, Pin,
+}
+
+export const getCategoryIcon = (iconName?: string): LucideIcon =>
+  iconName && CATEGORY_ICON_MAP[iconName] ? CATEGORY_ICON_MAP[iconName] : Pin
+
+/* ─── Category Icon Colors ─── */
+export const CATEGORY_COLORS: Record<string, { bg: string; text: string }> = {
+  food:          { bg: 'bg-orange-100 dark:bg-orange-900/30', text: 'text-orange-600 dark:text-orange-400' },
+  transport:     { bg: 'bg-sky-100 dark:bg-sky-900/30',      text: 'text-sky-600 dark:text-sky-400' },
+  shopping:      { bg: 'bg-pink-100 dark:bg-pink-900/30',     text: 'text-pink-600 dark:text-pink-400' },
+  health:        { bg: 'bg-red-100 dark:bg-red-900/30',       text: 'text-red-600 dark:text-red-400' },
+  entertainment: { bg: 'bg-purple-100 dark:bg-purple-900/30', text: 'text-purple-600 dark:text-purple-400' },
+  bills:         { bg: 'bg-blue-100 dark:bg-blue-900/30',     text: 'text-blue-600 dark:text-blue-400' },
+  education:     { bg: 'bg-indigo-100 dark:bg-indigo-900/30', text: 'text-indigo-600 dark:text-indigo-400' },
+  household:     { bg: 'bg-teal-100 dark:bg-teal-900/30',     text: 'text-teal-600 dark:text-teal-400' },
+  personal_care: { bg: 'bg-rose-100 dark:bg-rose-900/30',     text: 'text-rose-600 dark:text-rose-400' },
+  subscription:  { bg: 'bg-violet-100 dark:bg-violet-900/30', text: 'text-violet-600 dark:text-violet-400' },
+  charity:       { bg: 'bg-emerald-100 dark:bg-emerald-900/30', text: 'text-emerald-600 dark:text-emerald-400' },
+  salary:        { bg: 'bg-green-100 dark:bg-green-900/30',   text: 'text-green-600 dark:text-green-400' },
+  freelance:     { bg: 'bg-cyan-100 dark:bg-cyan-900/30',     text: 'text-cyan-600 dark:text-cyan-400' },
+  investment:    { bg: 'bg-lime-100 dark:bg-lime-900/30',     text: 'text-lime-600 dark:text-lime-400' },
+  bonus:         { bg: 'bg-amber-100 dark:bg-amber-900/30',   text: 'text-amber-600 dark:text-amber-400' },
+  other_income:  { bg: 'bg-slate-100 dark:bg-slate-900/30',   text: 'text-slate-600 dark:text-slate-400' },
+  transfer:      { bg: 'bg-violet-100 dark:bg-violet-900/30', text: 'text-violet-600 dark:text-violet-400' },
+  other:         { bg: 'bg-gray-100 dark:bg-gray-900/30',     text: 'text-gray-600 dark:text-gray-400' },
+}
+
+export const getCategoryColors = (categoryId?: string): { bg: string; text: string } =>
+  categoryId && CATEGORY_COLORS[categoryId] ? CATEGORY_COLORS[categoryId] : { bg: 'bg-gray-100 dark:bg-gray-800', text: 'text-gray-600 dark:text-gray-400' }
 
 export const CATEGORIES: Category[] = [
   // Expense
-  { id: 'food',          name: 'Makanan',      type: 'expense', icon: '🍽️' },
-  { id: 'transport',     name: 'Transport',    type: 'expense', icon: '🚗' },
-  { id: 'shopping',      name: 'Belanja',      type: 'expense', icon: '🛍️' },
-  { id: 'health',        name: 'Kesehatan',    type: 'expense', icon: '💊' },
-  { id: 'entertainment', name: 'Hiburan',      type: 'expense', icon: '🎬' },
-  { id: 'bills',         name: 'Tagihan',      type: 'expense', icon: '📄' },
-  { id: 'education',     name: 'Pendidikan',   type: 'expense', icon: '📚' },
-  { id: 'household',     name: 'Rumah Tangga', type: 'expense', icon: '🏠' },
-  { id: 'personal_care', name: 'Perawatan',    type: 'expense', icon: '💆' },
-  { id: 'subscription',  name: 'Langganan',    type: 'expense', icon: '📱' },
-  { id: 'charity',       name: 'Donasi',       type: 'expense', icon: '🤲' },
+  { id: 'food',          name: 'Makanan',      type: 'expense', icon: 'UtensilsCrossed' },
+  { id: 'transport',     name: 'Transport',    type: 'expense', icon: 'Car' },
+  { id: 'shopping',      name: 'Belanja',      type: 'expense', icon: 'ShoppingBag' },
+  { id: 'health',        name: 'Kesehatan',    type: 'expense', icon: 'Pill' },
+  { id: 'entertainment', name: 'Hiburan',      type: 'expense', icon: 'Clapperboard' },
+  { id: 'bills',         name: 'Tagihan',      type: 'expense', icon: 'FileText' },
+  { id: 'education',     name: 'Pendidikan',   type: 'expense', icon: 'BookOpen' },
+  { id: 'household',     name: 'Rumah Tangga', type: 'expense', icon: 'Home' },
+  { id: 'personal_care', name: 'Perawatan',    type: 'expense', icon: 'Sparkles' },
+  { id: 'subscription',  name: 'Langganan',    type: 'expense', icon: 'Smartphone' },
+  { id: 'charity',       name: 'Donasi',       type: 'expense', icon: 'HeartHandshake' },
   // Income
-  { id: 'salary',        name: 'Gaji',         type: 'income',  icon: '💰' },
-  { id: 'freelance',     name: 'Freelance',    type: 'income',  icon: '💼' },
-  { id: 'investment',    name: 'Investasi',    type: 'income',  icon: '📈' },
-  { id: 'bonus',         name: 'Bonus',        type: 'income',  icon: '🎁' },
-  { id: 'other_income',  name: 'Lainnya',      type: 'income',  icon: '💵' },
+  { id: 'salary',        name: 'Gaji',         type: 'income',  icon: 'Wallet' },
+  { id: 'freelance',     name: 'Freelance',    type: 'income',  icon: 'Briefcase' },
+  { id: 'investment',    name: 'Investasi',    type: 'income',  icon: 'TrendingUp' },
+  { id: 'bonus',         name: 'Bonus',        type: 'income',  icon: 'Gift' },
+  { id: 'other_income',  name: 'Lainnya',      type: 'income',  icon: 'Banknote' },
   // All / Transfer
-  { id: 'transfer',      name: 'Transfer',     type: 'transfer', icon: '↔️' },
-  { id: 'other',         name: 'Lainnya',      type: 'all',     icon: '📌' },
+  { id: 'transfer',      name: 'Transfer',     type: 'transfer', icon: 'ArrowLeftRight' },
+  { id: 'other',         name: 'Lainnya',      type: 'all',     icon: 'Pin' },
 ]
 
 export const EXPENSE_CATEGORIES = CATEGORIES.filter(

@@ -1,6 +1,4 @@
-import { getRecurringTemplates } from '@/actions/recurring'
-import RecurringForm from '../../RecurringForm'
-import { notFound } from 'next/navigation'
+import { redirect } from 'next/navigation'
 
 interface Props {
   params: Promise<{ id: string }>
@@ -8,10 +6,5 @@ interface Props {
 
 export default async function EditRecurringPage({ params }: Props) {
   const { id } = await params
-  const templates = await getRecurringTemplates()
-  const template = templates.find((t) => t.id === id)
-
-  if (!template) notFound()
-
-  return <RecurringForm template={template} />
+  redirect(`/recurring?edit=${id}`)
 }

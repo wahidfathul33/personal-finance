@@ -96,7 +96,7 @@ export async function getAllBalances(month?: number, year?: number) {
     supabase.from('balances').select('person_id, amount').eq('month', prevMonth).eq('year', prevYear),
   ])
 
-  if (!persons?.length) return { people: [], total: 0 }
+  if (!persons?.length) return { people: [], total: 0, prevTotal: 0 }
 
   const currMap = Object.fromEntries((currRows ?? []).map((r) => [r.person_id as string, r.amount as number]))
   const prevMap = Object.fromEntries((prevRows ?? []).map((r) => [r.person_id as string, r.amount as number]))
@@ -109,7 +109,8 @@ export async function getAllBalances(month?: number, year?: number) {
   }))
 
   const total = balances.reduce((acc, b) => acc + b.amount, 0)
-  return { people: balances, total }
+  const prevTotal = Object.values(prevMap).reduce((acc, v) => acc + (v as number), 0)
+  return { people: balances, total, prevTotal }
 }
 
 export async function getMonthlyStats(month?: number, year?: number) {
@@ -133,4 +134,65 @@ export async function getMonthlyStats(month?: number, year?: number) {
     .reduce((acc, t) => acc + Math.abs(t.amount as number), 0)
 
   return { income, expense }
+}
+
+export async function getMonthlyStatsWithComparison(month?: number, year?: number) {
+  const m = month ?? currentMonth()
+  const y = year ?? currentYear()
+  
+  // Current month
+  const currStart = `${y}-${String(m).padStart(2, '0')}-01`
+  const currEnd = new Date(y, m, 0).toISOString().split('T')[0]
+  
+  // Previous month
+  const prevMonth = m === 1 ? 12 : m - 1
+  const prevYear = m === 1 ? y - 1 : y
+  const prevStart = `${prevYear}-${String(prevMonth).padStart(2, '0')}-01`
+  const prevEnd = new Date(prevYear, prevMonth, 0).toISOString().split('T')[0]
+
+  const [{ data: currData }, { data: prevData }, { data: persons }] = await Promise.all([
+    supabase.from('transactions').select('amount, type, person_id').gte('date', currStart).lte('date', currEnd),
+    supabase.from('transactions').select('amount, type, person_id').gte('date', prevStart).lte('date', prevEnd),
+    supabase.from('persons').select('id, name, color').order('sort_order', { ascending: true }),
+  ])
+
+  const calc = (data: any[]) => ({
+    income: (data ?? []).filter((t) => t.type === 'income').reduce((acc, t) => acc + (t.amount as number), 0),
+    expense: (data ?? []).filter((t) => t.type === 'expense').reduce((acc, t) => acc + Math.abs(t.amount as number), 0),
+  })
+
+  const curr = calc(currData ?? [])
+  const prev = calc(prevData ?? [])
+
+  const pct = (curr: number, prev: number) => prev === 0 ? (curr > 0 ? 100 : 0) : Math.round(((curr - prev) / prev) * 100)
+
+  // Per-person breakdown with comparison
+  const perPerson = (persons ?? []).map((p) => {
+    const currRows = (currData ?? []).filter((t: any) => t.person_id === p.id)
+    const prevRows = (prevData ?? []).filter((t: any) => t.person_id === p.id)
+
+    const income = currRows.filter((t: any) => t.type === 'income').reduce((acc: number, t: any) => acc + (t.amount as number), 0)
+    const expense = currRows.filter((t: any) => t.type === 'expense').reduce((acc: number, t: any) => acc + Math.abs(t.amount as number), 0)
+    const prevIncome = prevRows.filter((t: any) => t.type === 'income').reduce((acc: number, t: any) => acc + (t.amount as number), 0)
+    const prevExpense = prevRows.filter((t: any) => t.type === 'expense').reduce((acc: number, t: any) => acc + Math.abs(t.amount as number), 0)
+
+    return {
+      id: p.id as string,
+      name: p.name as string,
+      color: p.color as string,
+      income, expense,
+      incomePct: pct(income, prevIncome),
+      expensePct: pct(expense, prevExpense),
+    }
+  })
+
+  return {
+    income: curr.income,
+    expense: curr.expense,
+    incomePct: pct(curr.income, prev.income),
+    expensePct: pct(curr.expense, prev.expense),
+    prevIncome: prev.income,
+    prevExpense: prev.expense,
+    perPerson,
+  }
 }

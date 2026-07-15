@@ -131,7 +131,7 @@ export async function getPersonComparison(month: number, year: number): Promise<
     .map(([id, values]) => {
       const cat = CATEGORIES.find((c) => c.id === id)
       return {
-        category: (cat?.icon ?? '📌') + ' ' + (cat?.name ?? 'Lainnya'),
+        category: cat?.name ?? 'Lainnya',
         ...values,
       }
     })

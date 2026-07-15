@@ -4,7 +4,8 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Copy, Trash2, ChevronDown, Pencil } from 'lucide-react'
 import type { TransactionWithCategory } from '@/lib/types'
-import { formatCurrency, formatDate, PERSON_COLORS } from '@/lib/constants'
+import { formatCurrency, formatDate, PERSON_COLORS, getCategoryIcon, getCategoryColors } from '@/lib/constants'
+import { cn } from '@/lib/utils'
 import { duplicateTransaction, deleteTransaction } from '@/actions/transactions'
 import TransactionForm from './TransactionForm'
 import ConfirmModal from '@/components/ui/ConfirmModal'
@@ -69,8 +70,8 @@ export default function TransactionItem({ transaction, showPerson = true, onSucc
         className="w-full flex items-center gap-3 p-3 text-left"
         onClick={() => setExpanded(!expanded)}
       >
-        <div className="w-9 h-9 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center flex-shrink-0 text-lg">
-          {transaction.category?.icon ?? '📌'}
+        <div className={cn('w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0', getCategoryColors(transaction.category_id).bg, getCategoryColors(transaction.category_id).text)}>
+          {(() => { const Icon = getCategoryIcon(transaction.category?.icon); return <Icon size={18} />; })()}
         </div>
 
         <div className="flex-1 min-w-0">
