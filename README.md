@@ -1,85 +1,157 @@
 # Keuangan Kita
 
-Aplikasi pengelola keuangan sederhana untuk keluarga atau kelompok kecil.
+Aplikasi pengelola keuangan bersama untuk keluarga atau kelompok kecil.
 
-## Screenshot
+## 🚀 Fitur Utama
 
-| Dashboard | Transaksi | Tabungan |
-|:---------:|:---------:|:--------:|
-| ![Dashboard](public/screenshoot/home.jpeg) | ![Transaksi](public/screenshoot/trx.jpeg) | ![Tabungan](public/screenshoot/saving.jpeg) |
+- **Transaksi Harian**: Catat pemasukan, pengeluaran, transfer, dan split bill
+- **Saldo Per Orang**: Tracking saldo bulanan per anggota
+- **Tabungan**: Ledger tabungan terpisah dengan setor/tarik
+- **Aset & Investasi**: Emas (logam mulia & perhiasan), deposito, piutang
+- **Transaksi Berulang**: Template otomatis untuk transaksi rutin bulanan
+- **Analisis**: Trend 6 bulan, breakdown kategori, perbandingan per orang
+- **Mode Gelap**: Dark mode dengan pilihan 8 warna aksen
+- **PWA**: Install sebagai aplikasi native, berjalan offline
 
-| Aset | Analisis | Auth |
-|:----:|:--------:|:----:|
-| ![Aset](public/screenshoot/asset.jpeg) | ![Analisis](public/screenshoot/chart.jpeg) | ![Auth](public/screenshoot/auth.jpeg) | Dibangun dengan Next.js, Supabase, dan Tailwind CSS. Mendukung PWA (installable di mobile).
+## 🛠️ Tech Stack
 
-## Fitur
+- **Next.js 16** (App Router)
+- **TypeScript**
+- **Tailwind CSS**
+- **Supabase** (PostgreSQL)
+- **Recharts** (visualisasi data)
+- **Framer Motion** (animasi)
+- **Radix UI** (komponen aksesibel)
 
-- **Dashboard** — ringkasan saldo, statistik pengeluaran/pemasukan bulanan, dan transaksi terbaru
-- **Transaksi** — catat pemasukan, pengeluaran, dan transfer antar anggota; mendukung split bill
-- **Tabungan** — kelola tabungan per anggota terpisah dari saldo utama
-- **Aset** — pantau aset (emas logam mulia, perhiasan, deposito, lainnya) beserta estimasi nilai
-- **Piutang** — catat dan pantau piutang
-- **Transaksi Rutin** — template transaksi yang dapat di-generate otomatis tiap bulan
-- **Analisis** — grafik dan ringkasan keuangan per periode
-- **Multi-anggota** — setiap transaksi dikaitkan ke anggota (person)
-- **PIN Auth** — proteksi akses dengan PIN, divalidasi via middleware
-- **PWA** — bisa diinstall di perangkat mobile, support offline fallback
-- **Dark mode** — tema terang/gelap
+## 📦 Instalasi
 
-## Instalasi
+```bash
+# Clone repository
+git clone <repo-url> keuangan-kita
+cd keuangan-kita
 
-### Prasyarat
+# Install dependencies
+npm install
 
-- Node.js 18+
-- Akun [Supabase](https://supabase.com)
+# Setup environment variables
+cp .env.example .env.local
+# Edit .env.local dan isi dengan konfigurasi Supabase Anda
 
-### Langkah
+# Jalankan development server
+npm run dev
+```
 
-1. **Clone repo**
-   ```bash
-   git clone <repo-url>
-   cd personal-finance
-   ```
+## 🔧 Environment Variables
 
-2. **Install dependencies**
-   ```bash
-   npm install
-   ```
+File `.env.local` memerlukan variabel berikut:
 
-3. **Setup environment**
-   ```bash
-   cp .env.example .env.local
-   ```
-   Isi nilai di `.env.local`:
-   | Variabel | Keterangan |
-   |---|---|
-   | `NEXT_PUBLIC_SUPABASE_URL` | URL project Supabase |
-   | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Anon key Supabase |
-   | `AUTH_PIN` | PIN untuk login (contoh: `123456`) |
-   | `AUTH_SECRET` | String acak panjang untuk HMAC token |
-   | `NEXT_PUBLIC_PIN_LENGTH` | Panjang PIN di UI (default: `6`) |
+```env
+# Supabase
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 
-4. **Jalankan migrasi database**
+# Authentication PIN
+AUTH_PIN=123456
+AUTH_SECRET=your-auth-secret
+```
 
-   Jalankan file SQL di `supabase/migrations/` secara berurutan melalui Supabase Studio atau CLI.
+## 🗄️ Database Setup
 
-5. **Jalankan dev server**
-   ```bash
-   npm run dev
-   ```
-   Buka [http://localhost:3000](http://localhost:3000).
+Jalankan migrasi di Supabase SQL Editor:
 
-### Build Production
+1. `001_initial_schema.sql` - Schema dasar
+2. `002_add_source_to_recurring.sql` - Tambah source ke recurring
+3. `003_gold_sub_type.sql` - Tambah sub_type untuk emas
+4. `004_add_source_to_transactions.sql` - Tambah source ke transactions
+5. `005_piutang.sql` - Tambah tabel piutang
+
+## 📱 PWA Install
+
+Aplikasi dapat diinstall sebagai Progressive Web App:
+
+1. Buka di browser (Chrome/Safari)
+2. Klik "Install" atau "Add to Home Screen"
+3. Aplikasi akan muncul di home screen seperti app native
+
+## 🌐 Deployment
+
+### Vercel (Recommended)
+
+```bash
+vercel deploy --prod
+```
+
+### Self-hosted
 
 ```bash
 npm run build
-npm run start
+npm start
 ```
 
-## Tech Stack
+## 📂 Struktur Folder
 
-- [Next.js 16](https://nextjs.org) (App Router)
-- [Supabase](https://supabase.com) — database & realtime
-- [Tailwind CSS](https://tailwindcss.com)
-- [Recharts](https://recharts.org) — grafik
-- [next-pwa](https://github.com/DucanH2912/next-pwa) — PWA support
+```
+keuangan-kita/
+├── actions/          # Server actions (CRUD operations)
+├── app/              # Pages (Next.js App Router)
+├── components/       # React components
+│   ├── home/         # Home page components
+│   ├── layout/       # Layout components (BottomNav, etc.)
+│   ├── providers/    # Context providers
+│   ├── transaction/  # Transaction form & items
+│   └── ui/           # UI primitives
+├── lib/              # Utilities, types, constants
+├── public/           # Static assets
+├── scripts/          # Utility scripts
+└── supabase/         # Database migrations
+```
+
+## 🎨 Customization
+
+### Warna Aksen
+
+Aplikasi mendukung 8 warna aksen:
+- Indigo (default)
+- Pink
+- Emerald
+- Blue
+- Violet
+- Amber
+- Rose
+- Teal
+
+### Kategori Transaksi
+
+Kategori dapat disesuaikan di `lib/constants.ts`:
+
+```typescript
+export const CATEGORIES: Category[] = [
+  // Expense
+  { id: 'food', name: 'Makanan', type: 'expense', icon: '🍽️' },
+  // ...
+]
+```
+
+## 🔐 Authentication
+
+Aplikasi menggunakan PIN-based authentication sederhana. PIN disimpan di environment variable `AUTH_PIN`. Setelah login, cookie HMAC-signed akan disimpan selama 30 hari.
+
+## 🤝 Kontribusi
+
+1. Fork repository
+2. Buat branch fitur (`git checkout -b fitur-baru`)
+3. Commit perubahan (`git commit -am 'Tambah fitur baru'`)
+4. Push ke branch (`git push origin fitur-baru`)
+5. Buat Pull Request
+
+## 📄 Lisensi
+
+MIT License
+
+## 📞 Kontak
+
+Untuk pertanyaan atau dukungan, silakan buka Issues di repository.
+
+---
+
+Dibuat dengan ❤️ untuk mengelola keuangan keluarga dengan lebih baik.

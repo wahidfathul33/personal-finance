@@ -5,8 +5,7 @@ import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import { BaseColorProvider } from "@/components/providers/BaseColorProvider";
 import { ToastProvider } from "@/components/providers/Toast";
 import RegisterSW from "@/components/providers/RegisterSW";
-import { HideAmountsProvider } from "@/lib/HideAmountsContext";
-
+import { HideAmountsProvider } from '@/lib/HideAmountsContext';
 export const viewport: Viewport = {
   viewportFit: 'cover',
 }
@@ -51,7 +50,7 @@ export default function RootLayout({
           })();
         `}} />
       </head>
-      <body className="antialiased bg-white dark:bg-gray-900 min-h-screen">
+      <body className="antialiased font-sans bg-white dark:bg-gray-900 min-h-screen">
         <ThemeProvider>
           <BaseColorProvider>
           <HideAmountsProvider>

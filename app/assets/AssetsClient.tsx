@@ -4,10 +4,12 @@ import { useState, useTransition } from 'react'
 import { addAsset, updateAsset, deleteAsset, updateGoldPrice, addDepositWithTransaction, cairkanDeposito } from '@/actions/assets'
 import type { Asset, Piutang, Person } from '@/lib/types'
 import { formatCurrency, todayISO, PERSON_COLORS } from '@/lib/constants'
-import { Plus, Trash2, Edit2, X, ChevronDown, Settings, LogOut } from 'lucide-react'
+import { Plus, Trash2, Edit2, ChevronDown, Settings, LogOut, Gem, Building2, Handshake, Check } from 'lucide-react'
 import ConfirmModal from '@/components/ui/ConfirmModal'
+import BottomDrawer from '@/components/ui/BottomDrawer'
 import PiutangSection from './PiutangSection'
 import { useHideAmounts } from '@/lib/HideAmountsContext'
+import HeroGradient from '@/components/ui/HeroGradient'
 
 interface GoldPriceInfo {
   price_per_gram: number
@@ -51,6 +53,7 @@ export default function AssetsClient({ summary, piutangList, persons }: Props) {
 
   // Add deposit form
   const [showAddDepositForm, setShowAddDepositForm] = useState(false)
+  const [showPiutangAddForm, setShowPiutangAddForm] = useState(false)
   const [newDepositName, setNewDepositName] = useState('')
   const [newDepositAmount, setNewDepositAmount] = useState('')
   const [newDepositNote, setNewDepositNote] = useState('')
@@ -235,28 +238,31 @@ export default function AssetsClient({ summary, piutangList, persons }: Props) {
     <div className="px-4 space-y-4 pb-8">
 
       {/* Portfolio Overview Card */}
-      <div className="bg-base-gradient rounded-2xl p-4 text-white shadow-md">
+      <HeroGradient variant="assets" className="p-4">
         <p className="text-white/70 text-xs font-medium mb-1">Total Kekayaan</p>
-        <p className="text-3xl font-bold tracking-tight drop-shadow-sm">{fmt(netWorth)}</p>
+        <p className="text-3xl font-bold text-white tracking-tight amount">{fmt(netWorth)}</p>
         <div className="grid grid-cols-3 gap-2 mt-3 text-xs">
           <div className="bg-white/10 rounded-xl p-2">
             <p className="text-white/70 mb-0.5">Emas</p>
             <p className="font-semibold text-sm">{fmt(totalValue)}</p>
+            {netWorth > 0 && <p className="text-white/60 text-[10px]">{Math.round((totalValue / netWorth) * 100)}%</p>}
           </div>
           <div className="bg-white/10 rounded-xl p-2">
             <p className="text-white/70 mb-0.5">Deposito</p>
             <p className="font-semibold text-sm">{fmt(totalDepositValue)}</p>
+            {netWorth > 0 && <p className="text-white/60 text-[10px]">{Math.round((totalDepositValue / netWorth) * 100)}%</p>}
           </div>
           <div className="bg-white/10 rounded-xl p-2">
             <p className="text-white/70 mb-0.5">Piutang</p>
             <p className="font-semibold text-sm">{fmt(totalPiutangOutstanding)}</p>
+            {netWorth > 0 && <p className="text-white/60 text-[10px]">{Math.round((totalPiutangOutstanding / netWorth) * 100)}%</p>}
           </div>
         </div>
-      </div>
+      </HeroGradient>
 
       {/* Tab Nav */}
       <div className="flex gap-1 bg-gray-100 dark:bg-gray-800 p-1 rounded-2xl">
-        {([['emas', '🥇', 'Emas'], ['deposito', '🏦', 'Deposito'], ['piutang', '🤝', 'Piutang']] as const).map(([key, icon, label]) => (
+        {([['emas', <Gem size={14} />, 'Emas'], ['deposito', <Building2 size={14} />, 'Deposito'], ['piutang', <Handshake size={14} />, 'Piutang']] as const).map(([key, icon, label]) => (
           <button
             key={key}
             onClick={() => setActiveTab(key)}
@@ -292,11 +298,11 @@ export default function AssetsClient({ summary, piutangList, persons }: Props) {
             <p className="text-2xl font-bold drop-shadow-sm">{fmt(totalValue)}</p>
             <div className="grid grid-cols-2 gap-2 mt-3">
               <div className="bg-white/15 rounded-xl p-2">
-                <p className="text-white/70 text-[11px] mb-0.5">🥇 LM · {totalLmGrams}g</p>
+                <p className="text-white/70 text-[11px] mb-0.5"><Gem size={12} className="inline" /> LM · {totalLmGrams}g</p>
                 <p className="font-semibold text-sm">{pricePerGram > 0 ? formatCurrency(pricePerGram) + '/g' : '—'}</p>
               </div>
               <div className="bg-white/15 rounded-xl p-2">
-                <p className="text-white/70 text-[11px] mb-0.5">💍 Perhiasan · {totalJewelryGrams}g</p>
+                <p className="text-white/70 text-[11px] mb-0.5"><Gem size={12} className="inline" /> Perhiasan · {totalJewelryGrams}g</p>
                 <p className="font-semibold text-sm">{jewelryPricePerGram > 0 ? formatCurrency(jewelryPricePerGram) + '/g' : '—'}</p>
               </div>
             </div>
@@ -315,52 +321,19 @@ export default function AssetsClient({ summary, piutangList, persons }: Props) {
           <div>
             <div className="flex items-center justify-between mb-2">
               <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Kepemilikan Emas</p>
-              <button
-                onClick={() => setShowAddForm(!showAddForm)}
-                className="w-7 h-7 btn-base rounded-full flex items-center justify-center"
-              >
-                <Plus size={14} className="text-white" />
-              </button>
             </div>
-
-            {/* Add form */}
-            {showAddForm && (
-              <form onSubmit={handleAddAsset} className="bg-gray-50 dark:bg-gray-800 rounded-2xl p-3 mb-3 space-y-2">
-                <div className="flex gap-2">
-                  {(['logam_mulia', 'perhiasan'] as const).map((st) => (
-                    <button key={st} type="button" onClick={() => setGoldSubType(st)}
-                      className={`flex-1 py-2 rounded-xl text-sm font-medium border transition-colors ${
-                        goldSubType === st
-                          ? 'bg-amber-500 text-white border-amber-500'
-                          : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 border-gray-200 dark:border-gray-600'
-                      }`}>
-                      {st === 'logam_mulia' ? '🥇 Logam Mulia' : '💍 Perhiasan'}
-                    </button>
-                  ))}
-                </div>
-                <input type="text" value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="Nama (cth: Galeri24, UBS...)" className="w-full border border-gray-200 dark:border-gray-700 rounded-xl py-2 px-3 text-sm bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 placeholder-gray-400 focus:outline-none" />
-                <div className="flex gap-2">
-                  <input type="number" inputMode="decimal" value={newAmount} onChange={(e) => setNewAmount(e.target.value)} placeholder="Jumlah" className="flex-1 border border-gray-200 dark:border-gray-700 rounded-xl py-2 px-3 text-sm bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 placeholder-gray-400 focus:outline-none" />
-                  <input type="text" value={newUnit} onChange={(e) => setNewUnit(e.target.value)} placeholder="gram" className="w-20 border border-gray-200 dark:border-gray-700 rounded-xl py-2 px-3 text-sm bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 placeholder-gray-400 focus:outline-none" />
-                </div>
-                <div className="flex gap-2">
-                  <button type="submit" disabled={isPending} className="flex-1 btn-base py-2 rounded-xl text-sm font-medium">Tambah</button>
-                  <button type="button" onClick={() => setShowAddForm(false)} className="flex-1 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 py-2 rounded-xl text-sm font-medium">Batal</button>
-                </div>
-              </form>
-            )}
 
             {/* Logam Mulia */}
             {lmAssets.length > 0 && (
               <div className="mb-3">
-                <p className="text-[11px] font-semibold text-amber-600 dark:text-amber-400 mb-1.5 px-1">🥇 Logam Mulia</p>
+                <p className="text-[11px] font-semibold text-amber-600 dark:text-amber-400 mb-1.5 px-1"><Gem size={12} className="inline" /> Logam Mulia</p>
                 <div className="flex flex-col gap-2">
                   {lmAssets.map((asset) => {
                     const isExpanded = expandedId === asset.id
                     return (
                       <div key={asset.id} className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 overflow-hidden">
                         <div className="w-full flex items-center gap-3 p-3 text-left cursor-pointer" onClick={() => setExpandedId(isExpanded ? null : asset.id)}>
-                          <div className="w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center flex-shrink-0"><span className="text-lg">🥇</span></div>
+                          <div className="w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center flex-shrink-0"><Gem size={18} className="text-amber-600" /></div>
                           <div className="flex-1">
                             <p className="text-sm font-semibold text-gray-900 dark:text-gray-100 text-left">{asset.name}</p>
                             <p className="text-xs text-gray-500 dark:text-gray-400">
@@ -394,14 +367,14 @@ export default function AssetsClient({ summary, piutangList, persons }: Props) {
             {/* Perhiasan */}
             {jewelryAssets.length > 0 && (
               <div className="mb-3">
-                <p className="text-[11px] font-semibold text-rose-500 dark:text-rose-400 mb-1.5 px-1">💍 Perhiasan</p>
+                <p className="text-[11px] font-semibold text-rose-500 dark:text-rose-400 mb-1.5 px-1"><Gem size={12} className="inline" /> Perhiasan</p>
                 <div className="flex flex-col gap-2">
                   {jewelryAssets.map((asset) => {
                     const isExpanded = expandedId === asset.id
                     return (
                       <div key={asset.id} className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 overflow-hidden">
                         <div className="w-full flex items-center gap-3 p-3 text-left cursor-pointer" onClick={() => setExpandedId(isExpanded ? null : asset.id)}>
-                          <div className="w-10 h-10 rounded-full bg-rose-100 dark:bg-rose-900/30 flex items-center justify-center flex-shrink-0"><span className="text-lg">💍</span></div>
+                          <div className="w-10 h-10 rounded-full bg-rose-100 dark:bg-rose-900/30 flex items-center justify-center flex-shrink-0"><Gem size={18} className="text-rose-500" /></div>
                           <div className="flex-1">
                             <p className="text-sm font-semibold text-gray-900 dark:text-gray-100 text-left">{asset.name}</p>
                             <p className="text-xs text-gray-500 dark:text-gray-400">
@@ -451,72 +424,7 @@ export default function AssetsClient({ summary, piutangList, persons }: Props) {
           <div>
             <div className="flex items-center justify-between mb-2">
               <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Deposito</p>
-              <button onClick={() => setShowAddDepositForm(!showAddDepositForm)} className="w-7 h-7 btn-base rounded-full flex items-center justify-center">
-                <Plus size={14} className="text-white" />
-              </button>
             </div>
-
-            {showAddDepositForm && (
-              <form onSubmit={handleAddDeposit} className="bg-gray-50 dark:bg-gray-800 rounded-2xl p-3 mb-3 space-y-2">
-                <input type="text" value={newDepositName} onChange={(e) => setNewDepositName(e.target.value)} placeholder="Nama (cth: BCA 3 Bulan, Mandiri...)" className="w-full border border-gray-200 dark:border-gray-700 rounded-xl py-2 px-3 text-sm bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 placeholder-gray-400 focus:outline-none" />
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">Rp</span>
-                  <input type="text" inputMode="numeric" value={newDepositAmount ? newDepositAmount.replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''} onChange={(e) => setNewDepositAmount(e.target.value.replace(/\D/g, ''))} placeholder="Nominal" className="w-full pl-10 pr-3 py-2 border border-gray-200 dark:border-gray-700 rounded-xl text-sm bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 placeholder-gray-400 focus:outline-none" />
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setNewDepositDeduct(v => !v)}
-                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium border transition-colors ${
-                    newDepositDeduct
-                      ? 'bg-indigo-50 dark:bg-indigo-900/30 border-indigo-300 dark:border-indigo-700 text-indigo-700 dark:text-indigo-300'
-                      : 'bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300'
-                  }`}
-                >
-                  <span>Potong dari saldo</span>
-                  <span className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors ${
-                    newDepositDeduct
-                      ? 'bg-indigo-600 border-indigo-600'
-                      : 'border-gray-300 dark:border-gray-600'
-                  }`}>
-                    {newDepositDeduct && (
-                      <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
-                        <path d="M1 4L3.5 6.5L9 1" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
-                      </svg>
-                    )}
-                  </span>
-                </button>
-                {newDepositDeduct && persons.length > 0 && (
-                  <div>
-                    <label className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 block">Potong saldo</label>
-                    <div className="flex flex-wrap gap-2">
-                      {persons.map((p) => {
-                        const colors = PERSON_COLORS[p.color] ?? PERSON_COLORS.indigo
-                        return (
-                          <button
-                            key={p.id}
-                            type="button"
-                            onClick={() => setNewDepositPersonId(p.id)}
-                            className={`flex-1 min-w-[80px] py-2 rounded-xl text-sm font-medium border transition-colors ${
-                              newDepositPersonId === p.id
-                                ? colors.button
-                                : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-gray-200 dark:border-gray-700'
-                            }`}
-                          >
-                            {p.name}
-                          </button>
-                        )
-                      })}
-                    </div>
-                    <input type="date" value={newDepositDate} onChange={(e) => setNewDepositDate(e.target.value)} className="mt-2 w-full border border-gray-200 dark:border-gray-700 rounded-xl py-2 px-3 text-sm bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 focus:outline-none appearance-none" />
-                  </div>
-                )}
-                <input type="text" value={newDepositNote} onChange={(e) => setNewDepositNote(e.target.value)} placeholder="Catatan (cth: bunga 5%, JT Jun 2026)" className="w-full border border-gray-200 dark:border-gray-700 rounded-xl py-2 px-3 text-sm bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 placeholder-gray-400 focus:outline-none" />
-                <div className="flex gap-2">
-                  <button type="submit" disabled={isPending} className="flex-1 btn-base py-2 rounded-xl text-sm font-medium">Tambah</button>
-                  <button type="button" onClick={() => setShowAddDepositForm(false)} className="flex-1 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 py-2 rounded-xl text-sm font-medium">Batal</button>
-                </div>
-              </form>
-            )}
 
             {assets.filter(a => a.type === 'deposit').length === 0 ? (
               <p className="text-center text-gray-400 text-sm py-6">Belum ada deposito</p>
@@ -527,7 +435,7 @@ export default function AssetsClient({ summary, piutangList, persons }: Props) {
                   return (
                     <div key={asset.id} className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 overflow-hidden">
                       <button className="w-full flex items-center gap-3 p-3 text-left" onClick={() => setExpandedId(isExpanded ? null : asset.id)}>
-                        <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center flex-shrink-0"><span className="text-lg">🏦</span></div>
+                          <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center flex-shrink-0"><Building2 size={18} className="text-blue-600" /></div>
                         <div className="flex-1">
                           <p className="text-sm font-semibold text-gray-900 dark:text-gray-100 text-left">{asset.name}</p>
                           <div>
@@ -560,45 +468,37 @@ export default function AssetsClient({ summary, piutangList, persons }: Props) {
       )}
 
       {/* ─── TAB: PIUTANG ─── */}
-      {activeTab === 'piutang' && <PiutangSection initialData={piutangList} persons={persons} />}
+      {activeTab === 'piutang' && <PiutangSection initialData={piutangList} persons={persons} openAddForm={showPiutangAddForm} onAddFormClose={() => setShowPiutangAddForm(false)} />}
 
     </div>
 
     {/* Gold Price Modal */}
-    {showPriceModal && (
-      <div className="fixed inset-0 z-[60] flex items-end justify-center bg-black/40" onClick={() => setShowPriceModal(false)}>
-        <div className="w-full max-w-lg bg-white dark:bg-gray-900 rounded-t-3xl p-5 pb-20 space-y-3" onClick={(e) => e.stopPropagation()}>
-          <div className="flex items-center justify-between mb-1">
-            <h3 className="text-m font-bold text-gray-900 dark:text-gray-100">Update Harga Emas</h3>
-            <button onClick={() => setShowPriceModal(false)} className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 text-gray-500"><X size={16} /></button>
+    <BottomDrawer open={showPriceModal} onClose={() => setShowPriceModal(false)} title="Update Harga Emas">
+      <form onSubmit={handleUpdatePrice} className="space-y-3 pb-4">
+        <div>
+          <label className="text-xs text-gray-500 dark:text-gray-400 mb-1 block">Harga Logam Mulia / gram</label>
+          <div className="relative">
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">Rp</span>
+            <input type="text" inputMode="numeric" value={newPrice ? newPrice.replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''} onChange={(e) => setNewPrice(e.target.value.replace(/\D/g, ''))} placeholder="0" className="w-full pl-10 pr-3 h-[40px] border border-gray-200 dark:border-gray-700 rounded-xl text-sm font-semibold bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 focus:outline-none" autoFocus />
           </div>
-          <form onSubmit={handleUpdatePrice} className="space-y-3">
-            <div>
-              <label className="text-xs text-gray-500 dark:text-gray-400 mb-1 block">Harga Logam Mulia / gram</label>
-              <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">Rp</span>
-                <input type="text" inputMode="numeric" value={newPrice ? newPrice.replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''} onChange={(e) => setNewPrice(e.target.value.replace(/\D/g, ''))} placeholder="0" className="w-full pl-10 pr-3 h-[40px] border border-gray-200 dark:border-gray-700 rounded-xl text-sm font-semibold bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 focus:outline-none" autoFocus />
-              </div>
-            </div>
-            <div>
-              <label className="text-xs text-gray-500 dark:text-gray-400 mb-1 block">Harga Perhiasan / gram</label>
-              <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">Rp</span>
-                <input type="text" inputMode="numeric" value={newJewelryPrice ? newJewelryPrice.replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''} onChange={(e) => setNewJewelryPrice(e.target.value.replace(/\D/g, ''))} placeholder="0" className="w-full pl-10 pr-3 h-[40px] border border-gray-200 dark:border-gray-700 rounded-xl text-sm font-semibold bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 focus:outline-none" />
-              </div>
-            </div>
-            <div>
-              <label className="text-xs text-gray-500 dark:text-gray-400 mb-1 block">Tanggal</label>
-              <input type="date" value={priceDate} onChange={(e) => setPriceDate(e.target.value)} className="w-full h-[40px] border border-gray-200 dark:border-gray-700 rounded-xl px-3 text-sm bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 focus:outline-none appearance-none" />
-            </div>
-            <div className="flex gap-2 pt-3">
-              <button type="submit" disabled={isPending} className="flex-1 bg-amber-500 text-white h-[40px] rounded-xl text-sm font-semibold">Simpan</button>
-              <button type="button" onClick={() => setShowPriceModal(false)} className="flex-1 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 h-[40px] rounded-xl text-sm font-medium">Batal</button>
-            </div>
-          </form>
         </div>
-      </div>
-    )}
+        <div>
+          <label className="text-xs text-gray-500 dark:text-gray-400 mb-1 block">Harga Perhiasan / gram</label>
+          <div className="relative">
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">Rp</span>
+            <input type="text" inputMode="numeric" value={newJewelryPrice ? newJewelryPrice.replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''} onChange={(e) => setNewJewelryPrice(e.target.value.replace(/\D/g, ''))} placeholder="0" className="w-full pl-10 pr-3 h-[40px] border border-gray-200 dark:border-gray-700 rounded-xl text-sm font-semibold bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 focus:outline-none" />
+          </div>
+        </div>
+        <div>
+          <label className="text-xs text-gray-500 dark:text-gray-400 mb-1 block">Tanggal</label>
+          <input type="date" value={priceDate} onChange={(e) => setPriceDate(e.target.value)} className="w-full h-[40px] border border-gray-200 dark:border-gray-700 rounded-xl px-3 text-sm bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 focus:outline-none appearance-none" />
+        </div>
+        <div className="flex gap-2 pt-3">
+          <button type="submit" disabled={isPending} className="flex-1 bg-amber-500 text-white h-[40px] rounded-xl text-sm font-semibold">Simpan</button>
+          <button type="button" onClick={() => setShowPriceModal(false)} className="flex-1 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 h-[40px] rounded-xl text-sm font-medium">Batal</button>
+        </div>
+      </form>
+    </BottomDrawer>
 
     {confirmId && (
       <ConfirmModal
@@ -608,95 +508,195 @@ export default function AssetsClient({ summary, piutangList, persons }: Props) {
       />
     )}
 
-    {/* Edit Asset Modal */}
-    {editAsset && (
-      <div className="fixed inset-0 z-[60] flex items-end justify-center bg-black/40" onClick={() => setEditAsset(null)}>
-        <div className="w-full max-w-lg bg-white dark:bg-gray-900 rounded-t-3xl p-5 pb-20 space-y-3" onClick={(e) => e.stopPropagation()}>
-          <div className="flex items-center justify-between mb-1">
-            <h3 className="text-base font-bold text-gray-900 dark:text-gray-100">Edit {editAsset.type === 'deposit' ? 'Deposito' : 'Emas'}</h3>
-            <button onClick={() => setEditAsset(null)} className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 text-gray-500"><X size={16} /></button>
-          </div>
-          <form onSubmit={handleUpdate} className="space-y-3">
-            <div>
-              <label className="text-xs text-gray-500 dark:text-gray-400 mb-1 block">Nama</label>
-              <input type="text" value={editName} onChange={(e) => setEditName(e.target.value)} className="w-full border border-gray-200 dark:border-gray-700 rounded-xl py-2.5 px-3 text-sm bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 focus:outline-none" autoFocus />
-            </div>
-            <div>
-              <label className="text-xs text-gray-500 dark:text-gray-400 mb-1 block">{editAsset.type === 'deposit' ? 'Nominal' : `Jumlah (${editUnit})`}</label>
-              {editAsset.type === 'deposit' ? (
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">Rp</span>
-                  <input type="text" inputMode="numeric" value={editAmount ? editAmount.replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''} onChange={(e) => setEditAmount(e.target.value.replace(/\D/g, ''))} className="w-full pl-10 pr-3 h-10 border border-gray-200 dark:border-gray-700 rounded-xl text-sm bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 focus:outline-none" />
-                </div>
-              ) : (
-                <input type="number" inputMode="decimal" value={editAmount} onChange={(e) => setEditAmount(e.target.value)} className="w-full border border-gray-200 dark:border-gray-700 rounded-xl py-2.5 px-3 text-sm bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 focus:outline-none" />
-              )}
-            </div>
-            {editAsset.type === 'deposit' && (
-              <div>
-                <label className="text-xs text-gray-500 dark:text-gray-400 mb-1 block">Catatan</label>
-                <input type="text" value={editNote} onChange={(e) => setEditNote(e.target.value)} placeholder="cth: bunga 5%, JT Jun 2026" className="w-full border border-gray-200 dark:border-gray-700 rounded-xl py-2.5 px-3 text-sm bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 placeholder-gray-400 focus:outline-none" />
-              </div>
-            )}
-            <div className="flex gap-2 pt-1">
-              <button type="submit" disabled={isPending} className="flex-1 btn-base h-10 rounded-xl text-sm font-semibold">Simpan</button>
-              <button type="button" onClick={() => setEditAsset(null)} className="flex-1 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 h-10 rounded-xl text-sm font-medium">Batal</button>
-            </div>
-          </form>
-        </div>
-      </div>
+    {/* FAB - context-aware per tab, hidden when any form/modal open */}
+    {!showAddForm && !showAddDepositForm && !editAsset && !cairkanAsset && !showPiutangAddForm && (
+      <button
+        onClick={() => {
+          if (activeTab === 'emas') setShowAddForm(true)
+          else if (activeTab === 'deposito') setShowAddDepositForm(true)
+          else if (activeTab === 'piutang') setShowPiutangAddForm(true)
+        }}
+        className="fixed bottom-20 right-4 z-[90] w-14 h-14 rounded-full btn-base shadow-lg flex items-center justify-center active:scale-95 transition-transform"
+      >
+        <Plus size={24} className="text-white" />
+      </button>
     )}
 
-    {/* Cairkan Deposito Modal */}
-    {cairkanAsset && (
-      <div className="fixed inset-0 z-[60] flex items-end justify-center bg-black/40" onClick={() => setCairkanAsset(null)}>
-        <div className="w-full max-w-lg bg-white dark:bg-gray-900 rounded-t-3xl p-5 pb-20 space-y-3" onClick={(e) => e.stopPropagation()}>
-          <div className="flex items-center justify-between mb-1">
-            <h3 className="text-base font-bold text-gray-900 dark:text-gray-100">Cairkan Deposito</h3>
-            <button onClick={() => setCairkanAsset(null)} className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 text-gray-500"><X size={16} /></button>
+    {/* Gold Add Drawer */}
+    <BottomDrawer open={showAddForm} onClose={() => setShowAddForm(false)} title="Tambah Emas">
+      <form onSubmit={handleAddAsset} className="space-y-4">
+        <div className="flex gap-2">
+          {(['logam_mulia', 'perhiasan'] as const).map((st) => (
+            <button key={st} type="button" onClick={() => setGoldSubType(st)}
+              className={`flex-1 py-2.5 rounded-xl text-sm font-medium border transition-colors ${
+                goldSubType === st
+                  ? 'bg-amber-500 text-white border-amber-500'
+                  : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 border-gray-200 dark:border-gray-600'
+              }`}>
+              {st === 'logam_mulia' ? <><Gem size={14} className="inline" /> Logam Mulia</> : <><Gem size={14} className="inline" /> Perhiasan</>}
+            </button>
+          ))}
+        </div>
+        <div>
+          <label className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 block">Nama</label>
+          <input type="text" value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="cth: Galeri24, UBS..." className="w-full border border-gray-200 dark:border-gray-700 rounded-xl py-2.5 px-3 text-sm bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-base-500" />
+        </div>
+        <div className="flex gap-2">
+          <div className="flex-1">
+            <label className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 block">Jumlah</label>
+            <input type="number" inputMode="decimal" value={newAmount} onChange={(e) => setNewAmount(e.target.value)} placeholder="0" className="w-full border border-gray-200 dark:border-gray-700 rounded-xl py-2.5 px-3 text-sm bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-base-500" />
           </div>
-          <p className="text-sm text-gray-500 dark:text-gray-400">{cairkanAsset.name}</p>
-          <form onSubmit={handleCairkan} className="space-y-3">
-            <div>
-              <label className="text-xs text-gray-500 dark:text-gray-400 mb-1 block">Pokok</label>
-              <div className="h-10 flex items-center px-3 bg-gray-100 dark:bg-gray-800 rounded-xl text-sm font-semibold text-gray-700 dark:text-gray-200">
-                Rp {cairkanAsset.amount.toLocaleString('id-ID')}
-              </div>
+          <div className="w-24">
+            <label className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 block">Satuan</label>
+            <input type="text" value={newUnit} onChange={(e) => setNewUnit(e.target.value)} placeholder="gram" className="w-full border border-gray-200 dark:border-gray-700 rounded-xl py-2.5 px-3 text-sm bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-base-500" />
+          </div>
+        </div>
+        <div className="flex gap-2">
+          <button type="submit" disabled={isPending || !newName || !newAmount} className="flex-1 btn-base h-[48px] rounded-xl font-semibold text-sm">Tambah</button>
+          <button type="button" onClick={() => setShowAddForm(false)} className="flex-1 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 h-[48px] rounded-xl font-semibold text-sm border border-gray-200 dark:border-gray-700">Batal</button>
+        </div>
+      </form>
+    </BottomDrawer>
+
+    {/* Deposit Add Drawer */}
+    <BottomDrawer open={showAddDepositForm} onClose={() => setShowAddDepositForm(false)} title="Tambah Deposito">
+      <form onSubmit={handleAddDeposit} className="space-y-4">
+        <div>
+          <label className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 block">Nama</label>
+          <input type="text" value={newDepositName} onChange={(e) => setNewDepositName(e.target.value)} placeholder="cth: BCA 3 Bulan, Mandiri..." className="w-full border border-gray-200 dark:border-gray-700 rounded-xl py-2.5 px-3 text-sm bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-base-500" />
+        </div>
+        <div>
+          <label className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 block">Nominal</label>
+          <div className="relative">
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm font-medium">Rp</span>
+            <input type="text" inputMode="numeric" value={newDepositAmount ? newDepositAmount.replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''} onChange={(e) => setNewDepositAmount(e.target.value.replace(/\D/g, ''))} placeholder="0" className="w-full pl-10 pr-3 py-3 border border-gray-200 dark:border-gray-700 rounded-xl text-lg font-semibold bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-base-500" />
+          </div>
+        </div>
+        <button
+          type="button"
+          onClick={() => setNewDepositDeduct(v => !v)}
+          className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium border transition-colors ${
+            newDepositDeduct
+              ? 'bg-indigo-50 dark:bg-indigo-900/30 border-indigo-300 dark:border-indigo-700 text-indigo-700 dark:text-indigo-300'
+              : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300'
+          }`}
+        >
+          <span>Potong dari saldo</span>
+          <span className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors ${
+            newDepositDeduct ? 'bg-indigo-600 border-indigo-600' : 'border-gray-300 dark:border-gray-600'
+          }`}>
+            {newDepositDeduct && (
+              <Check size={10} strokeWidth={3} className="text-white" />
+            )}
+          </span>
+        </button>
+        {newDepositDeduct && persons.length > 0 && (
+          <div>
+            <label className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 block">Potong saldo</label>
+            <div className="flex flex-wrap gap-2">
+              {persons.map((p) => {
+                const colors = PERSON_COLORS[p.color] ?? PERSON_COLORS.indigo
+                return (
+                  <button key={p.id} type="button" onClick={() => setNewDepositPersonId(p.id)}
+                    className={`flex-1 min-w-[80px] py-2 rounded-xl text-sm font-medium border transition-colors ${
+                      newDepositPersonId === p.id ? colors.button : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-gray-200 dark:border-gray-700'
+                    }`}>
+                    {p.name}
+                  </button>
+                )
+              })}
             </div>
-            <div>
-              <label className="text-xs text-gray-500 dark:text-gray-400 mb-1 block">Bunga</label>
+            <input type="date" value={newDepositDate} onChange={(e) => setNewDepositDate(e.target.value)} className="mt-2 w-full border border-gray-200 dark:border-gray-700 rounded-xl py-2.5 px-3 text-sm bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-base-500 appearance-none" />
+          </div>
+        )}
+        <div>
+          <label className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 block">Catatan</label>
+          <input type="text" value={newDepositNote} onChange={(e) => setNewDepositNote(e.target.value)} placeholder="cth: bunga 5%, JT Jun 2026" className="w-full border border-gray-200 dark:border-gray-700 rounded-xl py-2.5 px-3 text-sm bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-base-500" />
+        </div>
+        <div className="flex gap-2">
+          <button type="submit" disabled={isPending || !newDepositName || !newDepositAmount} className="flex-1 btn-base h-[48px] rounded-xl font-semibold text-sm">Tambah</button>
+          <button type="button" onClick={() => setShowAddDepositForm(false)} className="flex-1 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 h-[48px] rounded-xl font-semibold text-sm border border-gray-200 dark:border-gray-700">Batal</button>
+        </div>
+      </form>
+    </BottomDrawer>
+
+    {/* Edit Asset Modal */}
+    <BottomDrawer open={!!editAsset} onClose={() => setEditAsset(null)} title={editAsset ? `Edit ${editAsset.type === 'deposit' ? 'Deposito' : 'Emas'}` : undefined}>
+      {editAsset && (
+        <form onSubmit={handleUpdate} className="space-y-4 pb-4">
+          <div>
+            <label className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 block">Nama</label>
+            <input type="text" value={editName} onChange={(e) => setEditName(e.target.value)} className="w-full border border-gray-200 dark:border-gray-700 rounded-xl py-2.5 px-3 text-sm bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-base-500" autoFocus />
+          </div>
+          <div>
+            <label className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 block">{editAsset.type === 'deposit' ? 'Nominal' : `Jumlah (${editUnit})`}</label>
+            {editAsset.type === 'deposit' ? (
               <div className="relative">
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">Rp</span>
-                <input type="text" inputMode="numeric" value={cairkanBunga ? cairkanBunga.replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''} onChange={(e) => setCairkanBunga(e.target.value.replace(/\D/g, ''))} placeholder="0" className="w-full pl-10 pr-3 h-10 border border-gray-200 dark:border-gray-700 rounded-xl text-sm bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 focus:outline-none" />
+                <input type="text" inputMode="numeric" value={editAmount ? editAmount.replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''} onChange={(e) => setEditAmount(e.target.value.replace(/\D/g, ''))} className="w-full pl-10 pr-3 py-3 border border-gray-200 dark:border-gray-700 rounded-xl text-lg font-semibold bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-base-500" />
               </div>
+            ) : (
+              <input type="number" inputMode="decimal" value={editAmount} onChange={(e) => setEditAmount(e.target.value)} className="w-full border border-gray-200 dark:border-gray-700 rounded-xl py-2.5 px-3 text-sm bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-base-500" />
+            )}
+          </div>
+          {editAsset.type === 'deposit' && (
+            <div>
+              <label className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 block">Catatan</label>
+              <input type="text" value={editNote} onChange={(e) => setEditNote(e.target.value)} placeholder="cth: bunga 5%, JT Jun 2026" className="w-full border border-gray-200 dark:border-gray-700 rounded-xl py-2.5 px-3 text-sm bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-base-500" />
             </div>
-            {parseFloat(cairkanBunga || '0') > 0 && (
-              <div className="bg-emerald-50 dark:bg-emerald-900/20 rounded-xl px-3 py-2 text-sm text-emerald-700 dark:text-emerald-300 font-semibold">
-                Total masuk: Rp {(cairkanAsset.amount + parseFloat(cairkanBunga || '0')).toLocaleString('id-ID')}
+          )}
+          <div className="flex gap-2 pt-1">
+            <button type="submit" disabled={isPending} className="flex-1 btn-base h-[48px] rounded-xl font-semibold text-sm">Simpan</button>
+            <button type="button" onClick={() => setEditAsset(null)} className="flex-1 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 h-[48px] rounded-xl font-semibold text-sm border border-gray-200 dark:border-gray-700">Batal</button>
+          </div>
+        </form>
+      )}
+    </BottomDrawer>
+
+    {/* Cairkan Deposito Modal */}
+    <BottomDrawer open={!!cairkanAsset} onClose={() => setCairkanAsset(null)} title="Cairkan Deposito">
+      {cairkanAsset && (
+        <form onSubmit={handleCairkan} className="space-y-4 pb-4">
+          <p className="text-sm text-gray-500 dark:text-gray-400">{cairkanAsset.name}</p>
+          <div>
+            <label className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 block">Pokok</label>
+            <div className="py-2.5 px-3 bg-gray-100 dark:bg-gray-800 rounded-xl text-sm font-semibold text-gray-700 dark:text-gray-200">
+              Rp {cairkanAsset.amount.toLocaleString('id-ID')}
+            </div>
+          </div>
+          <div>
+            <label className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 block">Bunga</label>
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">Rp</span>
+              <input type="text" inputMode="numeric" value={cairkanBunga ? cairkanBunga.replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''} onChange={(e) => setCairkanBunga(e.target.value.replace(/\D/g, ''))} placeholder="0" className="w-full pl-10 pr-3 py-3 border border-gray-200 dark:border-gray-700 rounded-xl text-lg font-semibold bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-base-500" />
+            </div>
+          </div>
+          {parseFloat(cairkanBunga || '0') > 0 && (
+            <div className="bg-emerald-50 dark:bg-emerald-900/20 rounded-xl px-3 py-2 text-sm text-emerald-700 dark:text-emerald-300 font-semibold">
+              Total masuk: Rp {(cairkanAsset.amount + parseFloat(cairkanBunga || '0')).toLocaleString('id-ID')}
+            </div>
+          )}
+          <div className="flex gap-2">
+            <div className="flex-1">
+              <label className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 block">Tanggal</label>
+              <input type="date" value={cairkanDate} onChange={(e) => setCairkanDate(e.target.value)} className="w-full border border-gray-200 dark:border-gray-700 rounded-xl py-2.5 px-3 text-sm bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-base-500 appearance-none" />
+            </div>
+            {persons.length > 0 && (
+              <div className="flex-1">
+                <label className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 block">Masuk ke</label>
+                <select value={cairkanPersonId} onChange={(e) => setCairkanPersonId(e.target.value)} className="w-full border border-gray-200 dark:border-gray-700 rounded-xl py-2.5 px-3 text-sm bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-base-500">
+                  {persons.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                </select>
               </div>
             )}
-            <div className="flex gap-2">
-              <div className="flex-1">
-                <label className="text-xs text-gray-500 dark:text-gray-400 mb-1 block">Tanggal</label>
-                <input type="date" value={cairkanDate} onChange={(e) => setCairkanDate(e.target.value)} className="w-full h-10 border border-gray-200 dark:border-gray-700 rounded-xl px-3 text-sm bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 focus:outline-none appearance-none" />
-              </div>
-              {persons.length > 0 && (
-                <div className="flex-1">
-                  <label className="text-xs text-gray-500 dark:text-gray-400 mb-1 block">Masuk ke</label>
-                  <select value={cairkanPersonId} onChange={(e) => setCairkanPersonId(e.target.value)} className="w-full h-10 border border-gray-200 dark:border-gray-700 rounded-xl px-3 text-sm bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 focus:outline-none">
-                    {persons.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
-                  </select>
-                </div>
-              )}
-            </div>
-            <div className="flex gap-2 pt-1">
-              <button type="submit" disabled={isPending} className="flex-1 bg-emerald-500 text-white h-10 rounded-xl text-sm font-semibold">Cairkan</button>
-              <button type="button" onClick={() => setCairkanAsset(null)} className="flex-1 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 h-10 rounded-xl text-sm font-medium">Batal</button>
-            </div>
-          </form>
-        </div>
-      </div>
-    )}
+          </div>
+          <div className="flex gap-2 pt-1">
+            <button type="submit" disabled={isPending} className="flex-1 btn-base h-[48px] rounded-xl font-semibold text-sm">Cairkan</button>
+            <button type="button" onClick={() => setCairkanAsset(null)} className="flex-1 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 h-[48px] rounded-xl font-semibold text-sm border border-gray-200 dark:border-gray-700">Batal</button>
+          </div>
+        </form>
+      )}
+    </BottomDrawer>
   </>
   )
 }

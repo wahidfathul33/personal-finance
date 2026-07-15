@@ -1,9 +1,11 @@
+import { Suspense } from 'react'
 import { getRecurringTemplates } from '@/actions/recurring'
 import PageHeader from '@/components/layout/PageHeader'
 import RecurringList from './RecurringList'
 import GenerateButton from './GenerateButton'
+import RecurringPageClient from './RecurringPageClient'
 import Link from 'next/link'
-import { Plus, ArrowLeft } from 'lucide-react'
+import { ArrowLeft } from 'lucide-react'
 
 export const dynamic = 'force-dynamic'
 
@@ -28,16 +30,13 @@ export default async function RecurringPage() {
               <ArrowLeft size={16} />
             </Link>
             <GenerateButton />
-            <Link
-              href="/recurring/new"
-              className="w-9 h-9 btn-base rounded-full flex items-center justify-center"
-            >
-              <Plus size={18} className="text-white" />
-            </Link>
           </div>
         }
       />
       <RecurringList templates={templates} />
+      <Suspense>
+        <RecurringPageClient templates={templates} />
+      </Suspense>
     </div>
   )
 }

@@ -5,124 +5,15 @@ import { addSaving, deleteSaving, updateSaving } from '@/actions/savings'
 import type { Saving, Person } from '@/lib/types'
 import { formatCurrency, formatDate, PERSON_COLORS, todayISO, currentMonth, currentYear, MONTHS, YEAR_OPTIONS } from '@/lib/constants'
 import { usePersons } from '@/lib/usePersons'
-import { Plus, Trash2, Pencil, X, Check, Wallet, ChevronsUpDown, ChevronDown } from 'lucide-react'
+import { Plus, Trash2, Pencil, X, Check, Wallet, ChevronsUpDown, ChevronDown, TrendingUp, TrendingDown } from 'lucide-react'
 import ConfirmModal from '@/components/ui/ConfirmModal'
+import BottomDrawer from '@/components/ui/BottomDrawer'
 import { useHideAmounts } from '@/lib/HideAmountsContext'
+import HeroGradient from '@/components/ui/HeroGradient'
 
 interface Props {
   items: Saving[]
   className?: string
-}
-
-function EditInline({
-  saving,
-  persons,
-  onDone,
-  onCancel,
-}: {
-  saving: Saving
-  persons: Person[]
-  onDone: (updated: Saving) => void
-  onCancel: () => void
-}) {
-  const [isPending, startTransition] = useTransition()
-  const [personId, setPersonId] = useState<string>(saving.person_id)
-  const [amount, setAmount] = useState(String(Math.abs(saving.amount)))
-  const [date, setDate] = useState(saving.date)
-  const [note, setNote] = useState(saving.note ?? '')
-
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    if (!amount) return
-
-    startTransition(async () => {
-      await updateSaving(saving.id, {
-        person_id: personId,
-        amount: parseFloat(amount),
-        date,
-        note: note || null,
-      })
-      const p = persons.find((x) => x.id === personId)
-      onDone({
-        ...saving,
-        person_id: personId,
-        person: p ? { name: p.name, color: p.color } : saving.person,
-        amount: parseFloat(amount),
-        date,
-        note: note || null,
-      })
-    })
-  }
-
-  return (
-    <form onSubmit={handleSubmit} className="bg-base-subtle rounded-2xl border border-base-subtle p-3 space-y-2">
-      <div className="flex flex-wrap gap-2">
-        {persons.map((p) => {
-          const colors = PERSON_COLORS[p.color] ?? PERSON_COLORS.indigo
-          return (
-            <button
-              key={p.id}
-              type="button"
-              onClick={() => setPersonId(p.id)}
-              className={`flex-1 min-w-[70px] py-2 rounded-xl text-sm font-medium border transition-colors ${
-                personId === p.id
-                  ? colors.button
-                  : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-gray-200 dark:border-gray-700'
-              }`}
-            >
-              {p.name}
-            </button>
-          )
-        })}
-      </div>
-
-      <div className="relative">
-        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm font-medium">Rp</span>
-        <input
-          type="text"
-          inputMode="numeric"
-          value={amount ? amount.replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}
-          onChange={(e) => setAmount(e.target.value.replace(/\D/g, ''))}
-          placeholder="0"
-          required
-          className="w-full pl-10 pr-3 py-2.5 border border-gray-200 dark:border-gray-700 rounded-xl text-base font-semibold bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--base-500)]"
-        />
-      </div>
-
-      <input
-        type="date"
-        value={date}
-        onChange={(e) => setDate(e.target.value)}
-        className="w-full h-10 border border-gray-200 dark:border-gray-700 rounded-xl px-3 text-sm bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 focus:outline-none appearance-none"
-      />
-      <input
-        type="text"
-        value={note}
-        onChange={(e) => setNote(e.target.value)}
-        placeholder="Catatan (opsional)"
-        className="w-full border border-gray-200 dark:border-gray-700 rounded-xl py-2 px-3 text-sm bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 focus:outline-none"
-      />
-
-      <div className="flex gap-2">
-        <button
-          type="submit"
-          disabled={isPending}
-          className="flex-1 btn-base py-2 rounded-xl text-sm font-medium"
-        >
-          <Check size={14} className="inline mr-1" />
-          Simpan
-        </button>
-        <button
-          type="button"
-          onClick={onCancel}
-          className="flex-1 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 py-2 rounded-xl text-sm font-medium"
-        >
-          <X size={14} className="inline mr-1" />
-          Batal
-        </button>
-      </div>
-    </form>
-  )
 }
 
 export default function SavingsClient({ items: initialItems, className }: Props) {
@@ -135,7 +26,11 @@ export default function SavingsClient({ items: initialItems, className }: Props)
     return prefix + formatCurrency(v)
   }
   const [showForm, setShowForm] = useState(false)
-  const [editingId, setEditingId] = useState<string | null>(null)
+  const [editingSaving, setEditingSaving] = useState<Saving | null>(null)
+  const [editPersonId, setEditPersonId] = useState<string>('')
+  const [editAmount, setEditAmount] = useState('')
+  const [editDate, setEditDate] = useState('')
+  const [editNote, setEditNote] = useState('')
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
   const [confirmId, setConfirmId] = useState<string | null>(null)
@@ -154,6 +49,36 @@ export default function SavingsClient({ items: initialItems, className }: Props)
   const filteredTotal = useMemo(() =>
     filteredItems.reduce((sum, s) => sum + s.amount, 0)
   , [filteredItems])
+
+  const prevMonthTotal = useMemo(() => {
+    const prevMonth = month === 1 ? 12 : month - 1
+    const prevYear = month === 1 ? year - 1 : year
+    return items
+      .filter((s) => {
+        const d = new Date(s.date)
+        return d.getFullYear() === prevYear && d.getMonth() + 1 === prevMonth
+      })
+      .reduce((sum, s) => sum + s.amount, 0)
+  }, [items, month, year])
+
+  const monthPct = useMemo(() => {
+    if (prevMonthTotal === 0) return filteredTotal > 0 ? 100 : 0
+    return Math.round(((filteredTotal - prevMonthTotal) / prevMonthTotal) * 100)
+  }, [filteredTotal, prevMonthTotal])
+
+  const allTimeTotal = useMemo(() =>
+    items.reduce((sum, s) => sum + s.amount, 0)
+  , [items])
+
+  const perPersonTotals = useMemo(() => {
+    const map: Record<string, { name: string; color: string; total: number }> = {}
+    for (const s of items) {
+      const key = s.person_id
+      if (!map[key]) map[key] = { name: s.person?.name ?? '—', color: s.person?.color ?? 'indigo', total: 0 }
+      map[key].total += s.amount
+    }
+    return Object.values(map)
+  }, [items])
 
   const [personId, setPersonId] = useState<string>('')
   const [amount, setAmount] = useState('')
@@ -198,7 +123,24 @@ export default function SavingsClient({ items: initialItems, className }: Props)
 
   return (
     <>
-    <div className={`flex flex-col px-4 ${className ?? ''}`}>
+    <div className={`px-4 ${className ?? ''}`}>
+      {/* Hero Card */}
+      <HeroGradient variant="savings" className="p-4 mb-3">
+        <p className="text-white/70 text-xs font-medium mb-1">Total Tabungan</p>
+        <p className="text-3xl font-bold text-white tracking-tight amount">{fmt(allTimeTotal)}</p>
+        {perPersonTotals.length > 0 && (
+          <div className={`grid gap-2 mt-3 text-xs ${perPersonTotals.length <= 1 ? 'grid-cols-1' : perPersonTotals.length === 2 ? 'grid-cols-2' : 'grid-cols-3'}`}>
+            {perPersonTotals.map((p) => (
+              <div key={p.name} className="bg-white/10 rounded-xl p-2">
+                <p className="text-white/70 mb-0.5">{p.name}</p>
+                <p className="font-semibold text-sm">{fmt(p.total)}</p>
+                {allTimeTotal > 0 && <p className="text-white/60 text-[10px]">{Math.round((p.total / allTimeTotal) * 100)}%</p>}
+              </div>
+            ))}
+          </div>
+        )}
+      </HeroGradient>
+
       {/* Month / Year Filter */}
       <div className="flex items-center gap-2 mb-3">
         <div className="relative flex-1">
@@ -228,82 +170,23 @@ export default function SavingsClient({ items: initialItems, className }: Props)
       </div>
 
       {/* Month total */}
-      <div className="bg-gray-50 dark:bg-gray-800 rounded-2xl px-4 py-3 flex items-center justify-between mb-3">
+      <div className="bg-gray-50 dark:bg-gray-800 rounded-2xl px-4 py-3 flex items-center justify-between">
         <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">{MONTHS[month - 1]} {year}</span>
-        <span className={`text-sm font-bold ${
-          filteredTotal >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'
-        }`}>{fmt(filteredTotal, true)}</span>
+        <div className="flex items-center gap-1.5">
+          <span className={`text-sm font-bold ${
+            filteredTotal >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'
+          }`}>{fmt(filteredTotal)}</span>
+          {monthPct > 0 && <span className="text-xs font-medium text-emerald-600 dark:text-emerald-400 inline-flex items-center gap-0.5"><TrendingUp size={12} />{monthPct}%</span>}
+          {monthPct < 0 && <span className="text-xs font-medium text-rose-600 dark:text-rose-400 inline-flex items-center gap-0.5"><TrendingDown size={12} />{Math.abs(monthPct)}%</span>}
+        </div>
       </div>
 
-      <div className="flex items-center justify-between mb-3">
+      <div className="flex items-center justify-between mb-3 mt-3">
         <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Riwayat</p>
-        <button
-          onClick={() => setShowForm(!showForm)}
-          className="w-7 h-7 btn-base rounded-full flex items-center justify-center"
-        >
-          <Plus size={14} className="text-white" />
-        </button>
       </div>
 
-      {/* Scrollable list */}
-      <div className="flex-1 min-h-0 overflow-y-auto space-y-2 pb-4">
-        {showForm && (
-          <form onSubmit={handleAdd} className="bg-gray-50 dark:bg-gray-800 rounded-2xl p-3 space-y-2">
-          <div className="flex flex-wrap gap-2">
-            {persons.map((p) => {
-              const colors = PERSON_COLORS[p.color] ?? PERSON_COLORS.indigo
-              return (
-                <button
-                  key={p.id}
-                  type="button"
-                  onClick={() => setPersonId(p.id)}
-                  className={`flex-1 min-w-[70px] py-2 rounded-xl text-sm font-medium border transition-colors ${
-                    personId === p.id
-                      ? colors.button
-                      : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 border-gray-200 dark:border-gray-600'
-                  }`}
-                >
-                  {p.name}
-                </button>
-              )
-            })}
-          </div>
-
-          <div className="relative">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm font-medium">Rp</span>
-            <input
-              type="text"
-              inputMode="numeric"
-              value={amount ? amount.replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}
-              onChange={(e) => setAmount(e.target.value.replace(/\D/g, ''))}
-              placeholder="0"
-              required
-              className="w-full pl-10 pr-3 py-2.5 border border-gray-200 dark:border-gray-700 rounded-xl text-base font-semibold bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--base-500)]"
-            />
-          </div>
-          <input
-            type="date"
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
-            className="w-full h-10 border border-gray-200 dark:border-gray-700 rounded-xl px-3 text-sm bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 focus:outline-none appearance-none"
-          />
-          <input
-            type="text"
-            value={note}
-            onChange={(e) => setNote(e.target.value)}
-            placeholder="Catatan (opsional)"
-            className="w-full border border-gray-200 dark:border-gray-700 rounded-xl py-2 px-3 text-sm bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 focus:outline-none"
-          />
-          <div className="flex gap-2">
-            <button type="submit" disabled={isPending} className="flex-1 btn-base py-2 rounded-xl text-sm font-medium">
-              Simpan
-            </button>
-            <button type="button" onClick={() => setShowForm(false)} className="flex-1 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 py-2 rounded-xl text-sm font-medium">
-              Batal
-            </button>
-          </div>
-          </form>
-        )}
+      {/* List */}
+      <div className="space-y-2 pb-8">
 
         {items.length === 0 && (
           <p className="text-center text-gray-400 text-sm py-6">Belum ada tabungan</p>
@@ -314,25 +197,8 @@ export default function SavingsClient({ items: initialItems, className }: Props)
         )}
 
       {filteredItems.map((s) => {
-        const isEditing = editingId === s.id
         const color = s.person?.color ?? 'indigo'
         const badgeClass = PERSON_COLORS[color]?.badge ?? PERSON_COLORS.indigo.badge
-
-        if (isEditing) {
-          return (
-            <EditInline
-              key={s.id}
-              saving={s}
-              persons={persons}
-              onDone={(updated) => {
-                setItems((prev) => prev.map((x) => x.id === updated.id ? updated : x))
-                setEditingId(null)
-              }}
-              onCancel={() => setEditingId(null)}
-            />
-          )
-        }
-
         const isExpanded = expandedId === s.id
 
         return (
@@ -373,7 +239,7 @@ export default function SavingsClient({ items: initialItems, className }: Props)
             {isExpanded && (
               <div className="flex border-t border-gray-100 dark:border-gray-700">
                 <button
-                  onClick={() => { setEditingId(s.id); setExpandedId(null) }}
+                  onClick={() => { setEditingSaving(s); setEditPersonId(s.person_id); setEditAmount(String(Math.abs(s.amount))); setEditDate(s.date); setEditNote(s.note ?? ''); setExpandedId(null) }}
                   disabled={isPending}
                   className="flex-1 flex items-center justify-center gap-2 py-2.5 text-xs icon-btn-base transition-colors"
                 >
@@ -403,6 +269,160 @@ export default function SavingsClient({ items: initialItems, className }: Props)
         onCancel={() => setConfirmId(null)}
       />
     )}
+
+    {/* Edit Drawer */}
+    <BottomDrawer open={!!editingSaving} onClose={() => setEditingSaving(null)} title="Edit Tabungan">
+      {editingSaving && (
+        <form
+          onSubmit={(e) => {
+            e.preventDefault()
+            if (!editAmount || !editPersonId) return
+            startTransition(async () => {
+              await updateSaving(editingSaving.id, {
+                person_id: editPersonId,
+                amount: parseFloat(editAmount),
+                date: editDate,
+                note: editNote || null,
+              })
+              const p = persons.find((x) => x.id === editPersonId)
+              setItems((prev) => prev.map((x) => x.id === editingSaving.id ? {
+                ...x,
+                person_id: editPersonId,
+                person: p ? { name: p.name, color: p.color } : x.person,
+                amount: parseFloat(editAmount),
+                date: editDate,
+                note: editNote || null,
+              } : x))
+              setEditingSaving(null)
+            })
+          }}
+          className="space-y-4"
+        >
+          <div>
+            <label className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 block">Person</label>
+            <div className="flex flex-wrap gap-2">
+              {persons.map((p) => {
+                const colors = PERSON_COLORS[p.color] ?? PERSON_COLORS.indigo
+                return (
+                  <button key={p.id} type="button" onClick={() => setEditPersonId(p.id)}
+                    className={`flex-1 min-w-[70px] py-2 rounded-xl text-sm font-medium border transition-colors ${
+                      editPersonId === p.id ? colors.button : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 border-gray-200 dark:border-gray-600'
+                    }`}>
+                    {p.name}
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+          <div>
+            <label className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 block">Nominal</label>
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm font-medium">Rp</span>
+              <input type="text" inputMode="numeric"
+                value={editAmount ? editAmount.replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}
+                onChange={(e) => setEditAmount(e.target.value.replace(/\D/g, ''))}
+                placeholder="0" required
+                className="w-full pl-10 pr-3 py-3 border border-gray-200 dark:border-gray-700 rounded-xl text-lg font-semibold bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-base-500" />
+            </div>
+          </div>
+          <div>
+            <label className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 block">Tanggal</label>
+            <input type="date" value={editDate} onChange={(e) => setEditDate(e.target.value)}
+              className="w-full border border-gray-200 dark:border-gray-700 rounded-xl py-2.5 px-3 text-sm bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-base-500 appearance-none" />
+          </div>
+          <div>
+            <label className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 block">Catatan</label>
+            <input type="text" value={editNote} onChange={(e) => setEditNote(e.target.value)} placeholder="Opsional..."
+              className="w-full border border-gray-200 dark:border-gray-700 rounded-xl py-2.5 px-3 text-sm bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-base-500" />
+          </div>
+          <div className="flex gap-2">
+            <button type="submit" disabled={isPending || !editAmount || !editPersonId} className="flex-1 btn-base h-[48px] rounded-xl font-semibold text-sm">Simpan</button>
+            <button type="button" onClick={() => setEditingSaving(null)} className="flex-1 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 h-[48px] rounded-xl font-semibold text-sm border border-gray-200 dark:border-gray-700">Batal</button>
+          </div>
+        </form>
+      )}
+    </BottomDrawer>
+
+    {/* FAB */}
+    {!showForm && !editingSaving && (
+      <button
+        onClick={() => setShowForm(true)}
+        className="fixed bottom-20 right-4 z-[90] w-14 h-14 rounded-full btn-base shadow-lg flex items-center justify-center active:scale-95 transition-transform"
+      >
+        <Plus size={24} className="text-white" />
+      </button>
+    )}
+
+    {/* Bottom Drawer */}
+    <BottomDrawer open={showForm} onClose={() => setShowForm(false)} title="Tabungan Baru">
+      <form onSubmit={handleAdd} className="space-y-4">
+        <div className="flex flex-wrap gap-2">
+          {persons.map((p) => {
+            const colors = PERSON_COLORS[p.color] ?? PERSON_COLORS.indigo
+            return (
+              <button
+                key={p.id}
+                type="button"
+                onClick={() => setPersonId(p.id)}
+                className={`flex-1 min-w-[70px] py-2 rounded-xl text-sm font-medium border transition-colors ${
+                  personId === p.id
+                    ? colors.button
+                    : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 border-gray-200 dark:border-gray-600'
+                }`}
+              >
+                {p.name}
+              </button>
+            )
+          })}
+        </div>
+
+        <div>
+          <label className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 block">Nominal</label>
+          <div className="relative">
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm font-medium">Rp</span>
+            <input
+              type="text"
+              inputMode="numeric"
+              value={amount ? amount.replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}
+              onChange={(e) => setAmount(e.target.value.replace(/\D/g, ''))}
+              placeholder="0"
+              required
+              className="w-full pl-10 pr-3 py-3 border border-gray-200 dark:border-gray-700 rounded-xl text-lg font-semibold bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-base-500"
+            />
+          </div>
+        </div>
+
+        <div>
+          <label className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 block">Tanggal</label>
+          <input
+            type="date"
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+            className="w-full border border-gray-200 dark:border-gray-700 rounded-xl py-2.5 px-3 text-sm bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-base-500 appearance-none"
+          />
+        </div>
+
+        <div>
+          <label className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 block">Catatan</label>
+          <input
+            type="text"
+            value={note}
+            onChange={(e) => setNote(e.target.value)}
+            placeholder="Opsional..."
+            className="w-full border border-gray-200 dark:border-gray-700 rounded-xl py-2.5 px-3 text-sm bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-base-500"
+          />
+        </div>
+
+        <div className="flex gap-2">
+          <button type="submit" disabled={isPending || !amount || !personId} className="flex-1 btn-base h-[48px] rounded-xl font-semibold text-sm">
+            Simpan
+          </button>
+          <button type="button" onClick={() => setShowForm(false)} className="flex-1 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 h-[48px] rounded-xl font-semibold text-sm border border-gray-200 dark:border-gray-700">
+            Batal
+          </button>
+        </div>
+      </form>
+    </BottomDrawer>
   </>
   )
 }

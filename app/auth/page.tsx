@@ -1,37 +1,37 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { verifyPin } from '@/actions/auth'
-import { Delete } from 'lucide-react'
-import ThemeToggle from '@/components/ui/ThemeToggle'
+import { motion } from 'framer-motion'
+import { Moon, Sun, Fingerprint, Wallet, Check } from 'lucide-react'
+import { useTheme } from '@/components/providers/ThemeProvider'
+import { PinPad } from '@/components/ui/pinpad'
 
 const PIN_LENGTH = Number(process.env.NEXT_PUBLIC_PIN_LENGTH ?? 6)
 
-const KEYS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '', '0', 'del']
+// Get current time based greeting
+function getGreeting() {
+  const hour = new Date().getHours()
+  if (hour < 11) return 'Selamat Pagi'
+  if (hour < 15) return 'Selamat Siang'
+  if (hour < 18) return 'Selamat Sore'
+  return 'Selamat Malam'
+}
 
 export default function AuthPage() {
   const router = useRouter()
-  const [pin, setPin] = useState('')
+  const { theme, toggle } = useTheme()
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [shake, setShake] = useState(false)
-  const dotsRef = useRef<HTMLDivElement>(null)
 
-  useEffect(() => {
-    if (pin.length === PIN_LENGTH && !loading) {
-      submit(pin)
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pin])
-
-  async function submit(value: string) {
+  const handlePinComplete = async (pin: string) => {
     setLoading(true)
     setError('')
-    const result = await verifyPin(value)
+    const result = await verifyPin(pin)
     if ('error' in result) {
       setError(result.error)
-      setPin('')
       setShake(true)
       setTimeout(() => setShake(false), 400)
       setLoading(false)
@@ -41,84 +41,116 @@ export default function AuthPage() {
     }
   }
 
-  function handleKey(digit: string) {
-    if (loading || pin.length >= PIN_LENGTH) return
-    setPin((prev) => prev + digit)
-    setError('')
-  }
-
-  function handleDelete() {
-    if (loading) return
-    setPin((prev) => prev.slice(0, -1))
-    setError('')
-  }
+  const isLight = theme === 'light'
 
   return (
-    <div className="min-h-dvh flex flex-col items-center justify-center bg-white dark:bg-gray-900 px-8">
-      {/* Dark mode toggle */}
-      <div className="absolute top-4 right-4">
-        <ThemeToggle />
-      </div>
+    <div className="min-h-dvh flex flex-col items-center justify-center bg-white dark:bg-gray-900 px-8 relative">
+      {/* Theme Toggle */}
+      <motion.button
+        onClick={toggle}
+        className="absolute top-4 right-4 p-3 rounded-xl bg-base-100 dark:bg-base-800 text-base-600 dark:text-base-300 hover:bg-base-200 dark:hover:bg-base-700 transition-colors"
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        aria-label="Toggle theme"
+      >
+        {isLight ? (
+          <Moon className="w-5 h-5" />
+        ) : (
+          <Sun className="w-5 h-5" />
+        )}
+      </motion.button>
 
-      <div className="w-full max-w-xs flex flex-col items-center">
-        {/* Header */}
-        <div className="text-center mb-10">
-          <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">Keuangan Kita</h1>
-          <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">Masukkan PIN</p>
-        </div>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="w-full max-w-md flex flex-col items-center"
+      >
+        {/* Logo & Branding */}
+        <motion.div
+          initial={{ scale: 0.9, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ delay: 0.2, duration: 0.5 }}
+          className="mb-8 text-center"
+        >
+          <div className="flex justify-center mb-4">
+            <div className="relative">
+              <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-base-500 to-base-700 flex items-center justify-center shadow-lg">
+                <span className="text-4xl"><Wallet size={40} /></span>
+              </div>
+              <div className="absolute -bottom-1 -right-1 w-8 h-8 rounded-lg bg-emerald-500 flex items-center justify-center shadow-md">
+                <span className="text-lg"><Check size={18} /></span>
+              </div>
+            </div>
+          </div>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 tracking-tight">
+            Keuangan Kita
+          </h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
+            {getGreeting()}
+          </p>
+        </motion.div>
 
-        {/* PIN dots */}
-        <div ref={dotsRef} className={`flex justify-center gap-4 mb-3 ${shake ? 'shake' : ''}`}>
-          {Array.from({ length: PIN_LENGTH }).map((_, i) => (
-            <div
-              key={i}
-              className={`w-3.5 h-3.5 rounded-full transition-all duration-150 ${
-                i < pin.length
-                  ? 'bg-indigo-600 scale-110'
-                  : 'bg-gray-300 dark:bg-gray-600'
-              }`}
-            />
-          ))}
-        </div>
+        {/* PIN Input Section */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3, duration: 0.5 }}
+          className={`w-full ${shake ? 'shake' : ''}`}
+        >
+          <PinPad
+            pinLength={PIN_LENGTH}
+            onPinComplete={handlePinComplete}
+            className="w-full"
+          />
 
-        {/* Error */}
-        <div className="h-5 mb-6">
-          {error && (
-            <p className="text-center text-xs text-rose-500 animate-fade-in-up">{error}</p>
-          )}
-        </div>
-
-        {/* Keypad */}
-        <div className="grid grid-cols-3 gap-3 w-full">
-          {KEYS.map((key, i) => {
-            if (key === '') return <div key={i} />
-
-            if (key === 'del') {
-              return (
-                <button
-                  key={i}
-                  onClick={handleDelete}
-                  disabled={loading || pin.length === 0}
-                  className="w-20 h-20 rounded-full mx-auto flex items-center justify-center text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 active:scale-95 transition-all disabled:opacity-30"
-                >
-                  <Delete size={26} />
-                </button>
-              )
-            }
-
-            return (
-              <button
-                key={i}
-                onClick={() => handleKey(key)}
-                disabled={loading}
-                className="w-20 h-20 rounded-full mx-auto bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-2xl font-semibold text-gray-800 dark:text-gray-100 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 hover:border-indigo-300 dark:hover:border-indigo-700 active:scale-95 transition-all shadow-sm disabled:opacity-50"
+          {/* Error Message */}
+          <div className="h-8 mt-4">
+            {error && (
+              <motion.p
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="text-center text-sm text-rose-500 dark:text-rose-400 font-medium"
               >
-                {key}
-              </button>
-            )
-          })}
-        </div>
-      </div>
+                {error}
+              </motion.p>
+            )}
+          </div>
+
+          {/* Loading Indicator */}
+          {loading && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="flex justify-center mt-4"
+            >
+              <div className="w-6 h-6 border-2 border-base-500 border-t-transparent rounded-full animate-spin" />
+            </motion.div>
+          )}
+        </motion.div>
+
+        {/* Biometric Hint */}
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.6 }}
+          className="mt-8 text-xs text-gray-400 dark:text-gray-500 flex items-center gap-2"
+        >
+          <Fingerprint className="w-4 h-4" />
+          <span>Masukkan PIN untuk melanjutkan</span>
+        </motion.p>
+
+        {/* Footer */}
+        <motion.footer
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.7 }}
+          className="mt-12 text-xs text-gray-400 dark:text-gray-500 text-center"
+        >
+          <p>Keuangan Kita v2.0</p>
+        </motion.footer>
+      </motion.div>
     </div>
   )
 }
+

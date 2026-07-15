@@ -11,7 +11,7 @@ import {
 } from '@/actions/analysis'
 import { getPersons } from '@/actions/persons'
 import PageHeader from '@/components/layout/PageHeader'
-import { formatCurrency, currentMonth, currentYear, MONTHS, COLOR_HEX, YEAR_OPTIONS } from '@/lib/constants'
+import { formatCurrency, currentMonth, currentYear, MONTHS, COLOR_HEX, YEAR_OPTIONS, getCategoryIcon } from '@/lib/constants'
 import type { Person } from '@/lib/types'
 import { ChevronsUpDown } from 'lucide-react'
 import {
@@ -196,8 +196,8 @@ export default function AnalisisPage() {
                     <div key={item.id} className="flex items-center justify-between">
                       <div className="flex items-center gap-1.5">
                         <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: item.color }} />
-                        <span className="text-xs text-gray-600 dark:text-gray-300">
-                          {item.icon} {item.name}
+                        <span className="text-xs text-gray-600 dark:text-gray-300 inline-flex items-center gap-1">
+                          {(() => { const Icon = getCategoryIcon(item.icon); return <Icon size={12} />; })()} {item.name}
                         </span>
                       </div>
                       <span className="text-xs font-medium text-gray-700 dark:text-gray-200">

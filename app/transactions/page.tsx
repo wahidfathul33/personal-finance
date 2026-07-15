@@ -4,13 +4,15 @@ import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { getTransactions } from '@/actions/transactions'
 import { getPersons } from '@/actions/persons'
 import TransactionItem, { TransactionItemSkeleton } from '@/components/transaction/TransactionItem'
-import TransactionForm from '@/components/transaction/TransactionForm'
 import PageHeader from '@/components/layout/PageHeader'
 import Link from 'next/link'
 import type { TransactionWithCategory } from '@/lib/types'
 import type { Person } from '@/lib/types'
 import { currentMonth, currentYear, PERSON_COLORS, formatCurrency, MONTHS, YEAR_OPTIONS, CATEGORIES } from '@/lib/constants'
-import { Plus, CalendarDays, SlidersHorizontal, ChevronsUpDown } from 'lucide-react'
+import { CalendarDays, SlidersHorizontal, ChevronsUpDown } from 'lucide-react'
+import { useHideAmounts } from '@/lib/HideAmountsContext'
+import FABWrapper from '@/components/layout/FABWrapper'
+import HideToggle from '@/components/ui/HideToggle'
 
 const TYPE_OPTIONS = [
   { value: 'all', label: 'Semua' },
@@ -35,18 +37,11 @@ export default function TransactionsPage() {
   const [hasMore, setHasMore] = useState(false)
   const [offset, setOffset] = useState(0)
   const [showFilters, setShowFilters] = useState(false)
-  const [showForm, setShowForm] = useState(false)
   const [statsData, setStatsData] = useState<{ income: number; expense: number; count: number } | null>(null)
   const sentinelRef = useRef<HTMLDivElement>(null)
+  const { hidden } = useHideAmounts()
 
-  // Buka form otomatis jika dibuka via app shortcut (?action=new)
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search)
-    if (params.get('action') === 'new') {
-      setShowForm(true)
-      window.history.replaceState({}, '', '/transactions')
-    }
-  }, [])
+
 
   const filters = useMemo(() => ({
     month,
@@ -118,25 +113,20 @@ export default function TransactionsPage() {
   }, [typeFilter])
 
   return (
-    <div className="flex flex-col h-[calc(100dvh-80px)]">
+    <div>
       <PageHeader
         title="Transaksi"
         subtitle={`${MONTHS[month - 1]} ${year}`}
         right={
-          <>
+          <div className="flex items-center gap-2">
+            <HideToggle />
             <Link
               href="/recurring"
               className="w-9 h-9 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
             >
               <CalendarDays size={17} />
             </Link>
-            <button
-              onClick={() => setShowForm(true)}
-              className="w-9 h-9 flex items-center justify-center rounded-full btn-base"
-            >
-              <Plus size={18} />
-            </button>
-          </>
+          </div>
         }
       />
 
@@ -245,7 +235,7 @@ export default function TransactionsPage() {
               >
                 <option value="all">Semua Kategori</option>
                 {visibleCategories.map((cat) => (
-                  <option key={cat.id} value={cat.id}>{cat.icon} {cat.name}</option>
+                  <option key={cat.id} value={cat.id}>{cat.name}</option>
                 ))}
               </select>
               <ChevronsUpDown size={14} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
@@ -260,14 +250,14 @@ export default function TransactionsPage() {
           <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium mb-1">Masuk</p>
           {statsData === null
             ? <div className="h-5 w-20 rounded-full bg-emerald-200 dark:bg-emerald-900/50 shimmer-dark" />
-            : <p className="font-bold text-emerald-700 dark:text-emerald-300">{formatCurrency(statsData.income)}</p>
+            : <p className="font-bold text-emerald-700 dark:text-emerald-300">{hidden ? '••••••' : formatCurrency(statsData.income)}</p>
           }
         </div>
         <div className="bg-rose-50 dark:bg-rose-950/40 rounded-2xl p-4">
           <p className="text-xs text-rose-600 dark:text-rose-400 font-medium mb-1">Keluar</p>
           {statsData === null
             ? <div className="h-5 w-20 rounded-full bg-rose-200 dark:bg-rose-900/50 shimmer-dark" />
-            : <p className="font-bold text-rose-700 dark:text-rose-300">{formatCurrency(Math.abs(statsData.expense))}</p>
+            : <p className="font-bold text-rose-700 dark:text-rose-300">{hidden ? '••••••' : formatCurrency(Math.abs(statsData.expense))}</p>
           }
         </div>
         <div className="bg-gray-100 dark:bg-gray-800 rounded-2xl p-4">
@@ -280,7 +270,6 @@ export default function TransactionsPage() {
       </div>
 
       {/* List */}
-      <div className="flex-1 min-h-0 overflow-y-auto">
       {loading ? (
         <div className="px-4 space-y-2 pt-1">
           {Array.from({ length: 6 }).map((_, i) => (
@@ -290,7 +279,7 @@ export default function TransactionsPage() {
       ) : transactions.length === 0 ? (
         <div className="text-center py-10 text-gray-400 text-sm">Tidak ada transaksi</div>
       ) : (
-        <div className="px-4 space-y-2 pb-4">
+        <div className="px-4 space-y-2 pb-8">
           {transactions.map((tx) => (
             <TransactionItem key={tx.id} transaction={tx} onSuccess={() => { loadTransactions(); loadStats() }} />
           ))}
@@ -301,18 +290,13 @@ export default function TransactionsPage() {
           )}
         </div>
       )}
-      </div>
 
-      {showForm && (
-        <TransactionForm
-          onClose={() => setShowForm(false)}
-          onSuccess={() => {
-            setShowForm(false)
-            loadTransactions()
-            loadStats()
-          }}
-        />
-      )}
+      <FABWrapper
+        onSuccess={() => {
+          loadTransactions()
+          loadStats()
+        }}
+      />
     </div>
   )
 }

@@ -1,6 +1,7 @@
 'use client'
 
 import { PERSON_COLORS } from '@/lib/constants'
+import { Wallet, Building2 } from 'lucide-react'
 import type { Person } from '@/lib/types'
 
 interface Props {
@@ -64,7 +65,7 @@ export default function TransactionFormExpenseIncomeFields({
                     : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700'
                 }`}
               >
-                {src === 'saldo' ? '💳 Saldo' : '🏦 Tabungan'}
+                {src === 'saldo' ? <><Wallet size={14} className="inline" /> Saldo</> : <><Building2 size={14} className="inline" /> Tabungan</>}
               </button>
             ))}
           </div>

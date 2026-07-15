@@ -148,7 +148,7 @@ export default function SettingsPage() {
         {/* Appearance Section */}
         <div>
           <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Tampilan</h2>
-          <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 divide-y divide-gray-100 dark:divide-gray-700">
+          <div className="bg-gray-50 dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 divide-y divide-gray-200 dark:divide-gray-700">
             <div className="flex items-center justify-between px-4 py-3">
               <div className="flex items-center gap-3">
                 {theme === 'dark' ? <Moon size={16} className="text-gray-500 dark:text-gray-400" /> : <Sun size={16} className="text-gray-500 dark:text-gray-400" />}
@@ -174,7 +174,7 @@ export default function SettingsPage() {
         {/* Base Color Section */}
         <div>
           <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Warna Dasar</h2>
-          <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 p-4">
+          <div className="bg-gray-50 dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-4">
             <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">Warna aksen utama untuk navigasi dan tombol aksi.</p>
             <div className="flex flex-wrap gap-2">
               {BASE_COLOR_OPTIONS.map((c) => {
@@ -219,7 +219,7 @@ export default function SettingsPage() {
 
           {/* Add Form */}
           {showAdd && (
-            <div className="bg-white dark:bg-gray-800 rounded-2xl border border-indigo-200 dark:border-indigo-700 p-4 mb-3 space-y-3">
+            <div className="bg-gray-50 dark:bg-gray-800 rounded-2xl border border-indigo-200 dark:border-indigo-700 p-4 mb-3 space-y-3">
               <p className="text-xs font-semibold text-indigo-600 dark:text-indigo-400">Orang Baru</p>
               <div>
                 <label className="text-xs text-gray-500 dark:text-gray-400 mb-1 block">Nama</label>
@@ -266,7 +266,7 @@ export default function SettingsPage() {
                 return (
                   <div
                     key={p.id}
-                    className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 p-3"
+                    className="bg-gray-50 dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-3"
                   >
                     {isEditing ? (
                       <EditRow person={p} onDone={handleDoneEdit} />
