@@ -70,7 +70,7 @@ export default function TransactionItem({ transaction, showPerson = true, onSucc
         className="w-full flex items-center gap-3 p-3 text-left"
         onClick={() => setExpanded(!expanded)}
       >
-        <div className={cn('w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0', getCategoryColors(transaction.category_id).bg, getCategoryColors(transaction.category_id).text)}>
+        <div className={cn('w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0', getCategoryColors(transaction.category_id ?? undefined).bg, getCategoryColors(transaction.category_id ?? undefined).text)}>
           {(() => { const Icon = getCategoryIcon(transaction.category?.icon); return <Icon size={18} />; })()}
         </div>
 
