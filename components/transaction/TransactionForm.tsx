@@ -2,7 +2,7 @@
 
 import { useState, useTransition, useEffect } from 'react'
 import { X, Loader2 } from 'lucide-react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion, AnimatePresence, useDragControls, type PanInfo } from 'framer-motion'
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
 import TransactionFormExpenseIncomeFields from './TransactionFormExpenseIncomeFields'
 import TransactionFormTransferFields from './TransactionFormTransferFields'
@@ -38,6 +38,14 @@ export default function TransactionForm({ defaultMode = 'expense', editTransacti
 
   const [mode, setMode] = useState<Mode>(initialMode)
   const [isPending, startTransition] = useTransition()
+
+  // Swipe-down-to-dismiss: drag starts only from the handle, so form inputs
+  // and the scrollable body are never hijacked by the gesture.
+  const dragControls = useDragControls()
+  const handleDragEnd = (_: unknown, info: PanInfo) => {
+    if (info.offset.y > 120 || info.velocity.y > 800) onClose()
+  }
+
   const persons = usePersons()
 
   const [date, setDate] = useState(editTransaction?.date ?? todayISO())
@@ -154,16 +162,29 @@ export default function TransactionForm({ defaultMode = 'expense', editTransacti
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         className="fixed inset-0 bg-black/50 z-[60] flex items-end"
+        data-swipe-ignore
       >
         <motion.div
           initial={{ y: '100%' }}
           animate={{ y: 0 }}
           exit={{ y: '100%' }}
           transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+          drag="y"
+          dragListener={false}
+          dragControls={dragControls}
+          dragConstraints={{ top: 0, bottom: 0 }}
+          dragElastic={{ top: 0, bottom: 0.9 }}
+          onDragEnd={handleDragEnd}
+          role="dialog"
+          aria-modal="true"
+          aria-label={isEdit ? 'Edit Transaksi' : 'Tambah Transaksi'}
           className="bg-white dark:bg-gray-900 w-full max-w-lg mx-auto h-[90vh] flex flex-col rounded-t-3xl shadow-2xl z-[80] overflow-hidden"
         >
-          {/* Drag handle */}
-          <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
+          {/* Drag handle — draggable zone for swipe-down dismiss */}
+          <div
+            className="flex justify-center pt-3 pb-1 flex-shrink-0 touch-none cursor-grab active:cursor-grabbing"
+            onPointerDown={(e) => dragControls.start(e)}
+          >
             <div className="w-10 h-1 rounded-full bg-gray-300 dark:bg-gray-600" />
           </div>
 
