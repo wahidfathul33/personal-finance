@@ -74,6 +74,7 @@ export default function SwipeableItem({
   return (
     <div
       ref={containerRef}
+      data-swipe-ignore
       className={cn('relative overflow-hidden rounded-xl', className)}
     >
       {/* Action Buttons (behind) */}

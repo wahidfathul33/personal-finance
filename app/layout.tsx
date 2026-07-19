@@ -57,7 +57,7 @@ export default function RootLayout({
           <RegisterSW />
           <div className="max-w-lg mx-auto min-h-screen bg-white dark:bg-gray-900 shadow-sm dark:shadow-none relative">
             <ToastProvider>
-              <main className="pb-20">{children}</main>
+              <main className="pb-[calc(6rem+env(safe-area-inset-bottom))]">{children}</main>
               <BottomNav />
             </ToastProvider>
           </div>
